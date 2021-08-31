@@ -167,3 +167,6 @@ export PATH=$PATH:$HOME/.nodebrew/current/bin
 
 # starship
 eval "$(starship init zsh)"
+
+# Haskell
+[ -f "/Users/kenta.aikawa/.ghcup/env" ] && source "/Users/kenta.aikawa/.ghcup/env" # ghcup-env
