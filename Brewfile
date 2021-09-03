@@ -1,4 +1,5 @@
 brew "ghq"
+brew "graphviz"
 brew "mas"
 brew "peco"
 brew "stow"

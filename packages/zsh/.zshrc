@@ -106,7 +106,7 @@ autoload -Uz history-search-end
 zle -N history-beginning-search-backward-end history-search-end
 zle -N history-beginning-search-forward-end history-search-end
 bindkey "^p" history-beginning-search-backward-end
-bindkey "^b" history-beginning-search-forward-end
+bindkey "^n" history-beginning-search-forward-end
 
 # cdrコマンドを有効 ログアウトしても有効なディレクトリ履歴
 # cdr タブでリストを表示
@@ -170,3 +170,6 @@ eval "$(starship init zsh)"
 
 # Haskell
 [ -f "/Users/kenta.aikawa/.ghcup/env" ] && source "/Users/kenta.aikawa/.ghcup/env" # ghcup-env
+
+# plantUML
+export PLANTUML_LIMIT_SIZE=8192
