@@ -17,4 +17,4 @@ if [ ! -d ~/.config ]; then
   mkdir ~/.config
 fi
 
-stow -v -d ~/dotfiles/packages -t ~ zsh starship
+stow -v -d ~/dotfiles/packages -t ~ zsh starship vim
