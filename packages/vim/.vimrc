@@ -62,7 +62,7 @@ inoremap <expr><C-n> pumvisible() ? "<Down>" : "<C-n>"
 inoremap <expr><C-p> pumvisible() ? "<Up>" : "<C-p>"
 " }}}
 
-" coc.nvim {{{
+" coc.nvim(from coc.nvim README) {{{
 " unicode characters in the file autoload/float.vim
 set encoding=utf-8
 
@@ -120,6 +120,7 @@ inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
 
 " Use `[g` and `]g` to navigate diagnostics
 " Use `:CocDiagnostics` to get all diagnostics of current buffer in location list.
+" Return vim by entering C-o
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
 nmap <silent> ]g <Plug>(coc-diagnostic-next)
 

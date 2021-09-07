@@ -5,3 +5,6 @@ merged = '0'
 
 [[plugins]]
 repo = 'altercation/vim-colors-solarized'
+
+[[plugins]]
+repo = 'prettier/vim-prettier'
