@@ -6,6 +6,9 @@ fi
 # Ctrl+Dでログアウトしてしまうことを防ぐ
 setopt IGNOREEOF
 
+# terminal の操作を vi keybind にする
+set -o vi
+
 # 日本語を使用
 export LANG=ja_JP.UTF-8
 
@@ -54,7 +57,6 @@ alias so='source'
 alias v='vim'
 alias vi='vim'
 alias vz='vim ~/.zshrc'
-alias c='cdr'
 
 # エイリアス(Git)
 alias gl='git log'
@@ -116,10 +118,6 @@ add-zsh-hook chpwd chpwd_recent_dirs
 # cdrコマンドで履歴にないディレクトリにも移動可能に
 zstyle ":chpwd:*" recent-dirs-default true
 
-# 複数ファイルのmv 例　zmv *.txt *.txt.bk
-autoload -Uz zmv
-alias zmv='noglob zmv -W'
-
 # peco
 function peco-src() {
   local selected_dir=$(ghq list -p | peco --query "$LBUFER")
@@ -130,33 +128,18 @@ function peco-src() {
   zle clear-screen
 }
 zle -N peco-src
-bindkey '^[' peco-src
+bindkey '^g' peco-src
 
-# functions
-function ox() {
-  ls *.xcworkspace >/dev/null 2>&1
-  if [ $? -eq 0 ]; then
-    echo "found xcworkspace."
-    open *.xcworkspace
-    exit
+function peco-cdr() {
+  local selected_dir=$(cdr -l | awk '{ print $2 }' | peco)
+  if [ -n "$selected_dir" ]; then
+    BUFFER="cd ${selected_dir}"
+    zle accept-line
   fi
-
-  ls *.xcodeproj >/dev/null 2>&1
-  if [ $? -eq 0 ]; then
-    echo "found xcodeproj."
-    open *.xcodeproj
-    exit
-  fi
-
-  ls *.playground >/dev/null 2>&1
-  if [ $? -q 0 ]; then
-    echo "found playground."
-    open *.playground
-    exit
-  fi
-
-  echo "not found."
+  zle clear-screen
 }
+zle -N peco-cdr
+bindkey '^o' peco-cdr
 
 # rbenv
 export PATH=~/.rbenv/bin:$PATH
