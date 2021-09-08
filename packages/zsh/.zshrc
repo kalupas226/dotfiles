@@ -14,6 +14,12 @@ export LANG=ja_JP.UTF-8
 
 # export PATH
 export PATH="$HOME/bin:$PATH"
+export PATH=$PATH:$HOME/.rbenv/bin
+export PATH=$PATH:$HOME/.nodebrew/current/bin
+
+# eval
+eval "$(rbenv init -)"
+eval "$(starship init zsh)"
 
 # 色を使用
 autoload -Uz colors
@@ -140,16 +146,6 @@ function peco-cdr() {
 }
 zle -N peco-cdr
 bindkey '^o' peco-cdr
-
-# rbenv
-export PATH=~/.rbenv/bin:$PATH
-eval "$(rbenv init -)"
-
-# nodebrew
-export PATH=$PATH:$HOME/.nodebrew/current/bin
-
-# starship
-eval "$(starship init zsh)"
 
 # Haskell
 [ -f "/Users/kenta.aikawa/.ghcup/env" ] && source "/Users/kenta.aikawa/.ghcup/env" # ghcup-env
