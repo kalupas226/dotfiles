@@ -79,7 +79,6 @@ alias gps='git push'
 alias gpsu='git push -u origin'
 alias gp='git pull origin'
 alias gpset='git push --set-upstream origin'
-alias -g B='`git branch -a | peco --prompt "GIT BRANCH>" | head -n 1 | sed -e "s/^\*\s*//g"`'
 
 # エイリアス(tig)
 alias t='tig'
