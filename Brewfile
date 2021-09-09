@@ -1,10 +1,12 @@
 brew "ghq"
 brew "graphviz"
 brew "mas"
+brew "nodebrew"
 brew "peco"
 brew "stow"
 brew "starship"
 brew "tig"
+brew "tmux"
 
 tap "homebrew/cask-fonts"
 
