@@ -1,7 +1,9 @@
 [[plugins]]
 repo = 'neoclide/coc.nvim'
 rev = 'release'
-merged = '0'
+build = '''
+  git checkout release
+'''
 
 [[plugins]]
 repo = 'altercation/vim-colors-solarized'
