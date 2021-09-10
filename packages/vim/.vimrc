@@ -1,14 +1,10 @@
 " *** Vim Options *** {{{
-" バッファが編集中でもその他のファイルを開けるように
-set hidden
 " 入力中のコマンドをステータスに表示する
 set showcmd
 " 行番号を表示
 set number
-" 現在の行を強調表示
-set cursorline
-" 行末の1文字先までカーソルを移動できるように
-set virtualedit=onemore
+" タイトルを表示
+set title
 " インデントはスマートインデント
 set smartindent
 " ビープ音を可視化
@@ -23,8 +19,6 @@ set wildmode=list:longest
 syntax enable
 " vim 系のファイルのみ fold を有効化
 au FileType vim setlocal foldmethod=marker
-" 不可視文字を可視化(タブが「▸-」と表示される)
-set list listchars=tab:\▸\-
 " Tab文字を半角スペースにする
 set expandtab
 " 行頭以外のTab文字の表示幅（スペースいくつ分）
@@ -41,21 +35,34 @@ set incsearch
 set wrapscan
 " 検索語をハイライト表示
 set hlsearch
+" ヤンクに * レジスタを使う
+set clipboard=unnamed
+" menuone=補完ウィンドウで対象が1件しかなくても常に補完ウィンドウを表示, noinsert=補完ウィンドウを表示時に挿入しないようにする
+set completeopt=menuone,noinsert
 " }}}
 
-" *** Key Mappings *** {{{{
-" ESC連打でハイライト解除
-nmap <Esc><Esc> :nohlsearch<CR><Esc>
-inoremap {<Enter> {}<Left><CR><ESC><S-o>
-inoremap [<Enter> []<Left><CR><ESC><S-o>
-inoremap (<Enter> ()<Left><CR><ESC><S-o>
-set completeopt=menuone,noinsert
+" *** key mappings *** {{{{
+" insert
+" カッコ補完
+inoremap {<enter> {}<left><cr><esc><s-o>
+inoremap [<enter> []<left><cr><esc><s-o>
+inoremap (<enter> ()<left><cr><esc><s-o>
+" 補完時の動作を制御する
 inoremap <expr><CR> pumvisible() ? "<C-y>" : "<CR>"
 inoremap <expr><C-n> pumvisible() ? "<Down>" : "<C-n>"
 inoremap <expr><C-p> pumvisible() ? "<Up>" : "<C-p>"
+" BS 無効化
+inoremap <BS> <nop>
+
+" visual
+" visual mode で洗濯してからのインデント調整で選択範囲を解放しない
+vnoremap > >gv
+vnoremap < <gb
+" normal
+nnoremap <silent><C-e> :NERDTreeToggle<CR>
 " }}}
 
-" coc.nvim(from coc.nvim README) {{{
+" *** coc.nvim(from coc.nvim README) *** {{{
 " unicode characters in the file autoload/float.vim
 set encoding=utf-8
 
@@ -226,7 +233,7 @@ nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 set re=0
 " }}}
 
-" dein.vim settings {{{
+" *** dein.vim settings *** {{{
 " install dir {{{
 let s:dein_dir = expand('~/.cache/dein')
 let s:dein_repo_dir = s:dein_dir . '/repos/github.com/Shougo/dein.vim'
@@ -301,13 +308,15 @@ if dein#check_install()
   call dein#install()
 endif
 
+" }}}
+" }}}
+
+" *** Color Scheme *** {{{
+:colorscheme solarized
+
 highlight Normal ctermbg=none
 highlight NonText ctermbg=none
 highlight LineNr ctermbg=none
 highlight Folded ctermbg=none
 highlight EndOfBuffer ctermbg=none 
-
-" settings after installing dein
-:colorscheme solarized
-
-"End dein Scripts------------------------- }}}
+" }}}

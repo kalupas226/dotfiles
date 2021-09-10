@@ -79,6 +79,7 @@ alias gps='git push'
 alias gpsu='git push -u origin'
 alias gp='git pull origin'
 alias gpset='git push --set-upstream origin'
+alias gf='git fetch'
 
 # エイリアス(tig)
 alias t='tig'
