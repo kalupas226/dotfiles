@@ -8,8 +8,12 @@ bind generic E view-grep
 bind main ! ?git revert %(commit)
 bind main G move-last-line
 bind main <Esc>g :toggle commit-title-graph
+bind main R !git rebase -i %(commit)
 
 # status
 bind status a !?git commit --amend
 bind status D ?@rm %(file)
+
+# diff
+bind diff R !git rebase -i %(commit)
 
