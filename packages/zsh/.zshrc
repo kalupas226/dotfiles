@@ -6,9 +6,6 @@ fi
 # Ctrl+Dでログアウトしてしまうことを防ぐ
 setopt IGNOREEOF
 
-# terminal の操作を vi keybind にする
-set -o vi
-
 # 日本語を使用
 export LANG=ja_JP.UTF-8
 
@@ -124,28 +121,28 @@ add-zsh-hook chpwd chpwd_recent_dirs
 # cdrコマンドで履歴にないディレクトリにも移動可能に
 zstyle ":chpwd:*" recent-dirs-default true
 
-# peco
-function peco-src() {
-  local selected_dir=$(ghq list -p | peco --query "$LBUFER")
+# fzf 
+function fzf-src() {
+  local selected_dir=$(ghq list -p | fzf -q "$LBUFER" --preview='exa -l {}')
   if [ -n "$selected_dir" ]; then
     BUFFER="cd ${selected_dir}"
     zle accept-line
   fi
   zle clear-screen
 }
-zle -N peco-src
-bindkey '^g' peco-src
+zle -N fzf-src
+bindkey '^g' fzf-src
 
-function peco-cdr() {
-  local selected_dir=$(cdr -l | awk '{ print $2 }' | peco)
+function fzf-cdr() {
+  local selected_dir=$(cdr -l | awk '{ print $2 }' | fzf)
   if [ -n "$selected_dir" ]; then
     BUFFER="cd ${selected_dir}"
     zle accept-line
   fi
   zle clear-screen
 }
-zle -N peco-cdr
-bindkey '^o' peco-cdr
+zle -N fzf-cdr
+bindkey '^o' fzf-cdr
 
 # Haskell
 [ -f "/Users/kenta.aikawa/.ghcup/env" ] && source "/Users/kenta.aikawa/.ghcup/env" # ghcup-env
