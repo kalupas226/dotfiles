@@ -51,9 +51,6 @@ inoremap (<enter> ()<left><cr><esc><s-o>
 inoremap <expr><CR> pumvisible() ? "<C-y>" : "<CR>"
 inoremap <expr><C-n> pumvisible() ? "<Down>" : "<C-n>"
 inoremap <expr><C-p> pumvisible() ? "<Up>" : "<C-p>"
-" BS 無効化
-inoremap <BS> <nop>
-
 " visual
 " visual mode で洗濯してからのインデント調整で選択範囲を解放しない
 vnoremap > >gv
