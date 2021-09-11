@@ -52,14 +52,8 @@ alias -g G='| grep'
 alias -g GI='| grep -ri'
 
 # エイリアス
-alias lst='ls -ltr --color=auto'
-alias l='ls -ltr --color=auto'
-alias la='ls -la --color=auto'
-alias ll='ls -l --color=auto'
-alias so='source'
-alias v='vim'
-alias vi='vim'
 alias vz='vim ~/.zshrc'
+alias sz='source ~/.zshrc'
 
 # エイリアス(Git)
 alias gl='git log'
@@ -69,8 +63,6 @@ alias gbD='git branch -D'
 alias gs='git status'
 alias ga='git add'
 alias gc='git commit -m'
-alias gsw='git switch'
-alias gswc='git switch -c'
 alias gr='git restore'
 alias gps='git push'
 alias gpsu='git push -u origin'
@@ -122,7 +114,7 @@ add-zsh-hook chpwd chpwd_recent_dirs
 zstyle ":chpwd:*" recent-dirs-default true
 
 # fzf 
-function fzf-src() {
+function cdrepo() {
   local selected_dir=$(ghq list -p | fzf -q "$LBUFER" --preview='exa -l {}')
   if [ -n "$selected_dir" ]; then
     BUFFER="cd ${selected_dir}"
@@ -130,19 +122,55 @@ function fzf-src() {
   fi
   zle clear-screen
 }
-zle -N fzf-src
-bindkey '^g' fzf-src
+zle -N cdrepo
+bindkey '^@' cdrepo
 
-function fzf-cdr() {
-  local selected_dir=$(cdr -l | awk '{ print $2 }' | fzf)
+function cdrfzf() {
+  local selected_dir=$(cdr -l | awk '{ print $2 }' | fzf --preview 'f() { sh -c "exa -l $1" }; f {}')
   if [ -n "$selected_dir" ]; then
     BUFFER="cd ${selected_dir}"
     zle accept-line
   fi
   zle clear-screen
 }
-zle -N fzf-cdr
-bindkey '^o' fzf-cdr
+zle -N cdrfzf
+bindkey '^o' cdrfzf
+
+function gsw() {
+  local branches branch
+  branches=$(git branch -vv) &&
+  branch=$(echo "$branches" | fzf +m) &&
+  git switch $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
+}
+
+function fd() {
+  local dir
+  dir=$(find ${1:-.} -path '*/\.*' -prune \
+                  -o -type d -print 2> /dev/null | fzf +m --preview 'exa -l {}') &&
+  cd "$dir"
+}
+
+function fdc() {
+  DIR=`find * -maxdepth 1 -type d -print 2> /dev/null | fzf-tmux --preview 'exa -l {}'` \
+  && cd "$DIR"
+}
+
+function fdp() {
+  local declare dirs=()
+  get_parent_dirs() {
+    if [[ -d "${1}" ]]; then dirs+=("$1"); else return; fi
+    if [[ "${1}" == '/' ]]; then
+      for _dir in "${dirs[@]}"; do echo $_dir; done
+    else
+      get_parent_dirs $(dirname "$1")
+    fi
+  }
+  myrealpath() {
+    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
+  }
+  local DIR=$(get_parent_dirs $(myrealpath "${1:-$PWD}") | fzf-tmux --tac --preview 'exa -l {}')
+  cd "$DIR"
+}
 
 # Haskell
 [ -f "/Users/kenta.aikawa/.ghcup/env" ] && source "/Users/kenta.aikawa/.ghcup/env" # ghcup-env
