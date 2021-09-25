@@ -13,6 +13,7 @@ bind main R !git rebase -i %(commit)
 # status
 bind status a !?git commit --amend
 bind status D ?@rm %(file)
+bind status C !git cz commit
 
 # diff
 bind diff R !git rebase -i %(commit)
