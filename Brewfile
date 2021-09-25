@@ -1,4 +1,5 @@
 brew "bat"
+brew "commitizen"
 brew "exa"
 brew "fzf"
 brew "ghq"
@@ -31,3 +32,4 @@ cask "1password"
 
 mas "BetterSnapTool", id: 417375580
 mas "Kindle", id: 405399194
+mas "LINE", id: 539883307
