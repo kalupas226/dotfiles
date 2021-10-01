@@ -52,6 +52,7 @@ alias -g G='| grep'
 alias -g GI='| grep -ri'
 
 # エイリアス
+alias v='vim'
 alias vz='vim ~/.zshrc'
 alias sz='source ~/.zshrc'
 
@@ -64,12 +65,12 @@ alias gs='git status'
 alias ga='git add'
 alias gc='git commit -m'
 alias gr='git restore'
-alias gps='git push'
-alias gpsu='git push -u origin'
 alias gp='git pull origin'
-alias gpset='git push --set-upstream origin'
 alias gf='git fetch'
 alias gswc='git switch --create'
+alias gbdm="git branch --merged|egrep -v '\*|develop|master'|xargs git branch -d"
+alias gpsc='git push origin $(echo $(git rev-parse --abbrev-ref HEAD))'
+alias gpsuc='git push -u origin $(echo $(git rev-parse --abbrev-ref HEAD))'
 
 # エイリアス(tig)
 alias t='tig'

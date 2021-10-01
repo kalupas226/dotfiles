@@ -9,6 +9,7 @@ bind main ! ?git revert %(commit)
 bind main G move-last-line
 bind main <Esc>g :toggle commit-title-graph
 bind main R !git rebase -i %(commit)
+bind main P !zsh -c '{ git log %(commit)..HEAD --format=format:'%H' --reverse; echo } | while read -r; do git show --pretty=format:'%H%n%s%n%b' -s "$REPLY" | { read -r; echo -n "- $REPLY: "; read -r; echo "$REPLY"; declare body="$(while read -r; do echo "$REPLY"; done)"; [[ -n "$body" ]] && echo "  - $body"; }; done | pbcopy'
 
 # status
 bind status a !?git commit --amend

@@ -13,3 +13,11 @@ repo = 'prettier/vim-prettier'
 
 [[plugins]]
 repo = 'preservim/nerdtree'
+
+[[plugins]]
+repo = 'iamcco/markdown-preview.nvim'
+on_ft = ['markdown', 'pandoc.markdown', 'rmd']
+build = 'sh -c "cd app && npm install"'
+
+[[plugins]]
+repo = 'dhruvasagar/vim-table-mode'
