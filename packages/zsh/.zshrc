@@ -68,7 +68,6 @@ alias gr='git restore'
 alias gp='git pull origin'
 alias gf='git fetch'
 alias gswc='git switch --create'
-alias gbdm="git branch --merged|egrep -v '\*|develop|master'|xargs git branch -d"
 alias gpsc='git push origin $(echo $(git rev-parse --abbrev-ref HEAD))'
 alias gpsuc='git push -u origin $(echo $(git rev-parse --abbrev-ref HEAD))'
 
