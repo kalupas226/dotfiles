@@ -115,7 +115,12 @@ add-zsh-hook chpwd chpwd_recent_dirs
 # cdrコマンドで履歴にないディレクトリにも移動可能に
 zstyle ":chpwd:*" recent-dirs-default true
 
-# fzf 
+# function 
+function gbdm() {
+  git fetch --prune
+  git branch --merged | egrep -v "\*|master|development" | xargs git branch -d
+}
+
 function cdrepo() {
   local selected_dir=$(ghq list -p | fzf -q "$LBUFER" --preview='exa -l {}')
   if [ -n "$selected_dir" ]; then
