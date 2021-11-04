@@ -60,7 +60,6 @@ alias sz='source ~/.zshrc'
 alias gl='git log'
 alias gb='git branch'
 alias gbd='git branch -d'
-alias gbD='git branch -D'
 alias gs='git status'
 alias ga='git add'
 alias gc='git commit -m'
@@ -121,6 +120,20 @@ function gbdm() {
   git branch --merged | egrep -v "\*|master|development" | xargs git branch -d
 }
 
+function gsw() {
+  local branches branch
+  branches=$(git branch -vv) &&
+  branch=$(echo "$branches" | fzf +m) &&
+  git switch $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
+}
+
+function gbdfzf() {
+  local branches branch
+  branches=$(git branch -vv) &&
+  branch=$(echo "$branches" | fzf +m) &&
+  git branch -D $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
+}
+
 function cdrepo() {
   local selected_dir=$(ghq list -p | fzf -q "$LBUFER" --preview='exa -l {}')
   if [ -n "$selected_dir" ]; then
@@ -142,13 +155,6 @@ function cdrfzf() {
 }
 zle -N cdrfzf
 bindkey '^o' cdrfzf
-
-function gsw() {
-  local branches branch
-  branches=$(git branch -vv) &&
-  branch=$(echo "$branches" | fzf +m) &&
-  git switch $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
-}
 
 function fd() {
   local dir
