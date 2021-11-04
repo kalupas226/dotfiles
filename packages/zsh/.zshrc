@@ -126,6 +126,14 @@ function gsw() {
   git switch $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
 }
 
+function gswr() {
+    local branches branch
+    branches=$(git branch --all | grep -v HEAD) &&
+    branch=$(echo "$branches" |
+             fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+    git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+}
+
 function gbdfzf() {
   local branches branch
   branches=$(git branch -vv) &&
