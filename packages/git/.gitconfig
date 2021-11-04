@@ -1,0 +1,12 @@
+[ghq]
+  vcs = git
+  root = ~/Development
+[user]
+	email = kalupas226@gmail.com
+	name = kalupas226
+[pull]
+	rebase = false
+[merge]
+	tool = vimdiff
+[mergetool]
+	keepBackup = false
