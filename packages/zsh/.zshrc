@@ -55,6 +55,8 @@ alias -g GI='| grep -ri'
 alias v='vim'
 alias vz='vim ~/.zshrc'
 alias sz='source ~/.zshrc'
+alias ls='exa --icons'
+alias cat='bat'
 
 # エイリアス(Git)
 alias gl='git log'
