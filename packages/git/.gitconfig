@@ -10,3 +10,5 @@
 	tool = vimdiff
 [mergetool]
 	keepBackup = false
+[core]
+	editor = vim
