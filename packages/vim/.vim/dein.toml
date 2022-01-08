@@ -9,9 +9,6 @@ build = '''
 repo = 'altercation/vim-colors-solarized'
 
 [[plugins]]
-repo = 'prettier/vim-prettier'
-
-[[plugins]]
 repo = 'preservim/nerdtree'
 
 [[plugins]]
