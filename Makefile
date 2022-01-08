@@ -1,6 +1,5 @@
 SHELL = /bin/bash
 DOTFILES_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-HOMEBREW_PREFIX := $(shell bin/is-supported bin/is-arm64 /opt/homebrew /usr/local)
 PATH := $(DOTFILES_DIR)/bin:$(PATH)
 CONFIG_HOME = $(HOME)/.config
 
