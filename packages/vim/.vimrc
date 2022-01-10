@@ -11,8 +11,6 @@ set smartindent
 set visualbell
 " 括弧入力時の対応する括弧を表示
 set showmatch
-" ステータスラインを常に表示
-set laststatus=2
 " コマンドラインの補完
 set wildmode=list:longest
 " シンタックスハイライトの有効化
@@ -41,6 +39,8 @@ set clipboard=unnamed
 set completeopt=menuone,noinsert
 " history の上限を増やす
 set history=200
+" 256色対応させる
+set t_Co=256
 
 " key map
 " insert
@@ -73,5 +73,3 @@ source ~/.vim/coc.nvim.vim
 highlight Normal ctermbg=none
 highlight NonText ctermbg=none
 highlight LineNr ctermbg=none
-highlight Folded ctermbg=none
-highlight EndOfBuffer ctermbg=none 
