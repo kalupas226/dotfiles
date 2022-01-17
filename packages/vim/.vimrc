@@ -33,8 +33,6 @@ set incsearch
 set wrapscan
 " 検索語をハイライト表示
 set hlsearch
-" ヤンクに * レジスタを使う
-set clipboard=unnamed
 " menuone=補完ウィンドウで対象が1件しかなくても常に補完ウィンドウを表示, noinsert=補完ウィンドウを表示時に挿入しないようにする
 set completeopt=menuone,noinsert
 " history の上限を増やす
