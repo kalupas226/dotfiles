@@ -55,3 +55,12 @@ hook_add = '''
   let g:airline#extensions#default#section_truncate_width = {}
   let g:airline#extensions#whitespace#enabled = 1
 '''
+
+[[plugins]]
+repo = 'tpope/vim-fugitive'
+
+[[plugins]]
+repo = 'mzlogin/vim-markdown-toc'
+
+[[plugins]]
+repo = 'thinca/vim-quickrun'
