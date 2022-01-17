@@ -1,6 +1,7 @@
 brew "actionlint"
 brew "bat"
 brew "commitizen"
+brew "coreutils"
 brew "exa"
 brew "ffmpeg"
 brew "fzf"
