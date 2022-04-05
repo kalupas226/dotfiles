@@ -25,4 +25,4 @@ npm-packages: npm
 
 link:
 	mkdir -p $(CONFIG_HOME)
-	is-executable stow || stow -v -d ${DOTFILES_DIR}/packages -t ~ "$(ls ${DOTFILES_DIR}/packages)"
+	is-executable stow || stow -v -d ${DOTFILES_DIR}/packages -t ~ $(shell ls "${DOTFILES_DIR}"/packages/)
