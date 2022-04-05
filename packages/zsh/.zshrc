@@ -3,7 +3,7 @@ if [ $SHLVL = 1 ]; then
   tmux
 fi
 
-set -o vi
+bindkey -e
 # Ctrl+Dでログアウトしてしまうことを防ぐ
 setopt IGNOREEOF
 
