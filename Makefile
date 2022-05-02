@@ -18,9 +18,9 @@ brew-packages: brew
 	brew bundle -v --file=${DOTFILES_DIR}/install/Brewfile
 
 npm: brew-packages
-	is-executable nodebrew || nodebrew setup \
-	nodebrew install-binary latest \
-	nodebrew use $(shell nodebrew list)
+	is-executable nodebrew || nodebrew setup
+	nodebrew install-binary latest
+	nodebrew use latest
 
 npm-packages: npm
 	npm install -g $(shell cat ${DOTFILES_DIR}/install/npmfile)
