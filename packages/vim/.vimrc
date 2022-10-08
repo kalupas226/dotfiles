@@ -56,6 +56,7 @@ vnoremap > >gv
 vnoremap < <gb
 " normal
 nnoremap <silent><C-e> :NERDTreeToggle<CR>
+nnoremap <silent><C-l> :NERDTreeFind<CR>
 " command
 " <C-p> と <C-n> でもコマンド履歴のフィルタリングができるようにする
 cnoremap <C-p> <Up>
@@ -64,13 +65,3 @@ cnoremap <C-n> <Down>
 " source settings
 source ~/.vim/dein_vim.vim
 source ~/.vim/coc.nvim.vim
-
-" color scheme
-:colorscheme solarized
-
-highlight Normal ctermbg=none
-highlight NonText ctermbg=none
-highlight LineNr ctermbg=none
-highlight GitGutterAdd    guifg=#009900 ctermfg=2
-highlight GitGutterChange guifg=#bbbb00 ctermfg=3
-highlight GitGutterDelete guifg=#ff2222 ctermfg=1
