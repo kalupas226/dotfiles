@@ -1,8 +1,3 @@
-# 起動時に tmux を起動
-if [ $SHLVL = 1 ]; then
-  tmux
-fi
-
 bindkey -e
 # Ctrl+Dでログアウトしてしまうことを防ぐ
 setopt IGNOREEOF
