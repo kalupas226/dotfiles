@@ -5,11 +5,6 @@ setopt IGNOREEOF
 # 日本語を使用
 export LANG=ja_JP.UTF-8
 
-# export PATH
-export PATH="$HOME/bin:$PATH"
-export PATH=$PATH:$HOME/.rbenv/bin
-export PATH=$PATH:$HOME/.nodebrew/current/bin
-
 # eval
 eval "$(rbenv init -)"
 eval "$(starship init zsh)"
