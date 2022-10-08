@@ -12,7 +12,8 @@ core-macos: brew npm
 packages: brew-packages npm-packages
 
 brew:
-	is-executable brew || curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash
+	is-executable brew || \
+	curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash
 
 brew-packages: brew
 	brew bundle -v --file=${DOTFILES_DIR}/install/Brewfile
