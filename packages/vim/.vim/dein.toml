@@ -1,8 +1,7 @@
 [[plugins]]
 repo = 'neoclide/coc.nvim'
 rev = 'release'
-build = '''
-  git checkout release
+build = ''' git checkout release
 '''
 
 [[plugins]]
@@ -66,6 +65,9 @@ repo = 'thinca/vim-quickrun'
 repo = 'airblade/vim-gitgutter'
 hook_add = '''
   let g:gitgutter_sign_removed = '-'
+  highlight GitGutterAdd guifg=#009900 ctermfg=2
+  highlight GitGutterChange guifg=#bbbb00 ctermfg=3
+  highlight GitGutterDelete guifg=#ff2222 ctermfg=1
 '''
 
 [[plugins]]
@@ -79,3 +81,6 @@ repo = 'MaxMEllon/vim-jsx-pretty'
 
 [[plugins]]
 repo = 'jparise/vim-graphql'
+
+[[plugins]]
+repo = 'rhysd/committia.vim'
