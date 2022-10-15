@@ -130,7 +130,7 @@ function gswr() {
 function gbdfzf() {
   local branches branch
   branches=$(git branch -vv) &&
-  branch=$(echo "$branches" | fzf +m) &&
+  branch=$(echo "$branches" | fzf -m) &&
   git branch -D $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
 }
 
