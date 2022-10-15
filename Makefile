@@ -20,7 +20,7 @@ brew-packages: brew
 
 npm: brew-packages
 	is-executable nodebrew || nodebrew setup
-	nodebrew install-binary latest
+	-nodebrew install-binary latest
 	nodebrew use latest
 
 npm-packages: npm
