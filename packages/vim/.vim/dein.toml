@@ -84,3 +84,9 @@ repo = 'jparise/vim-graphql'
 
 [[plugins]]
 repo = 'rhysd/committia.vim'
+
+[[plugins]]
+repo = 'junegunn/fzf.vim'
+hook_add = '''
+  set rtp+=/opt/homebrew/opt/fzf
+'''
