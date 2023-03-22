@@ -108,7 +108,7 @@ table.insert(mykeys, {
 })
 
 return {
-  font_size = 15.0,
+  font_size = 14.0,
   color_scheme = 'Solarized Dark Higher Contrast',
 
   disable_default_key_bindings = true,
