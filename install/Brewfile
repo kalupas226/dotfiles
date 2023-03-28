@@ -19,6 +19,7 @@ brew "tmux"
 
 tap "homebrew/cask-fonts"
 
+cask "cleanshot"
 cask "cmd-eikana"
 cask "dash"
 cask "deepl"
@@ -32,8 +33,8 @@ cask "meetingbar"
 cask "postman"
 cask "proxyman"
 cask "raycast"
-cask "skitch"
 cask "visual-studio-code"
+cask "warp"
 
 mas "Kindle", id: 405399194
 mas "LINE", id: 539883307

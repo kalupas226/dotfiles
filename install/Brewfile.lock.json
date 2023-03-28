@@ -854,7 +854,7 @@
     },
     "tap": {
       "homebrew/cask-fonts": {
-        "revision": "ade7f0856e687619ae000689069c96be73267381"
+        "revision": "71fa5e02f60d9bdf81593855de218da2e438cd88"
       }
     },
     "cask": {
@@ -943,7 +943,7 @@
         }
       },
       "proxyman": {
-        "version": "4.4.0,44000",
+        "version": "4.5.0,45000",
         "options": {
           "full_name": "proxyman"
         }
@@ -983,6 +983,18 @@
         "options": {
           "full_name": "raycast"
         }
+      },
+      "warp": {
+        "version": "0.2023.03.14.08.03.stable_01",
+        "options": {
+          "full_name": "warp"
+        }
+      },
+      "cleanshot": {
+        "version": "4.5",
+        "options": {
+          "full_name": "cleanshot"
+        }
       }
     },
     "mas": {
@@ -1019,7 +1031,7 @@
         "macOS": "12.6"
       },
       "ventura": {
-        "HOMEBREW_VERSION": "4.0.9-20-gce07d6a",
+        "HOMEBREW_VERSION": "4.0.9-39-gea92f56",
         "HOMEBREW_PREFIX": "/opt/homebrew",
         "Homebrew/homebrew-core": "api",
         "CLT": "14.2.0.0.1.1668646533",
