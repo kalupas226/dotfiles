@@ -55,9 +55,11 @@ inoremap <expr><C-p> pumvisible() ? "<Up>" : "<C-p>"
 vnoremap > >gv
 vnoremap < <gb
 " normal
+nnoremap <silent> <C-h> :bprev<CR>
+nnoremap <silent> <C-l> :bnext<CR>
 " plugins keymap
 nnoremap <silent><C-e> :NERDTreeToggle<CR>
-nnoremap <silent><C-l> :NERDTreeFind<CR>
+nnoremap <silent><Leader>n :NERDTreeFind<CR>
 nnoremap <silent><Leader>g :GFiles<CR>
 nnoremap <silent><Leader>h :History<CR>
 nnoremap <silent><Leader>r :Rg<CR>
