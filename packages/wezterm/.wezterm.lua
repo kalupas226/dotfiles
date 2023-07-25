@@ -104,7 +104,7 @@ table.insert(mykeys, {
 table.insert(mykeys, {
   key = 'v',
   mods = 'SUPER',
-  action = wezterm.action.Paste,
+  action = wezterm.action.PasteFrom 'Clipboard',
 })
 
 return {
