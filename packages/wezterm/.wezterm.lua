@@ -110,7 +110,7 @@ table.insert(mykeys, {
 return {
   font_size = 14.0,
   color_scheme = 'Solarized Dark Higher Contrast',
-
+  window_close_confirmation = 'NeverPrompt',
   disable_default_key_bindings = true,
   leader = { 
     key = 'b',
