@@ -31,7 +31,6 @@ cask "raycast"
 cask "slack"
 cask "smartgit"
 cask "visual-studio-code"
-cask "warp"
 cask "wezterm"
 cask "1password"
 
