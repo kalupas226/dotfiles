@@ -187,3 +187,6 @@ function fdp() {
 
 # plantUML
 export PLANTUML_LIMIT_SIZE=8192
+
+# asdf
+. "$HOME/.asdf/asdf.sh"
