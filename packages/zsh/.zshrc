@@ -43,7 +43,7 @@ alias -g GI='| grep -ri'
 alias v='vim'
 alias vz='vim ~/.zshrc'
 alias sz='source ~/.zshrc'
-alias ls='exa --icons'
+alias ls='eza --icons'
 alias cat='bat'
 
 # エイリアス(Git)
