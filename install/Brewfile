@@ -19,11 +19,9 @@ cask "arc"
 cask "cleanshot"
 cask "cmd-eikana"
 cask "dash"
-cask "deepl"
 cask "homebrew/cask-fonts/font-hack-nerd-font"
 cask "karabiner-elements"
 cask "keycastr"
-cask "postman"
 cask "proxyman"
 cask "raycast"
 cask "slack"
@@ -31,6 +29,3 @@ cask "smartgit"
 cask "visual-studio-code"
 cask "wezterm"
 cask "1password"
-
-mas "Kindle", id: 405399194
-mas "LINE", id: 539883307

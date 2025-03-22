@@ -1,12 +1,13 @@
-SHELL = /bin/bash
+SHELL = /bin/zsh
 DOTFILES_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 CONFIG_HOME = $(HOME)/.config
+.SHELLFLAGS := -e -c
 
 all: macos	
 
 macos: install-manager packages link
 
-install-manager: install-brew install-asdf
+install-manager: install-brew install-mise
 
 packages: brew-packages npm-packages
 
@@ -14,18 +15,14 @@ install-brew:
 	which brew || \
 		curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash
 
-install-asdf:
-	if [ ! -d ~/.asdf ]; then \
-		git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.12.0;  \
+install-mise:
+	curl https://mise.run | sh
+	@if ! grep -q "mise activate" ~/.zshrc; then \
+		echo 'eval "$$(~/.local/bin/mise activate zsh)"' >> ~/.zshrc; \
 	fi
 
-install-node: install-asdf
-	. "${HOME}/.asdf/asdf.sh"
-	if [ -z "$$(asdf plugin list | grep nodejs)" ]; then \
-		asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git; \
-	fi
-	asdf install nodejs latest
-	asdf global nodejs latest
+install-node: install-mise
+	. ~/.zshrc && mise use --global node@latest
 
 brew-packages: install-brew
 	brew bundle -v --file=${DOTFILES_DIR}/install/Brewfile

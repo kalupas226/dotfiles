@@ -2,10 +2,6 @@ bindkey -e
 # Ctrl+Dでログアウトしてしまうことを防ぐ
 setopt IGNOREEOF
 
-# eval
-eval "$(rbenv init -)"
-eval "$(starship init zsh)"
-
 # 色を使用
 autoload -Uz colors
 colors
@@ -188,5 +184,5 @@ function fdp() {
 # plantUML
 export PLANTUML_LIMIT_SIZE=8192
 
-# asdf
-. "$HOME/.asdf/asdf.sh"
+eval "$(starship init zsh)"
+eval "$(~/.local/bin/mise activate zsh)"
