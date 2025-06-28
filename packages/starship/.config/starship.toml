@@ -1,3 +1,62 @@
+# ~/.config/starship.toml
+
+format = """$directory$git_branch$git_status
+$character"""
+right_format = """$time"""
+
+add_newline = true
+
+[time]
+disabled = false
+format = '[🕒 $time]($style)'
+style = 'dim white'
+time_format = '%H:%M'
+
+[directory]
+style = "bold white"
+format = "[ 📁$path ](bold white bg:#2e4057)"
+truncation_length = 3
+truncate_to_repo = true
+
 [character]
-success_symbol = "🐼"
-error_symbol = "🐛"
+success_symbol = "[▶](bold green)"
+error_symbol = "[▶](bold red)"
+
+[git_branch]
+format = "[ $symbol$branch](bold white bg:#3e5c76)"
+style = "bold magenta"
+
+[git_status]
+style = "bold orange"
+format = '[ $all_status$ahead_behind ](bold white bg:#4e7395)'
+conflicted = "!"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date = ""
+untracked = "?"
+stashed = "$"
+modified = "*"
+staged = "+"
+renamed = "»"
+deleted = "✘"
+
+[cmd_duration]
+min_time = 500
+format = "took [$duration]($style) "
+style = "bold yellow"
+
+[nodejs]
+symbol = "⬢ "
+
+[python]
+symbol = "🐍 "
+
+[rust]
+symbol = "🦀 "
+
+[swift]
+symbol = "🐦 "
+
+[package]
+disabled = true
