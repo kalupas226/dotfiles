@@ -1,29 +1,53 @@
 # dotfiles
 
-## Installation
-If macOS:
+My personal macOS dotfiles organized by packages with automated installation.
 
-```
+## Installation
+
+### Prerequisites (macOS)
+```bash
 sudo softwareupdate -i -a
 xcode-select --install
 ```
 
-Install dotfiles repo with `curl` available:
+### Quick Install
+Clone the repository and run the installation script:
 
-```
-bash -c "`curl -fsSL https://raw.githubusercontent.com/kalupas226/dotfiles/master/remote-install.sh`"
-```
-
-Alternatively, clone manually into the desired location:
-
-```
+```bash
 git clone https://github.com/kalupas226/dotfiles.git ~/.dotfiles
-```
-
-Use the Makefile to install everything and symlink with stow.
-
-```
 cd ~/.dotfiles
-make
+./install.sh
 ```
+
+### What gets installed
+- **Homebrew** - Package manager for macOS
+- **mise** - Development environment manager
+- **CLI tools** - bat, eza, fzf, ripgrep, starship, tig, etc.
+- **GUI applications** - Arc, CleanShot, Wezterm, VSCode, etc.
+- **Fonts** - Hack Nerd Font
+- **Node.js** - Latest LTS version via mise
+- **Dotfiles** - Automatically symlinked to your home directory
+
+## Repository Structure
+
+This repository uses a package-based organization:
+
+```
+packages/
+├── git/        # Git configuration
+├── starship/   # Starship prompt configuration  
+├── tig/        # Git browser configuration
+├── tmux/       # Terminal multiplexer configuration
+├── vim/        # Vim/Neovim configuration
+├── wezterm/    # Terminal emulator configuration
+└── zsh/        # Zsh shell configuration
+```
+
+Each package contains dotfiles in their expected directory structure. The installation script automatically creates symlinks from package files to their target locations in your home directory.
+
+## Configuration Files
+
+- **Brewfile** - Homebrew package definitions
+- **install.sh** - Main installation script with custom symlinking logic
+- **packages/** - Individual application configurations
 
