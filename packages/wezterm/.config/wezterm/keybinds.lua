@@ -1,5 +1,7 @@
 local wezterm = require 'wezterm'
 
+local M = {}
+
 local mykeys = {
   -- KeyAssignment for pane
   {
@@ -107,15 +109,6 @@ table.insert(mykeys, {
   action = wezterm.action.PasteFrom 'Clipboard',
 })
 
-return {
-  font_size = 14.0,
-  color_scheme = 'Solarized Dark Higher Contrast',
-  window_close_confirmation = 'NeverPrompt',
-  disable_default_key_bindings = true,
-  leader = { 
-    key = 'b',
-    mods = 'CTRL',
-    timeout_milliseconds = 1000 
-  },
-  keys = mykeys,
-}
+M.keys = mykeys
+
+return M

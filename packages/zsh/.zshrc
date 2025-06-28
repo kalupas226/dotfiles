@@ -1,7 +1,6 @@
 bindkey -e
 # Ctrl+Dでログアウトしてしまうことを防ぐ
 setopt IGNOREEOF
-
 # 色を使用
 autoload -Uz colors
 colors
@@ -78,6 +77,9 @@ zstyle ':completion:*:default' menu select=2
 
 # 補完で大文字にもマッチ
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+
+# エイリアスでも補完を有効にする
+setopt complete_aliases
 
 # Ctrl+rでヒストリーのインクリメンタルサーチ、Ctrl+sで逆順
 bindkey '^r' history-incremental-pattern-search-backward
@@ -178,11 +180,7 @@ function fdp() {
   cd "$DIR"
 }
 
-# Haskell
-[ -f "/Users/kenta.aikawa/.ghcup/env" ] && source "/Users/kenta.aikawa/.ghcup/env" # ghcup-env
-
-# plantUML
-export PLANTUML_LIMIT_SIZE=8192
-
+# Starship prompt
 eval "$(starship init zsh)"
+
 eval "$(~/.local/bin/mise activate zsh)"
