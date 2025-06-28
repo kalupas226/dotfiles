@@ -1,3 +1,5 @@
+set main-view-author = width:20
+
 # generic
 bind generic g move-first-line
 bind generic G move-last-line
