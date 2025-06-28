@@ -23,7 +23,7 @@ success_symbol = "[▶](bold green)"
 error_symbol = "[▶](bold red)"
 
 [git_branch]
-format = "[ $symbol$branch ](bold white bg:#3e5c76)"
+format = "[ $symbol$branch](bold white bg:#3e5c76)"
 style = "bold magenta"
 
 [git_status]
