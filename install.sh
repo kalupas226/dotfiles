@@ -18,6 +18,7 @@ install_mise() {
     if ! command -v mise &> /dev/null; then
         echo "Installing mise..."
         curl https://mise.run | sh
+        mkdir -p ~/.local/bin
         if ! grep -q "mise activate" ~/.zshrc; then
             echo 'eval "$$(~/.local/bin/mise activate zsh)"' >> ~/.zshrc
         fi
