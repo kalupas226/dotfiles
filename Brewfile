@@ -1,5 +1,6 @@
 brew "bat"
 brew "coreutils"
+brew "docker"
 brew "eza"
 brew "ffmpeg"
 brew "fzf"
