@@ -11,6 +11,7 @@ brew "ripgrep"
 brew "shellcheck"
 brew "starship"
 brew "tig"
+brew "tmux"
 
 cask "arc"
 cask "cleanshot"
