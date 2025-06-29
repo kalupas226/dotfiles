@@ -1,34 +1,31 @@
 # ~/.config/starship.toml
 
-format = """$directory$git_branch$git_status
+format = """$directory $git_branch $git_status
 $character"""
-right_format = """$time"""
+right_format = """$cmd_duration"""
 
 add_newline = true
 
 [time]
-disabled = false
-format = '[🕒 $time]($style)'
-style = 'dim white'
-time_format = '%H:%M'
+disabled = true
 
 [directory]
-style = "bold white"
-format = "[ 📁$path ](bold white bg:#2e4057)"
+style = "bold #39d353"
+format = "[$path]($style)"
 truncation_length = 3
 truncate_to_repo = true
 
 [character]
-success_symbol = "[▶](bold green)"
-error_symbol = "[▶](bold red)"
+success_symbol = "[❯](bold #39d353)"
+error_symbol = "[❯](bold #ff7b72)"
 
 [git_branch]
-format = "[ $symbol$branch](bold white bg:#3e5c76)"
-style = "bold magenta"
+format = "[$symbol$branch]($style)"
+style = "bold #58a6ff"
 
 [git_status]
-style = "bold orange"
-format = '[ $all_status$ahead_behind ](bold white bg:#4e7395)'
+style = "bold #ff7b72"
+format = '[$all_status$ahead_behind]($style)'
 conflicted = "!"
 ahead = "⇡${count}"
 behind = "⇣${count}"
@@ -43,8 +40,8 @@ deleted = "✘"
 
 [cmd_duration]
 min_time = 500
-format = "took [$duration]($style) "
-style = "bold yellow"
+format = "[$duration]($style)"
+style = "bold #7d8590"
 
 [nodejs]
 symbol = "⬢ "

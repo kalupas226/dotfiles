@@ -178,6 +178,11 @@ function fdp() {
   cd "$DIR"
 }
 
+# tmux自動起動（SSH接続時は除く）
+if [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ] && command -v tmux >/dev/null 2>&1; then
+  tmux attach-session -t main || tmux new-session -s main
+fi
+
 # Starship prompt
 eval "$(starship init zsh)"
 
