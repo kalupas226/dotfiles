@@ -28,6 +28,13 @@ table.insert(mykeys, {
   action = wezterm.action.DecreaseFontSize,
 })
 
+-- Enable CMD+v paste
+table.insert(mykeys, {
+  key = 'v',
+  mods = 'SUPER',
+  action = wezterm.action.PasteFrom 'Clipboard',
+})
+
 M.keys = mykeys
 
 return M
