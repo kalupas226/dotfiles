@@ -1,0 +1,3 @@
+# Vim directories
+packages/vim/.vim/plugged/
+packages/vim/.vim/autoload/

@@ -68,6 +68,13 @@ nnoremap <silent><Leader>r :Rg<CR>
 cnoremap <C-p> <Up>
 cnoremap <C-n> <Down>
 
-" source settings
-source ~/.vim/dein_vim.vim
+" vim-plug settings
+call plug#begin()
+source ~/.vim/plugins.vim
+call plug#end()
+
+" plugin configurations
+source ~/.vim/plugin-config.vim
+
+" coc.nvim configuration
 source ~/.vim/coc.nvim.vim
