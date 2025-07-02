@@ -4,24 +4,16 @@ return {
     "hrsh7th/cmp-buffer",
     "hrsh7th/cmp-path",
     "hrsh7th/cmp-cmdline",
+    "hrsh7th/cmp-nvim-lsp",
   },
-  ft = "gitcommit",
   config = function()
     local cmp = require("cmp")
     
-    -- Only setup for gitcommit filetype
-    cmp.setup.filetype("gitcommit", {
+    -- Global setup for LSP completion
+    cmp.setup({
       sources = cmp.config.sources({
-        { 
-          name = "buffer",
-          option = {
-            get_bufnrs = function()
-              -- Get completion from all buffers including diff buffers
-              return vim.api.nvim_list_bufs()
-            end,
-            keyword_length = 2,
-          }
-        },
+        { name = "nvim_lsp" },
+        { name = "buffer" },
         { name = "path" },
       }),
       mapping = cmp.mapping.preset.insert({
@@ -49,6 +41,22 @@ return {
         completion = cmp.config.window.bordered(),
         documentation = cmp.config.window.bordered(),
       },
+    })
+    
+    -- Enhanced setup for gitcommit filetype (all buffers for committia.vim diff buffers)
+    cmp.setup.filetype("gitcommit", {
+      sources = cmp.config.sources({
+        { 
+          name = "buffer",
+          option = {
+            get_bufnrs = function()
+              return vim.api.nvim_list_bufs() -- Get completion from all buffers including diff buffers
+            end,
+            keyword_length = 2,
+          }
+        },
+        { name = "path" },
+      })
     })
   end,
 }
