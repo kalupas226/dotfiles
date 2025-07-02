@@ -40,12 +40,12 @@ install_node() {
 install_npm_packages() {
     echo "Installing global npm packages..."
     if [ -f "${DOTFILES_DIR}/npmfile" ]; then
-        while read -r package; do
+        for package in $(cat "${DOTFILES_DIR}/npmfile"); do
             if [ -n "$package" ] && [ "${package#\#}" = "$package" ]; then
                 echo "Installing $package..."
                 npm install -g "$package"
             fi
-        done < "${DOTFILES_DIR}/npmfile"
+        done
     else
         echo "npmfile not found, skipping npm package installation"
     fi
