@@ -3,7 +3,7 @@ set main-view-author = width:20
 # generic
 bind generic g move-first-line
 bind generic G move-last-line
-bind generic M !git difftool --tool=vimdiff --no-prompt --trust-exit-code %(commit)^!
+bind generic M !git difftool --tool=nvimdiff --no-prompt --trust-exit-code %(commit)^!
 bind generic E view-grep
 
 # main

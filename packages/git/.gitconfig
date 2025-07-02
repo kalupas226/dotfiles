@@ -7,8 +7,8 @@
 [pull]
   rebase = false
 [merge]
-  tool = vimdiff
+  tool = nvimdiff
 [mergetool]
   keepBackup = false
 [core]
-  editor = vim
+  editor = nvim
