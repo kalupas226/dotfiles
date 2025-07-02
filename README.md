@@ -22,7 +22,7 @@ cd ~/.dotfiles
 ### What gets installed
 - **Homebrew** - Package manager for macOS
 - **mise** - Development environment manager
-- **CLI tools** - bat, eza, fzf, ripgrep, starship, tig, etc.
+- **CLI tools** - bat, eza, fzf, ripgrep, starship, tig, neovim, etc.
 - **GUI applications** - Arc, CleanShot, Wezterm, VSCode, etc.
 - **Fonts** - Hack Nerd Font
 - **Node.js** - Latest LTS version via mise
@@ -38,7 +38,7 @@ packages/
 ├── starship/   # Starship prompt configuration  
 ├── tig/        # Git browser configuration
 ├── tmux/       # Terminal multiplexer configuration
-├── vim/        # Vim/Neovim configuration
+├── nvim/       # Neovim configuration
 ├── wezterm/    # Terminal emulator configuration
 └── zsh/        # Zsh shell configuration
 ```

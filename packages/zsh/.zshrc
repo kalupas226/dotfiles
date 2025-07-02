@@ -35,8 +35,9 @@ alias -g G='| grep'
 alias -g GI='| grep -ri'
 
 # エイリアス
-alias v='vim'
-alias vz='vim ~/.zshrc'
+alias v='nvim'
+alias vim='nvim'
+alias vz='nvim ~/.zshrc'
 alias sz='source ~/.zshrc'
 alias ls='eza --icons'
 alias cat='bat'

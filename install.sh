@@ -32,16 +32,6 @@ install_node() {
     source ~/.zshrc && mise use --global node@latest
 }
 
-install_vim_plug() {
-    echo "Installing vim-plug..."
-    if [ ! -f ~/.vim/autoload/plug.vim ]; then
-        curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-            https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-        echo "vim-plug installed"
-    else  
-        echo "vim-plug already installed"
-    fi
-}
 
 install_brew_packages() {
     echo "Installing Homebrew packages..."
@@ -98,7 +88,6 @@ main() {
     install_mise
     install_brew_packages
     install_node
-    install_vim_plug
     link_dotfiles
     
     echo "Installation complete!"
