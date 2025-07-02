@@ -4,22 +4,16 @@ return {
     "hrsh7th/cmp-buffer",
     "hrsh7th/cmp-path",
     "hrsh7th/cmp-cmdline",
+    "hrsh7th/cmp-nvim-lsp",
   },
   config = function()
     local cmp = require("cmp")
     
+    -- Global setup for LSP completion
     cmp.setup({
       sources = cmp.config.sources({
-        { name = "buffer", option = {
-          get_bufnrs = function()
-            -- Get completion from all visible buffers
-            local bufs = {}
-            for _, win in ipairs(vim.api.nvim_list_wins()) do
-              bufs[vim.api.nvim_win_get_buf(win)] = true
-            end
-            return vim.tbl_keys(bufs)
-          end
-        }},
+        { name = "nvim_lsp" },
+        { name = "buffer" },
         { name = "path" },
       }),
       mapping = cmp.mapping.preset.insert({
@@ -48,16 +42,15 @@ return {
         documentation = cmp.config.window.bordered(),
       },
     })
-
-    -- Use more aggressive buffer completion for gitcommit filetype
+    
+    -- Enhanced setup for gitcommit filetype (all buffers for committia.vim diff buffers)
     cmp.setup.filetype("gitcommit", {
       sources = cmp.config.sources({
         { 
           name = "buffer",
           option = {
             get_bufnrs = function()
-              -- Get completion from all buffers including diff buffers
-              return vim.api.nvim_list_bufs()
+              return vim.api.nvim_list_bufs() -- Get completion from all buffers including diff buffers
             end,
             keyword_length = 2,
           }
