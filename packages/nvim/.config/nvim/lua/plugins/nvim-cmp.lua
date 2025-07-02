@@ -5,21 +5,23 @@ return {
     "hrsh7th/cmp-path",
     "hrsh7th/cmp-cmdline",
   },
+  ft = "gitcommit",
   config = function()
     local cmp = require("cmp")
     
-    cmp.setup({
+    -- Only setup for gitcommit filetype
+    cmp.setup.filetype("gitcommit", {
       sources = cmp.config.sources({
-        { name = "buffer", option = {
-          get_bufnrs = function()
-            -- Get completion from all visible buffers
-            local bufs = {}
-            for _, win in ipairs(vim.api.nvim_list_wins()) do
-              bufs[vim.api.nvim_win_get_buf(win)] = true
-            end
-            return vim.tbl_keys(bufs)
-          end
-        }},
+        { 
+          name = "buffer",
+          option = {
+            get_bufnrs = function()
+              -- Get completion from all buffers including diff buffers
+              return vim.api.nvim_list_bufs()
+            end,
+            keyword_length = 2,
+          }
+        },
         { name = "path" },
       }),
       mapping = cmp.mapping.preset.insert({
@@ -47,23 +49,6 @@ return {
         completion = cmp.config.window.bordered(),
         documentation = cmp.config.window.bordered(),
       },
-    })
-
-    -- Use more aggressive buffer completion for gitcommit filetype
-    cmp.setup.filetype("gitcommit", {
-      sources = cmp.config.sources({
-        { 
-          name = "buffer",
-          option = {
-            get_bufnrs = function()
-              -- Get completion from all buffers including diff buffers
-              return vim.api.nvim_list_bufs()
-            end,
-            keyword_length = 2,
-          }
-        },
-        { name = "path" },
-      })
     })
   end,
 }
