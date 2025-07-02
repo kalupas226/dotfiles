@@ -10,27 +10,27 @@ add_newline = true
 disabled = true
 
 [directory]
-style = "bold #39d353"
+style = "bold #89b4fa"
 format = "[$path]($style)"
 truncation_length = 3
 truncate_to_repo = true
 
 [character]
-success_symbol = "[❯](bold #39d353)"
-error_symbol = "[❯](bold #ff7b72)"
+success_symbol = "[❯](bold #a6e3a1)"
+error_symbol = "[❯](bold #f38ba8)"
 
 [git_branch]
 format = "[$symbol$branch]($style)"
-style = "bold #58a6ff"
+style = "bold #cba6f7"
 
 [git_status]
-style = "bold #ff7b72"
+style = "bold #f38ba8"
 format = '[$all_status$ahead_behind]($style)'
 
 [cmd_duration]
 min_time = 500
 format = "[$duration]($style)"
-style = "bold #7d8590"
+style = "bold #6c7086"
 
 [nodejs]
 symbol = "⬢ "

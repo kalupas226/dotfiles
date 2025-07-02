@@ -4,7 +4,7 @@ local keybinds = require('keybinds')
 return {
   font = wezterm.font('JetBrains Mono'),
   font_size = 16.0,
-  color_scheme = 'Solarized Dark Higher Contrast',
+  color_scheme = 'Catppuccin Mocha',
   disable_default_key_bindings = true,
   use_ime = true,
   window_background_opacity = 0.80,
