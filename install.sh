@@ -27,15 +27,28 @@ install_mise() {
     fi
 }
 
+install_brew_packages() {
+    echo "Installing Homebrew packages..."
+    brew bundle -v --file="${DOTFILES_DIR}/Brewfile"
+}
+
 install_node() {
     echo "Installing Node.js via mise..."
     source ~/.zshrc && mise use --global node@latest
 }
 
-
-install_brew_packages() {
-    echo "Installing Homebrew packages..."
-    brew bundle -v --file="${DOTFILES_DIR}/Brewfile"
+install_npm_packages() {
+    echo "Installing global npm packages..."
+    if [ -f "${DOTFILES_DIR}/npmfile" ]; then
+        while read -r package; do
+            if [ -n "$package" ] && [ "${package#\#}" = "$package" ]; then
+                echo "Installing $package..."
+                npm install -g "$package"
+            fi
+        done < "${DOTFILES_DIR}/npmfile"
+    else
+        echo "npmfile not found, skipping npm package installation"
+    fi
 }
 
 
@@ -88,6 +101,7 @@ main() {
     install_mise
     install_brew_packages
     install_node
+    install_npm_packages
     link_dotfiles
     
     echo "Installation complete!"
