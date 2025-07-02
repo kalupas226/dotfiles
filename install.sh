@@ -32,6 +32,7 @@ install_node() {
     source ~/.zshrc && mise use --global node@latest
 }
 
+
 install_brew_packages() {
     echo "Installing Homebrew packages..."
     brew bundle -v --file="${DOTFILES_DIR}/Brewfile"
