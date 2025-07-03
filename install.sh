@@ -3,7 +3,6 @@
 set -e
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONFIG_HOME="${HOME}/.config"
 
 install_brew() {
     if ! command -v brew &> /dev/null; then
@@ -59,8 +58,8 @@ link_dotfiles() {
         package_name=$(basename "${package_dir}")
         echo "Processing package: ${package_name}"
         
-        # Find all files and directories starting with . in the package directory
-        find "${package_dir}" -name ".*" -type f | while read -r source_file; do
+        # Find all files starting with . or inside directories starting with .
+        find "${package_dir}" \( -name ".*" -o -path "*/.*" \) -type f | while read -r source_file; do
             # Calculate relative path from package directory
             relative_path="${source_file#${package_dir}}"
             target_file="${HOME}/${relative_path}"
@@ -73,24 +72,6 @@ link_dotfiles() {
             ln -sf "${source_file}" "${target_file}"
             echo "  Linked: ${relative_path}"
         done
-        
-        # Handle .config directories
-        if [ -d "${package_dir}.config" ]; then
-            mkdir -p "${CONFIG_HOME}"
-            find "${package_dir}.config" -type f | while read -r config_file; do
-                # Calculate relative path from .config directory
-                relative_path="${config_file#${package_dir}.config/}"
-                target_file="${CONFIG_HOME}/${relative_path}"
-                target_dir=$(dirname "${target_file}")
-                
-                # Create target directory if it doesn't exist
-                mkdir -p "${target_dir}"
-                
-                # Create symlink
-                ln -sf "${config_file}" "${target_file}"
-                echo "  Linked config: ${relative_path}"
-            done
-        fi
     done
 }
 

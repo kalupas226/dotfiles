@@ -11,6 +11,7 @@ brew "neovim"
 brew "ripgrep"
 brew "shellcheck"
 brew "starship"
+brew "terminal-notifier"
 brew "tig"
 brew "tmux"
 

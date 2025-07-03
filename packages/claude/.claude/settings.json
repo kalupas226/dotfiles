@@ -1,0 +1,49 @@
+{
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "deny": [
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(rsync:*)",
+      "Bash(git push:*)",
+      "Bash(npm publish:*)",
+      "Bash(pip install:*)",
+      "Bash(brew install:*)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf .git)",
+      "Bash(sudo:*)",
+      "Bash(chmod 777 /*)"
+    ],
+    "additionalDirectories": [
+      "/Users/kalupas226/Development"
+    ]
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title \"🤖 Claude Code\" -message \"Task completed successfully\" -sound \"Ping\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title \"🤖 Claude Code\" -message \"Response finished\" -sound \"Breeze\""
+          }
+        ]
+      }
+    ]
+  }
+}
