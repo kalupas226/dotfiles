@@ -14,8 +14,9 @@
       "Bash(rm -rf /)",
       "Bash(rm -rf ~)",
       "Bash(rm -rf /*)",
-      "Bash(sudo rm:*)",
-      "Bash(sudo:*)"
+      "Bash(rm -rf .git)",
+      "Bash(sudo:*)",
+      "Bash(chmod 777 /*)"
     ],
     "additionalDirectories": [
       "/Users/kalupas226/Development"
