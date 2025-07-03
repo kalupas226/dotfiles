@@ -20,5 +20,29 @@
     "additionalDirectories": [
       "/Users/kalupas226/Development"
     ]
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title \"🤖 Claude Code\" -message \"Task completed successfully\" -sound \"Ping\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title \"🤖 Claude Code\" -message \"Response finished\" -sound \"Breeze\""
+          }
+        ]
+      }
+    ]
   }
 }
