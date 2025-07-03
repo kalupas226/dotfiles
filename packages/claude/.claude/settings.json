@@ -1,0 +1,24 @@
+{
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "deny": [
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(rsync:*)",
+      "Bash(git push:*)",
+      "Bash(npm publish:*)",
+      "Bash(pip install:*)",
+      "Bash(brew install:*)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf /*)",
+      "Bash(sudo rm:*)",
+      "Bash(sudo:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/kalupas226/Development"
+    ]
+  }
+}
