@@ -32,6 +32,16 @@ return {
       capabilities = swift_capabilities,
     })
 
+    -- JSON Language Server
+    lspconfig.jsonls.setup({
+      capabilities = defaultCapabilities,
+    })
+
+    -- JavaScript/TypeScript Language Server
+    lspconfig.ts_ls.setup({
+      capabilities = defaultCapabilities,
+    })
+
     -- LSP keymaps
     vim.api.nvim_create_autocmd("LspAttach", {
       group = vim.api.nvim_create_augroup("UserLspConfig", {}),
