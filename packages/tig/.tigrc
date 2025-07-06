@@ -18,6 +18,7 @@ bind main a !sh -c 'git diff --name-only %(commit) | fzf --preview="git diff --c
 # status
 bind status a !?git commit --amend
 bind status D ?@rm %(file)
+bind status e !nvim %(file)
 
 # diff
 bind diff R !git rebase -i %(commit)
