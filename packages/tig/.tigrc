@@ -1,5 +1,9 @@
 set main-view-author = width:20
 
+# colors (match tmux catppuccin mocha theme)
+color title-focus black green bold
+color title-blur black blue bold
+
 # generic
 bind generic g move-first-line
 bind generic G move-last-line
