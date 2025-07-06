@@ -1,5 +1,9 @@
 set main-view-author = width:20
 
+# colors (match tmux catppuccin mocha theme)
+color title-focus black green bold
+color title-blur black blue bold
+
 # generic
 bind generic g move-first-line
 bind generic G move-last-line
@@ -18,6 +22,7 @@ bind main a !sh -c 'git diff --name-only %(commit) | fzf --preview="git diff --c
 # status
 bind status a !?git commit --amend
 bind status D ?@rm %(file)
+bind status e !nvim %(file)
 
 # diff
 bind diff R !git rebase -i %(commit)

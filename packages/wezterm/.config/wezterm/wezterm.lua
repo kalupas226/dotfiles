@@ -2,7 +2,11 @@ local wezterm = require 'wezterm'
 local keybinds = require('keybinds')
 
 return {
-  font = wezterm.font('JetBrains Mono'),
+  font = wezterm.font_with_fallback({
+    'JetBrains Mono',
+    'SF Mono',
+    'Hiragino Sans',
+  }),
   font_size = 16.0,
   color_scheme = 'Catppuccin Mocha',
   disable_default_key_bindings = true,
