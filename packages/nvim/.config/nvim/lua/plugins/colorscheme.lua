@@ -11,15 +11,6 @@ return {
         light = "latte",
         dark = "mocha",
       },
-      integrations = {
-        cmp = true,
-        gitsigns = true,
-        nvimtree = true,
-        diffview = false,
-        telescope = {
-          enabled = true
-        }
-      },
       custom_highlights = function(colors)
         return {
           DiffAdd = { fg = colors.green },
