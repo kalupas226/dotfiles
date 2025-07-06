@@ -4,12 +4,6 @@ return {
   config = function()
     local actions = require("diffview.actions")
     
-    -- GitHubライクな色設定
-    vim.api.nvim_set_hl(0, 'DiffAdd', { bg = '#1a4d1a', fg = '#a3d977' })
-    vim.api.nvim_set_hl(0, 'DiffDelete', { bg = '#4d1a1a', fg = '#f85149' })
-    vim.api.nvim_set_hl(0, 'DiffChange', { bg = '#2c3e50', fg = '#f1c40f' })
-    vim.api.nvim_set_hl(0, 'DiffText', { bg = '#3498db', fg = '#ffffff' })
-    
     require("diffview").setup({
       diff_binaries = false,    -- Show diffs for binaries
       enhanced_diff_hl = false, -- See |diffview-config-enhanced_diff_hl|
