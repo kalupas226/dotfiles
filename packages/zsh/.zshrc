@@ -218,10 +218,6 @@ if [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ] && command -v tmux >/dev/null 2>&1
   tmux attach-session -t main || tmux new-session -s main
 fi
 
-# -----------------------------------------------------------------------------
-# Plugin Manager (sheldon)
-# -----------------------------------------------------------------------------
-
 # Initialize tools
 eval "$(sheldon source)"
 eval "$(starship init zsh)"
