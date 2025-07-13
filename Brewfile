@@ -14,6 +14,7 @@ brew "starship"
 brew "terminal-notifier"
 brew "tig"
 brew "tmux"
+brew "zsh-autosuggestions"
 
 cask "arc"
 cask "cleanshot"

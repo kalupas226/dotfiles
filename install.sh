@@ -86,6 +86,8 @@ main() {
     link_dotfiles
     
     echo "Installation complete!"
+    echo ""
+    echo "Please restart your terminal or run 'source ~/.zshrc' to apply the new settings."
 }
 
 main "$@"

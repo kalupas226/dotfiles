@@ -206,3 +206,9 @@ fi
 # Initialize prompt and tools
 eval "$(starship init zsh)"
 eval "$(~/.local/bin/mise activate zsh)"
+
+# Auto-suggestions plugin
+if command -v brew >/dev/null 2>&1; then
+  local autosuggestions_path="$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  [[ -f "$autosuggestions_path" ]] && source "$autosuggestions_path"
+fi
