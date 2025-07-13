@@ -18,9 +18,7 @@ install_mise() {
         echo "Installing mise..."
         curl https://mise.run | sh
         mkdir -p ~/.local/bin
-        if ! grep -q "mise activate" ~/.zshrc; then
-            echo 'eval "$$(~/.local/bin/mise activate zsh)"' >> ~/.zshrc
-        fi
+        eval "$(~/.local/bin/mise activate zsh)"
     else
         echo "mise already installed"
     fi
@@ -33,7 +31,7 @@ install_brew_packages() {
 
 install_node() {
     echo "Installing Node.js via mise..."
-    source ~/.zshrc && mise use --global node@latest
+    mise use --global node@latest
 }
 
 install_npm_packages() {
@@ -78,12 +76,12 @@ link_dotfiles() {
 main() {
     echo "Starting dotfiles installation..."
     
+    link_dotfiles
     install_brew
     install_mise
     install_brew_packages
     install_node
     install_npm_packages
-    link_dotfiles
     
     echo "Installation complete!"
     echo ""
