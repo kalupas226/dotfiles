@@ -94,12 +94,27 @@ setopt no_flow_control  # Disable Ctrl+s/Ctrl+q flow control
 bindkey '^r' history-incremental-pattern-search-backward
 bindkey '^s' history-incremental-pattern-search-forward
 
-# History search with partial input
+# History search with partial input (original behavior)
 autoload -Uz history-search-end
 zle -N history-beginning-search-backward-end history-search-end
 zle -N history-beginning-search-forward-end history-search-end
 bindkey "^p" history-beginning-search-backward-end
 bindkey "^n" history-beginning-search-forward-end
+
+# Substring search with arrow keys
+bindkey "^[[A" history-substring-search-up
+bindkey "^[[B" history-substring-search-down
+
+# Zoxide interactive selection
+function zoxide_interactive() {
+  local dir=$(zoxide query -i)
+  if [[ -n "$dir" ]]; then
+    cd "$dir"
+  fi
+  zle reset-prompt
+}
+zle -N zoxide_interactive
+bindkey "^z" zoxide_interactive
 
 # -----------------------------------------------------------------------------
 # Custom Functions
@@ -203,6 +218,12 @@ if [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ] && command -v tmux >/dev/null 2>&1
   tmux attach-session -t main || tmux new-session -s main
 fi
 
-# Initialize prompt and tools
+# -----------------------------------------------------------------------------
+# Plugin Manager (sheldon)
+# -----------------------------------------------------------------------------
+
+# Initialize tools
+eval "$(sheldon source)"
 eval "$(starship init zsh)"
 eval "$(~/.local/bin/mise activate zsh)"
+eval "$(zoxide init zsh)"
