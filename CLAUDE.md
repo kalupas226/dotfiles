@@ -8,20 +8,21 @@ This is a personal macOS dotfiles repository organized using a package-based arc
 
 ### Package Structure
 - **packages/**: Contains individual application configurations
+  - `claude/`: Claude Code settings and configurations
   - `git/`: Git configuration files
+  - `mise/`: Development environment manager configuration
+  - `nvim/`: Neovim configuration
+  - `sheldon/`: Shell plugin manager configuration
   - `starship/`: Starship prompt configuration
   - `tig/`: Git browser configuration
   - `tmux/`: Terminal multiplexer configuration
-  - `nvim/`: Neovim configuration with lazy.nvim plugin manager
   - `wezterm/`: Terminal emulator configuration
   - `zsh/`: Zsh shell configuration
-  - `claude/`: Claude Code settings and configurations
 
 ### Key Configuration Files
 - **Brewfile**: Homebrew package definitions for CLI tools and GUI applications
-- **npmfile**: Global npm packages (claude-code, bash-language-server, etc.)
 - **install.sh**: Main installation script with custom symlinking logic
-- **settings.json**: Claude Code security permissions and hooks configuration
+- **packages/claude/.claude/settings.json**: Claude Code security permissions and hooks configuration
 
 ## Installation and Setup Commands
 
@@ -38,24 +39,23 @@ cd ~/.dotfiles
 # Reinstall Homebrew packages
 brew bundle -v --file=Brewfile
 
-# Install global npm packages
-npm install -g $(cat npmfile)
+# Install mise tools
+mise install
 
 # Relink dotfiles (after making changes)
 # The install.sh script handles this automatically
 ```
 
 ### Neovim Configuration
-- Uses **lazy.nvim** as plugin manager with automatic bootstrapping
-- LSP configured for: Bash, Swift, JSON, JavaScript/TypeScript
-- Includes: nvim-cmp (completion), telescope (fuzzy finder), nvim-tree (file explorer)
-- Plugin configurations are in `packages/nvim/.config/nvim/lua/plugins/`
+- Configuration located in `packages/nvim/`
+- Automatically symlinked to `~/.config/nvim/`
+- Uses modern Neovim plugin ecosystem
 
 ### Claude Code Integration
-- Plugin: `claude-code.nvim` installed in Neovim configuration
 - Settings: Located in `packages/claude/.claude/settings.json`
 - Security: Configured to block dangerous operations while allowing development tasks
-- Keymaps: `<C-,>` to toggle Claude Code terminal, `<leader>cC` for continue mode
+- Hooks: Terminal notifications configured for task completion and response finish
+- Permissions: Additional directories include `/Users/kalupas226/Development`
 
 ## Development Workflow
 

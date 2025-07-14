@@ -26,15 +26,16 @@ cd ~/.dotfiles
 - **GUI applications** - Arc, CleanShot, Wezterm, VSCode, etc.
 - **Fonts** - Hack Nerd Font
 - **Node.js** - Latest LTS version via mise
-- **Global npm packages** - claude-code, bash-language-server, etc.
 - **Dotfiles** - Automatically symlinked to your home directory
 
 ### Post-installation setup
 
-To install additional language servers for NeoVim:
+The installation script automatically sets up:
+- Homebrew packages from Brewfile
+- mise for development environment management
+- All dotfiles symlinked to their proper locations
 
-1. Open NeoVim nad install coc-marketplace: `:CocInstall coc-marketplace`
-2. Browse and install language servers: `:CocList marketplace`
+Restart your terminal or run `source ~/.zshrc` to load the new configuration.
 
 ## Repository Structure
 
@@ -42,11 +43,14 @@ This repository uses a package-based organization:
 
 ```
 packages/
+├── claude/     # Claude Code settings and configurations
 ├── git/        # Git configuration
+├── mise/       # Development environment manager configuration
+├── nvim/       # Neovim configuration
+├── sheldon/    # Shell plugin manager configuration
 ├── starship/   # Starship prompt configuration  
 ├── tig/        # Git browser configuration
 ├── tmux/       # Terminal multiplexer configuration
-├── nvim/       # Neovim configuration
 ├── wezterm/    # Terminal emulator configuration
 └── zsh/        # Zsh shell configuration
 ```
@@ -56,7 +60,6 @@ Each package contains dotfiles in their expected directory structure. The instal
 ## Configuration Files
 
 - **Brewfile** - Homebrew package definitions
-- **npmfile** - Global npm package definitions (installed via `npm install -g`)
 - **install.sh** - Main installation script with custom symlinking logic
 - **packages/** - Individual application configurations
 
