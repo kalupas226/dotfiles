@@ -53,6 +53,7 @@ install_mise() {
 
 install_mise_tools() {
     echo "Installing mise tools..."
+    eval "$(~/.local/bin/mise activate zsh)"
     ~/.local/bin/mise install 
 }
 
