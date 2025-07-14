@@ -51,23 +51,9 @@ install_mise() {
     fi
 }
 
-install_node() {
-    echo "Installing Node.js via mise..."
-    ~/.local/bin/mise use --global node@latest
-}
-
-install_npm_packages() {
-    echo "Installing global npm packages..."
-    if [ -f "${DOTFILES_DIR}/npmfile" ]; then
-        for package in $(cat "${DOTFILES_DIR}/npmfile"); do
-            if [ -n "$package" ] && [ "${package#\#}" = "$package" ]; then
-                echo "Installing $package..."
-                ~/.local/bin/mise exec node -- npm install -g "$package"
-            fi
-        done
-    else
-        echo "npmfile not found, skipping npm package installation"
-    fi
+install_mise_tools() {
+    echo "Installing mise tools..."
+    ~/.local/bin/mise install 
 }
 
 main() {
@@ -77,8 +63,7 @@ main() {
     install_brew
     install_brew_packages
     install_mise
-    install_node
-    install_npm_packages
+    install_mise_tools
     
     echo "Installation complete!"
     echo ""
