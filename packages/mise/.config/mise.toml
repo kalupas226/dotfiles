@@ -1,2 +1,5 @@
 [tools]
 node = "latest"
+"npm:@anthropic-ai/claude-code" = "latest"
+"npm:bash-language-server" = "latest"
+"npm:vscode-langservers-extracted" = "latest"
