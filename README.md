@@ -37,6 +37,19 @@ The installation script automatically sets up:
 
 Restart your terminal or run `source ~/.zshrc` to load the new configuration.
 
+## Maintenance
+
+- npm adds/updates:
+  - Check lifecycle hooks: `npm view <pkg>@<ver> scripts --json`
+  - If install/prepare exists, install with `--ignore-scripts=false`
+  - Otherwise keep the default `ignore-scripts=true` for safety
+- `scripts/check-updates.sh`: One-shot checker for updates of
+  - Homebrew packages (`brew update --quiet` + `brew outdated`)
+  - mise tools (`mise outdated`)
+  - Neovim plugins (lazy.nvim headless check; uses repo config, temp cache)
+  - sheldon plugins (checks pinned `rev` against latest tags)
+  - No persistent changes; run it occasionally to know what to bump.
+
 ## Repository Structure
 
 This repository uses a package-based organization:
@@ -45,6 +58,7 @@ This repository uses a package-based organization:
 packages/
 ├── claude/     # Claude Code settings and configurations
 ├── git/        # Git configuration
+├── npm/        # npm CLI defaults
 ├── mise/       # Development environment manager configuration
 ├── nvim/       # Neovim configuration
 ├── sheldon/    # Shell plugin manager configuration
@@ -62,4 +76,3 @@ Each package contains dotfiles in their expected directory structure. The instal
 - **Brewfile** - Homebrew package definitions
 - **install.sh** - Main installation script with custom symlinking logic
 - **packages/** - Individual application configurations
-
