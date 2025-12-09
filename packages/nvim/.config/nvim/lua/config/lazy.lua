@@ -22,10 +22,13 @@ require("lazy").setup({
   },
   defaults = {
     lazy = false,
-    version = false,
+    version = "*",
   },
   install = { colorscheme = { "habamax" } },
-  checker = { enabled = true },
+  checker = {
+    enabled = true,
+    notify = true,
+  },
   performance = {
     rtp = {
       disabled_plugins = {
