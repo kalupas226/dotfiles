@@ -4,63 +4,38 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-info() { printf "\n==> %s\n" "$*"; }
+UI_HELPERS="$DOTFILES_DIR/scripts/lib/ui.sh"
+. "$UI_HELPERS"
 
-# 1) Homebrew updates (metadata + outdated list)
+# Override icons for this script (checks only)
+STEP_ICON="🔍"
+
+# Banner
+border="${CYAN}${LINE_EQUAL}${RESET}"
+printf "%s\n" "$border"
+echo "${BOLD}${CYAN}🔎 Checking dotfiles updates${RESET}"
+printf "%s\n\n" "$border"
+
+# 1) Homebrew outdated (metadata + list)
+step "Homebrew outdated"
 if command -v brew >/dev/null 2>&1; then
-  info "brew outdated"
-  brew update --quiet || info "brew update failed"
-  HOMEBREW_NO_INSTALL_CLEANUP=1 brew outdated || info "brew outdated failed"
+  note "brew outdated (no auto-update)"
+  HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew outdated || warn "brew outdated failed"
 else
-  info "brew not installed"
+  warn "brew not installed"
 fi
 
 # 2) mise tool updates (does not install anything)
+step "mise outdated"
 if command -v mise >/dev/null 2>&1; then
-  info "mise outdated"
-  (cd "$DOTFILES_DIR" && mise outdated) || info "mise outdated failed"
+  (cd "$DOTFILES_DIR" && mise outdated) || warn "mise outdated failed"
 else
-  info "mise not installed"
+  warn "mise not installed"
 fi
 
-# 3) Neovim plugin updates via lazy.nvim
-if command -v nvim >/dev/null 2>&1; then
-  info "Neovim Lazy check"
-  NVIM_CFG="$DOTFILES_DIR/packages/nvim/.config"
-  if [[ -d "$NVIM_CFG/nvim" ]]; then
-    # Run with repo config, but keep caches/data in a temp dir to avoid polluting the user's ~/.local/share ~/.cache
-    TMP_BASE="${TMPDIR:-/tmp}/lazy-check-$$"
-    cleanup() { [[ -d "$TMP_BASE" ]] && rm -rf "$TMP_BASE"; }
-    trap cleanup EXIT
-
-    LAZY_LOG="$TMP_BASE/lazy.log"
-    mkdir -p "$TMP_BASE/share" "$TMP_BASE/state" "$TMP_BASE/cache"
-    XDG_CONFIG_HOME="$NVIM_CFG" \
-    XDG_DATA_HOME="$TMP_BASE/share" \
-    XDG_STATE_HOME="$TMP_BASE/state" \
-    XDG_CACHE_HOME="$TMP_BASE/cache" \
-    nvim --headless "+Lazy! sync" "+Lazy! check" "+qa" >"$LAZY_LOG" 2>&1 || info "lazy check failed"
-    if [[ -s "$LAZY_LOG" ]]; then
-      info "Neovim Lazy summary"
-      if grep -iE "update|outdated|upgrade|changed|new version|available" "$LAZY_LOG"; then
-        true
-      else
-        info "No obvious update lines; showing last 20 log lines"
-        tail -n 20 "$LAZY_LOG"
-      fi
-    fi
-    cleanup
-    trap - EXIT
-  else
-    info "nvim config not found at $NVIM_CFG/nvim"
-  fi
-else
-  info "nvim not installed"
-fi
-
-# 4) sheldon plugins: compare pinned rev with latest tag
+# 3) sheldon plugins: compare pinned rev with latest tag
+step "sheldon plugin rev check"
 if command -v git >/dev/null 2>&1; then
-  info "sheldon plugin rev check"
   plugins_file="$DOTFILES_DIR/packages/sheldon/.config/sheldon/plugins.toml"
   if [[ -f "$plugins_file" ]]; then
     while read -r name repo rev; do
@@ -83,16 +58,16 @@ if command -v git >/dev/null 2>&1; then
       ' "$plugins_file"
     )
   else
-    info "plugins.toml not found"
+    warn "plugins.toml not found"
   fi
 else
-  info "git not installed"
+  warn "git not installed"
 fi
 
-info "Next steps if updates were reported"
-printf "  - Homebrew: run 'brew upgrade <pkg>' (or 'brew upgrade' for all)\n"
-printf "  - mise: edit packages/mise/.config/mise.toml, then run 'mise install <tool>'\n"
-printf "  - Neovim: run 'nvim --headless \"+Lazy update\" \"+qa\"' (or inside nvim run :Lazy update)\n"
-printf "  - sheldon: bump rev in packages/sheldon/.config/sheldon/plugins.toml and run 'sheldon lock --relock'\n"
+step "Next steps"
+printf "%s  • Homebrew:%s run 'brew upgrade <pkg>' (or 'brew upgrade' for all)\n" "$MAGENTA" "$RESET"
+printf "%s  • mise:%s edit packages/mise/.config/mise.toml, then run 'mise install <tool>'\n" "$MAGENTA" "$RESET"
+printf "%s  • sheldon:%s bump rev in packages/sheldon/.config/sheldon/plugins.toml and run 'sheldon lock --relock'\n" "$MAGENTA" "$RESET"
 
-printf "\nDone.\n"
+printf "\n"
+ok "Checks finished"

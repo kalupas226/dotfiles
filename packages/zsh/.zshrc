@@ -221,5 +221,5 @@ fi
 # Initialize tools
 eval "$(sheldon source)"
 eval "$(starship init zsh)"
-eval "$(~/.local/bin/mise activate zsh)"
+eval "$(mise activate zsh)"
 eval "$(zoxide init zsh)"

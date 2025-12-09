@@ -4,12 +4,20 @@ set -e
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+UI_HELPERS="${DOTFILES_DIR}/scripts/lib/ui.sh"
+. "$UI_HELPERS"
+
 link_dotfiles() {
-    echo "Linking dotfiles..."
+    step "Linking dotfiles"
     
+    local first_package=1
     for package_dir in "${DOTFILES_DIR}"/packages/*/; do
+        if [ $first_package -eq 0 ]; then
+            section_line
+        fi
+        first_package=0
         package_name=$(basename "${package_dir}")
-        echo "Processing package: ${package_name}"
+        note "Package: ${package_name}"
         
         # Find all files starting with . or inside directories starting with .
         find "${package_dir}" \( -name ".*" -o -path "*/.*" \) -type f | while read -r source_file; do
@@ -23,52 +31,58 @@ link_dotfiles() {
             
             # Create symlink
             ln -sf "${source_file}" "${target_file}"
-            echo "  Linked: ${relative_path}"
+            ok "Linked ${relative_path}"
         done
     done
 }
 
 install_brew() {
-    if ! command -v brew &> /dev/null; then
-        echo "Installing Homebrew..."
-        curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash
-    else
-        echo "Homebrew already installed"
+    step "Checking Homebrew"
+    if command -v brew &> /dev/null; then
+        skip "Homebrew already installed"
+        return
+    fi
+
+    if ! curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash; then
+        warn "Homebrew install failed; check network/CLT and rerun"
+        return 1
     fi
 }
 
 install_brew_packages() {
-    echo "Installing Homebrew packages..."
-    brew bundle -v --file="${DOTFILES_DIR}/Brewfile"
-}
-
-install_mise() {
-    if ! command -v mise &> /dev/null; then
-        echo "Installing mise..."
-        curl https://mise.run | sh
-    else
-        echo "mise already installed"
+    step "Installing Homebrew packages"
+    if ! brew bundle -v --file="${DOTFILES_DIR}/Brewfile"; then
+        warn "brew bundle failed; fix Brewfile or network and rerun"
+        return 1
     fi
 }
 
 install_mise_tools() {
-    echo "Installing mise tools..."
-    eval "$(~/.local/bin/mise activate zsh)"
-    ~/.local/bin/mise install 
+    step "Installing mise tools"
+    if ! command -v mise &> /dev/null; then
+        warn "mise not found; install with 'brew install mise' then rerun"
+        return 1
+    fi
+
+    eval "$(mise activate zsh)"
+    mise install
 }
 
 main() {
-    echo "Starting dotfiles installation..."
+    local border="${CYAN}${LINE_EQUAL}${RESET}"
+    printf "%s\n" "$border"
+    echo "${BOLD}${CYAN}🌟 Starting dotfiles installation${RESET}"
+    printf "%s\n\n" "$border"
     
     link_dotfiles
     install_brew
+    eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null
     install_brew_packages
-    install_mise
     install_mise_tools
     
-    echo "Installation complete!"
     echo ""
-    echo "Please restart your terminal or run 'source ~/.zshrc' to apply the new settings."
+    echo "${GREEN}🎉 Installation complete!${RESET}"
+    echo "Please restart your terminal or run 'source ~/.zshrc' to apply the new setup."
 }
 
 main "$@"

@@ -11,7 +11,7 @@ xcode-select --install
 ```
 
 ### Quick Install
-Clone the repository and run the installation script:
+Default location is `~/.dotfiles`. Clone and run:
 
 ```bash
 git clone https://github.com/kalupas226/dotfiles.git ~/.dotfiles
@@ -28,14 +28,16 @@ cd ~/.dotfiles
 - **Node.js** - Latest LTS version via mise
 - **Dotfiles** - Automatically symlinked to your home directory
 
-### Post-installation setup
-
-The installation script automatically sets up:
-- Homebrew packages from Brewfile
-- mise for development environment management
-- All dotfiles symlinked to their proper locations
-
 Restart your terminal or run `source ~/.zshrc` to load the new configuration.
+
+### Using mise tasks
+- Install/link everything (runs `install.sh` under the hood):  
+  `mise run dotfiles:install`
+- Check for updates (brew/mise/neovim/sheldon):  
+  `mise run dotfiles:check-updates`
+
+Custom location: set `DOTFILES_DIR` before running tasks, e.g.  
+`DOTFILES_DIR=/path/to/dotfiles mise run dotfiles:install`
 
 ## Maintenance
 
@@ -43,12 +45,11 @@ Restart your terminal or run `source ~/.zshrc` to load the new configuration.
   - Check lifecycle hooks: `npm view <pkg>@<ver> scripts --json`
   - If install/prepare exists, install with `--ignore-scripts=false`
   - Otherwise keep the default `ignore-scripts=true` for safety
-- `scripts/check-updates.sh`: One-shot checker for updates of
-  - Homebrew packages (`brew update --quiet` + `brew outdated`)
+- Updates check (one-shot, no writes): `mise run dotfiles:check-updates`
+  - Homebrew (`brew update --quiet` + `brew outdated`)
   - mise tools (`mise outdated`)
-  - Neovim plugins (lazy.nvim headless check; uses repo config, temp cache)
-  - sheldon plugins (checks pinned `rev` against latest tags)
-  - No persistent changes; run it occasionally to know what to bump.
+  - sheldon plugins (pinned `rev` vs latest tags)
+- If `brew bundle` or `mise install` fails mid-run, fix the cause then rerun `mise run dotfiles:install`.
 
 ## Repository Structure
 
@@ -73,6 +74,8 @@ Each package contains dotfiles in their expected directory structure. The instal
 
 ## Configuration Files
 
+- **packages/mise/.config/mise.toml** - tool pins and mise tasks (`dotfiles:install`, `dotfiles:check-updates`)
 - **Brewfile** - Homebrew package definitions
 - **install.sh** - Main installation script with custom symlinking logic
+- **scripts/** - helper scripts (e.g. `check-updates.sh`, `lib/ui.sh`)
 - **packages/** - Individual application configurations
