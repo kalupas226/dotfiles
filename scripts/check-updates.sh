@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 info() { printf "\n==> %s\n" "$*"; }
 
@@ -18,7 +18,7 @@ fi
 # 2) mise tool updates (does not install anything)
 if command -v mise >/dev/null 2>&1; then
   info "mise outdated"
-  (cd "$REPO_ROOT" && mise outdated) || info "mise outdated failed"
+  (cd "$DOTFILES_DIR" && mise outdated) || info "mise outdated failed"
 else
   info "mise not installed"
 fi
@@ -26,7 +26,7 @@ fi
 # 3) Neovim plugin updates via lazy.nvim
 if command -v nvim >/dev/null 2>&1; then
   info "Neovim Lazy check"
-  NVIM_CFG="$REPO_ROOT/packages/nvim/.config"
+  NVIM_CFG="$DOTFILES_DIR/packages/nvim/.config"
   if [[ -d "$NVIM_CFG/nvim" ]]; then
     # Run with repo config, but keep caches/data in a temp dir to avoid polluting the user's ~/.local/share ~/.cache
     TMP_BASE="${TMPDIR:-/tmp}/lazy-check-$$"
@@ -61,7 +61,7 @@ fi
 # 4) sheldon plugins: compare pinned rev with latest tag
 if command -v git >/dev/null 2>&1; then
   info "sheldon plugin rev check"
-  plugins_file="$REPO_ROOT/packages/sheldon/.config/sheldon/plugins.toml"
+  plugins_file="$DOTFILES_DIR/packages/sheldon/.config/sheldon/plugins.toml"
   if [[ -f "$plugins_file" ]]; then
     while read -r name repo rev; do
       [[ -z "$rev" ]] && continue
