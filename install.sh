@@ -68,6 +68,34 @@ install_mise_tools() {
     mise install
 }
 
+install_global_npm_packages() {
+    step "Installing global npm CLIs"
+
+    eval "$(mise activate zsh)"  # ensure mise-managed Node/npm is on PATH
+
+    if ! command -v npm &> /dev/null; then
+        warn "npm not found; install Node via mise first"
+        return 1
+    fi
+
+    local list_file="${DOTFILES_DIR}/packages/npm/global-packages.txt"
+    if [ ! -f "$list_file" ]; then
+        skip "No global npm package list found"
+        return
+    fi
+
+    while IFS= read -r pkg; do
+        [ -z "$pkg" ] && continue
+        case "$pkg" in
+            \#*) continue ;;
+        esac
+        note "npm install -g ${pkg}"
+        if ! npm install -g "$pkg"; then
+            warn "Failed to install ${pkg}"
+        fi
+    done < "$list_file"
+}
+
 main() {
     local border="${CYAN}${LINE_EQUAL}${RESET}"
     printf "%s\n" "$border"
@@ -79,6 +107,7 @@ main() {
     eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null
     install_brew_packages
     install_mise_tools
+    install_global_npm_packages
     
     echo ""
     echo "${GREEN}🎉 Installation complete!${RESET}"

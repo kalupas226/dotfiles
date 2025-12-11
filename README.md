@@ -41,10 +41,8 @@ Custom location: set `DOTFILES_DIR` before running tasks, e.g.
 
 ## Maintenance
 
-- npm adds/updates:
-  - Check lifecycle hooks: `npm view <pkg>@<ver> scripts --json`
-  - If install/prepare exists, install with `--ignore-scripts=false`
-  - Otherwise keep the default `ignore-scripts=true` for safety
+- Node: pinned via mise in `packages/mise/.config/mise/config.toml`
+- npm CLIs: prefer project-local `devDependencies` or `npm dlx`/`npx`; only keep truly global needs in `packages/npm/global-packages.txt` and `install.sh` will install them
 - Updates check (one-shot, no writes): `mise run dotfiles:check-updates`
   - Homebrew (`brew update --quiet` + `brew outdated`)
   - mise tools (`mise outdated`)
