@@ -1,0 +1,5 @@
+# Global npm CLIs to install (no version pin). install.sh installs them.
+@anthropic-ai/claude-code
+bash-language-server
+vscode-langservers-extracted
+@openai/codex
