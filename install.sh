@@ -96,6 +96,27 @@ install_global_npm_packages() {
     done < "$list_file"
 }
 
+install_tpm() {
+    step "Installing TPM (tmux plugin manager)"
+
+    if [ -d "${HOME}/.tmux/plugins/tpm" ]; then
+        skip "TPM already installed"
+        return
+    fi
+
+    if ! command -v git &> /dev/null; then
+        warn "git not found; install git then rerun"
+        return 1
+    fi
+
+    if git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"; then
+        ok "Installed TPM"
+    else
+        warn "TPM install failed; check network and rerun"
+        return 1
+    fi
+}
+
 main() {
     local border="${CYAN}${LINE_EQUAL}${RESET}"
     printf "%s\n" "$border"
@@ -103,6 +124,7 @@ main() {
     printf "%s\n\n" "$border"
     
     link_dotfiles
+    install_tpm
     install_brew
     eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null
     install_brew_packages
