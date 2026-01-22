@@ -43,20 +43,9 @@ zstyle ":chpwd:*" recent-dirs-default true
 # Aliases
 # -----------------------------------------------------------------------------
 
-# Global aliases
-alias -g L='| less'
-alias -g H='| head'
-alias -g G='| grep'
-alias -g GI='| grep -ri'
-
 # General aliases
-alias v='nvim'
-alias vim='nvim'
-alias vz='nvim ~/.zshrc'
-alias sz='source ~/.zshrc'
 alias ls='eza --icons'
 alias cat='bat'
-alias h='fc -lt '\''%F %T'\'' 1'  # Show history with timestamps
 
 # Git aliases
 alias gl='git log'
@@ -72,8 +61,6 @@ alias gpsuc='git push -u origin $(git rev-parse --abbrev-ref HEAD)'
 
 # Tig aliases
 alias t='tig'
-alias tr='tig refs'
-alias ts='tig status'
 
 # -----------------------------------------------------------------------------
 # Completion & Key Bindings
@@ -121,13 +108,13 @@ bindkey "^z" zoxide_interactive
 # -----------------------------------------------------------------------------
 
 # Git branch management
-function gbdm() {
+function gbdmerged() {
   # Delete merged branches (exclude master/development/current)
   git fetch --prune
   git branch --merged | egrep -v "\*|master|development" | xargs git branch -d
 }
 
-function gsw() {
+function gswl() {
   # Switch to local branch using fzf
   local branches branch
   branches=$(git branch -vv) &&
@@ -144,7 +131,7 @@ function gswr() {
   git switch $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
 }
 
-function gbdfzf() {
+function gbd() {
   # Force delete branches using fzf (supports multiple selection)
   local branches branch
   branches=$(git branch -vv) &&
@@ -164,18 +151,6 @@ function cdrepo() {
 }
 zle -N cdrepo
 bindkey '^@' cdrepo
-
-function cdrfzf() {
-  # Navigate to recent directory using fzf (Ctrl+o)
-  local selected_dir=$(cdr -l | awk '{ print $2 }' | fzf --preview 'f() { sh -c "eza -l $1" }; f {}')
-  if [ -n "$selected_dir" ]; then
-    BUFFER="cd ${selected_dir}"
-    zle accept-line
-  fi
-  zle clear-screen
-}
-zle -N cdrfzf
-bindkey '^o' cdrfzf
 
 function fd() {
   # Find and navigate to directory using fzf
