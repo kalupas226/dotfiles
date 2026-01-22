@@ -18,7 +18,12 @@ vim.opt.completeopt = {"menuone", "noinsert"}
 vim.opt.history = 200
 vim.opt.termguicolors = true
 
--- Encoding
+vim.opt.foldmethod = "indent"
+vim.opt.foldlevel = 99
+vim.opt.foldenable = true
+vim.opt.foldcolumn = "1"
+vim.opt.fillchars = { fold = " ", foldopen = "▾", foldclose = "▸", foldsep = " " }
+vim.opt.foldtext = "foldtext()"
 vim.opt.encoding = "utf-8"
 vim.opt.backup = false
 vim.opt.writebackup = false
