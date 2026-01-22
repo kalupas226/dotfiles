@@ -5,12 +5,14 @@ My personal macOS dotfiles organized by packages with automated installation.
 ## Installation
 
 ### Prerequisites (macOS)
+
 ```bash
 sudo softwareupdate -i -a
 xcode-select --install
 ```
 
 ### Quick Install
+
 Default location is `~/.dotfiles`. Clone and run:
 
 ```bash
@@ -20,6 +22,7 @@ cd ~/.dotfiles
 ```
 
 ### What gets installed
+
 - **Homebrew** - Package manager for macOS
 - **mise** - Development environment manager
 - **CLI tools** - bat, eza, fzf, ripgrep, starship, tig, neovim, etc.
@@ -31,6 +34,7 @@ cd ~/.dotfiles
 Restart your terminal or run `source ~/.zshrc` to load the new configuration.
 
 ### Post-install manual steps
+
 Some tools require a one-time manual step after `install.sh`:
 
 - **tmux plugins (TPM)**: open tmux and run `prefix + I` to install plugins (e.g. `tmux-resurrect`, `vim-tmux-navigator`)
@@ -38,6 +42,7 @@ Some tools require a one-time manual step after `install.sh`:
 - **Homebrew apps/tools**: some packages need first-run setup, permissions (e.g. macOS Security & Privacy), or in-app configuration—check each tool as needed
 
 ### Using mise tasks
+
 - Install/link everything (runs `install.sh` under the hood):  
   `mise run dotfiles:install`
 - Check for updates (brew/mise/npm/sheldon):  
