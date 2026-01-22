@@ -25,7 +25,7 @@ cd ~/.dotfiles
 - **CLI tools** - bat, eza, fzf, ripgrep, starship, tig, neovim, etc.
 - **GUI applications** - Arc, CleanShot, Wezterm, VSCode, etc.
 - **Fonts** - Hack Nerd Font
-- **Node.js** - Latest LTS version via mise
+- **Node.js** - Pinned via mise
 - **Dotfiles** - Automatically symlinked to your home directory
 
 Restart your terminal or run `source ~/.zshrc` to load the new configuration.
@@ -40,8 +40,10 @@ Some tools require a one-time manual step after `install.sh`:
 ### Using mise tasks
 - Install/link everything (runs `install.sh` under the hood):  
   `mise run dotfiles:install`
-- Check for updates (brew/mise/neovim/sheldon):  
+- Check for updates (brew/mise/npm/sheldon):  
   `mise run dotfiles:check-updates`
+
+Tasks are defined in `packages/mise/.config/mise/config.toml`.
 
 Custom location: set `DOTFILES_DIR` before running tasks, e.g.  
 `DOTFILES_DIR=/path/to/dotfiles mise run dotfiles:install`
@@ -55,6 +57,7 @@ Custom location: set `DOTFILES_DIR` before running tasks, e.g.
   - mise tools (`mise outdated`)
   - sheldon plugins (pinned `rev` vs latest tags)
 - If `brew bundle` or `mise install` fails mid-run, fix the cause then rerun `mise run dotfiles:install`.
+  - If you don't use mise tasks, run `./scripts/check-updates.sh`
 
 ## Repository Structure
 
@@ -79,7 +82,7 @@ Each package contains dotfiles in their expected directory structure. The instal
 
 ## Configuration Files
 
-- **packages/mise/.config/mise.toml** - tool pins and mise tasks (`dotfiles:install`, `dotfiles:check-updates`)
+- **packages/mise/.config/mise/config.toml** - tool pins and mise tasks (`dotfiles:install`, `dotfiles:check-updates`)
 - **Brewfile** - Homebrew package definitions
 - **install.sh** - Main installation script with custom symlinking logic
 - **scripts/** - helper scripts (e.g. `check-updates.sh`, `lib/ui.sh`)
