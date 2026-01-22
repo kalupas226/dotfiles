@@ -17,7 +17,6 @@ vim.opt.hlsearch = true
 vim.opt.completeopt = {"menuone", "noinsert"}
 vim.opt.history = 200
 vim.opt.termguicolors = true
-
 vim.opt.foldmethod = "indent"
 vim.opt.foldlevel = 99
 vim.opt.foldenable = true
@@ -29,3 +28,12 @@ vim.opt.backup = false
 vim.opt.writebackup = false
 vim.opt.updatetime = 300
 vim.opt.signcolumn = "yes"
+vim.opt.autoread = true
+
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+  callback = function()
+    if vim.fn.getcmdwintype() == "" then
+      vim.cmd("checktime")
+    end
+  end,
+})
