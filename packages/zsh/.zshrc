@@ -88,10 +88,6 @@ zle -N history-beginning-search-forward-end history-search-end
 bindkey "^p" history-beginning-search-backward-end
 bindkey "^n" history-beginning-search-forward-end
 
-# Substring search with arrow keys
-bindkey "^[[A" history-substring-search-up
-bindkey "^[[B" history-substring-search-down
-
 # Zoxide interactive selection
 function zoxide_interactive() {
   local dir=$(zoxide query -i)
@@ -111,15 +107,14 @@ bindkey "^z" zoxide_interactive
 function gbdmerged() {
   # Delete merged branches (exclude master/development/current)
   git fetch --prune
-  git branch --merged | egrep -v "\*|master|development" | xargs git branch -d
+  git branch --merged | egrep -v "\*|master|main|development" | xargs git branch -d
 }
 
 function gswl() {
   # Switch to local branch using fzf
-  local branches branch
-  branches=$(git branch -vv) &&
-  branch=$(echo "$branches" | fzf +m) &&
-  git switch $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
+  local branch
+  branch=$(git for-each-ref --format='%(refname:short)' refs/heads | fzf +m) || return
+  [[ -n "$branch" ]] && git switch "$branch"
 }
 
 function gswr() {
@@ -133,16 +128,15 @@ function gswr() {
 
 function gbd() {
   # Force delete branches using fzf (supports multiple selection)
-  local branches branch
-  branches=$(git branch -vv) &&
-  branch=$(echo "$branches" | fzf -m) &&
-  git branch -D $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
+  local -a branches
+  branches=("${(@f)$(git for-each-ref --format='%(refname:short)' refs/heads | fzf -m)}") || return
+  (( ${#branches[@]} )) && git branch -D -- "${branches[@]}"
 }
 
 # Directory navigation with fzf
 function cdrepo() {
   # Navigate to ghq managed repository using fzf (Ctrl+@)
-  local selected_dir=$(ghq list -p | fzf -q "$LBUFER" --preview='eza -l {}')
+  local selected_dir=$(ghq list -p | fzf -q "$LBUFFER" --preview='eza -l {}')
   if [ -n "$selected_dir" ]; then
     BUFFER="cd ${selected_dir}"
     zle accept-line
@@ -168,7 +162,7 @@ function fdc() {
 
 function fdp() {
   # Find and navigate to parent directory using fzf
-  local declare dirs=()
+  local -a dirs=()
   get_parent_dirs() {
     if [[ -d "${1}" ]]; then dirs+=("$1"); else return; fi
     if [[ "${1}" == '/' ]]; then
