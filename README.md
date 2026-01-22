@@ -30,6 +30,13 @@ cd ~/.dotfiles
 
 Restart your terminal or run `source ~/.zshrc` to load the new configuration.
 
+### Post-install manual steps
+Some tools require a one-time manual step after `install.sh`:
+
+- **tmux plugins (TPM)**: open tmux and run `prefix + I` to install plugins (e.g. `tmux-resurrect`, `vim-tmux-navigator`)
+- **Neovim plugins (lazy.nvim)**: open Neovim and run `:Lazy sync`
+- **Homebrew apps/tools**: some packages need first-run setup, permissions (e.g. macOS Security & Privacy), or in-app configuration—check each tool as needed
+
 ### Using mise tasks
 - Install/link everything (runs `install.sh` under the hood):  
   `mise run dotfiles:install`
