@@ -43,11 +43,10 @@ zstyle ":chpwd:*" recent-dirs-default true
 # Aliases
 # -----------------------------------------------------------------------------
 
-# General aliases
+# Aliases
 alias ls='eza --icons'
 alias cat='bat'
-
-# Git aliases
+alias vim='nvim'
 alias gl='git log'
 alias gb='git branch'
 alias gs='git status'
