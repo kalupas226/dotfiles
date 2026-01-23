@@ -19,7 +19,6 @@ brew "tmux"
 brew "zoxide"
 
 cask "cleanshot"
-cask "cmd-eikana"
 cask "font-hack-nerd-font"
 cask "karabiner-elements"
 cask "keycastr"
