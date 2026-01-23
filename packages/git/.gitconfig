@@ -2,7 +2,7 @@
   vcs = git
   root = ~/Development
 [user]
-  email = kalupas226@gmail.com
+  email = 22762894+kalupas226@users.noreply.github.com
   name = kalupas226
 [pull]
   rebase = false
@@ -12,6 +12,6 @@
   prompt = false
   keepBackup = false
 [mergetool "diffview"]
-  cmd = nvim -n -c "DiffviewOpen" "$MERGE"
+  cmd = nvim -n -c "DiffviewOpen" "$MERGED"
 [core]
   editor = nvim
