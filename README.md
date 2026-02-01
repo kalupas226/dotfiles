@@ -40,6 +40,12 @@ Some tools require a one-time manual step after `install.sh`:
 - **tmux plugins (TPM)**: open tmux and run `prefix + I` to install plugins (e.g. `tmux-resurrect`, `vim-tmux-navigator`)
 - **Neovim plugins (lazy.nvim)**: open Neovim and run `:Lazy sync`
 - **Homebrew apps/tools**: some packages need first-run setup, permissions (e.g. macOS Security & Privacy), or in-app configuration—check each tool as needed
+- **Logi Tune**: install manually (not managed by Homebrew in this repo). Reference: https://www.logitech.com/assets/66219/5/brio-500.pdf
+- **macOS settings (manual)**: set these in System Settings (paths can vary by macOS version)
+  - Mission Control: `Desktop & Dock` → disable "Automatically rearrange Spaces based on most recent use"
+  - Trackpad: `Trackpad` → enable "Tap to click"
+  - Trackpad: `Accessibility` → `Pointer Control` → `Trackpad Options...` → enable dragging and choose "Three Finger Drag"
+  - Keyboard: `Keyboard` → `Keyboard Shortcuts...` → `Modifier Keys...` → set "Caps Lock" to "Control"
 
 ### Using mise tasks
 
