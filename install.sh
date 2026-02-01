@@ -36,6 +36,27 @@ link_dotfiles() {
     done
 }
 
+install_tpm() {
+    step "Installing TPM (tmux plugin manager)"
+
+    if [ -d "${HOME}/.tmux/plugins/tpm" ]; then
+        skip "TPM already installed"
+        return
+    fi
+
+    if ! command -v git &> /dev/null; then
+        warn "git not found; install git then rerun"
+        return 1
+    fi
+
+    if git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"; then
+        ok "Installed TPM"
+    else
+        warn "TPM install failed; check network and rerun"
+        return 1
+    fi
+}
+
 install_brew() {
     step "Checking Homebrew"
     if command -v brew &> /dev/null; then
@@ -94,27 +115,6 @@ install_global_npm_packages() {
             warn "Failed to install ${pkg}"
         fi
     done < "$list_file"
-}
-
-install_tpm() {
-    step "Installing TPM (tmux plugin manager)"
-
-    if [ -d "${HOME}/.tmux/plugins/tpm" ]; then
-        skip "TPM already installed"
-        return
-    fi
-
-    if ! command -v git &> /dev/null; then
-        warn "git not found; install git then rerun"
-        return 1
-    fi
-
-    if git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"; then
-        ok "Installed TPM"
-    else
-        warn "TPM install failed; check network and rerun"
-        return 1
-    fi
 }
 
 main() {

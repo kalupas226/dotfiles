@@ -190,4 +190,5 @@ fi
 eval "$(sheldon source)"
 eval "$(starship init zsh)"
 eval "$(mise activate zsh)"
+eval "$(codex completion zsh)"
 eval "$(zoxide init zsh)"
