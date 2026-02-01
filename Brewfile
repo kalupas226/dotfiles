@@ -1,3 +1,5 @@
+tap "asmvik/formulae"
+
 brew "bat"
 brew "coreutils"
 brew "docker"
@@ -16,6 +18,7 @@ brew "starship"
 brew "terminal-notifier"
 brew "tig"
 brew "tmux"
+brew "asmvik/formulae/yabai"
 brew "zoxide"
 
 cask "cleanshot"
