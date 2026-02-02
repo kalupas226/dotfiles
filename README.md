@@ -42,7 +42,9 @@ Some tools require a one-time manual step after `install.sh`:
 - **Homebrew apps/tools**: some packages need first-run setup, permissions (e.g. macOS Security & Privacy), or in-app configuration—check each tool as needed
 - **yabai**:
   - Grant **Accessibility** permission to the `yabai` binary in `System Settings → Privacy & Security → Accessibility`
-  - Start the service: `brew services start yabai`
+  - Install and start the service:
+    - `yabai --install-service`
+    - `yabai --start-service`
   - Restart after config changes: `yabai --restart-service`
   - Install guide (latest release): https://github.com/asmvik/yabai/wiki/Installing-yabai-(latest-release)
 - **Logi Tune**: install manually (not managed by Homebrew in this repo). Reference: https://www.logitech.com/assets/66219/5/brio-500.pdf
@@ -50,7 +52,6 @@ Some tools require a one-time manual step after `install.sh`:
   - Mission Control: `Desktop & Dock` → disable "Automatically rearrange Spaces based on most recent use"
   - Trackpad: `Trackpad` → enable "Tap to click"
   - Trackpad: `Accessibility` → `Pointer Control` → `Trackpad Options...` → enable dragging and choose "Three Finger Drag"
-  - Keyboard: `Keyboard` → `Keyboard Shortcuts...` → `Modifier Keys...` → set "Caps Lock" to "Control"
 
 ### Using mise tasks
 
@@ -83,6 +84,7 @@ This repository uses a package-based organization:
 packages/
 ├── claude/     # Claude Code settings and configurations
 ├── git/        # Git configuration
+├── karabiner/  # Karabiner-Elements configuration
 ├── npm/        # npm CLI defaults
 ├── mise/       # Development environment manager configuration
 ├── nvim/       # Neovim configuration
