@@ -106,3 +106,4 @@ Each package contains dotfiles in their expected directory structure. The instal
 - **install.sh** - Main installation script with custom symlinking logic
 - **scripts/** - helper scripts (e.g. `check-updates.sh`, `lib/ui.sh`)
 - **packages/** - Individual application configurations
+- **KEYBINDINGS.md** - cheat sheet for custom macOS/terminal/Neovim keybindings
