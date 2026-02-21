@@ -62,7 +62,7 @@ run_checks() {
 next_steps() {
   step "Next steps"
   printf "%s  • Homebrew:%s run 'brew upgrade <pkg>' (or 'brew upgrade' for all)\n" "$MAGENTA" "$RESET"
-  printf "%s  • mise:%s edit packages/mise/.config/mise.toml, then run 'mise install <tool>'\n" "$MAGENTA" "$RESET"
+  printf "%s  • mise:%s edit packages/mise/.config/mise/config.toml, then run 'mise install <tool>'\n" "$MAGENTA" "$RESET"
   printf "%s  • npm:%s run 'npm update -g <pkg>'\n" "$MAGENTA" "$RESET"
   printf "%s  • sheldon:%s bump rev in packages/sheldon/.config/sheldon/plugins.toml and run 'sheldon lock --relock'\n" "$MAGENTA" "$RESET"
 }

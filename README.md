@@ -26,7 +26,7 @@ cd ~/.dotfiles
 - **Homebrew** - Package manager for macOS
 - **mise** - Development environment manager
 - **CLI tools** - bat, eza, fzf, ripgrep, starship, tig, neovim, etc.
-- **GUI applications** - Arc, CleanShot, Wezterm, VSCode, etc.
+- **GUI applications** - ChatGPT, CleanShot, Wezterm, VSCode, Raycast, etc.
 - **Fonts** - Hack Nerd Font
 - **Node.js** - Pinned via mise
 - **Dotfiles** - Automatically symlinked to your home directory
