@@ -181,8 +181,8 @@ function fdp() {
 # Initialization
 # -----------------------------------------------------------------------------
 
-# Auto-start tmux (except for SSH connections)
-if [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ] && command -v tmux >/dev/null 2>&1; then
+# Auto-start tmux (except in Codex/VS Code terminals)
+if [ -z "$TMUX" ] && [ -z "$CODEX_SHELL" ] && [ "$TERM_PROGRAM" != "vscode" ] && command -v tmux >/dev/null 2>&1; then
   tmux attach-session -t main || tmux new-session -s main
 fi
 
