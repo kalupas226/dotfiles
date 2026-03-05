@@ -1,38 +1,35 @@
-# Repository Guidelines
+# AGENTS.md
 
-## Project Structure & Module Organization
+This file provides guidance to AI coding agents when working with code in this repository.
 
-- `packages/` holds application-specific dotfiles (e.g., `packages/zsh`, `packages/tmux`, `packages/nvim`). Files are stored in their target path shape and are symlinked into `$HOME` by `install.sh`.
-- `scripts/` contains helper scripts and checks (e.g., `scripts/check-updates.sh`, `scripts/checks/*.sh`, `scripts/lib/ui.sh`).
-- `Brewfile` defines Homebrew dependencies.
-- `install.sh` is the main entrypoint for setup and linking.
+## Commands
 
-## Build, Test, and Development Commands
+- **Install everything**: `./install.sh` or `mise run dotfiles:install`
+- **Check for updates** (read-only): `mise run dotfiles:check-updates` or `./scripts/check-updates.sh`
+- **Run a specific update check**: `./scripts/check-updates.sh brew|mise|npm|sheldon`
 
-- `./install.sh` — installs Homebrew packages, mise tools, global npm CLIs, and symlinks dotfiles.
-- `mise run dotfiles:install` — runs the install workflow via mise.
-- `mise run dotfiles:check-updates` — reports updates for brew/mise/npm/sheldon without writing changes.
-- `./scripts/check-updates.sh` — direct update-check runner if you are not using mise.
+There is no automated test suite. Validate changes by running `./install.sh` or checking that symlinks under `$HOME` are correct after edits.
 
-## Coding Style & Naming Conventions
+## Architecture
 
-- Shell scripts use `zsh` and `set -e`; keep indentation at 4 spaces and prefer readable, explicit conditionals.
-- Use kebab-case for script filenames in `scripts/` (e.g., `check-updates.sh`).
-- Keep package folder names lowercase and match tool names (e.g., `packages/starship`, `packages/wezterm`).
+This repo uses a **package-based layout**: each directory under `packages/` mirrors the filesystem structure relative to `$HOME`. `install.sh` symlinks every dotfile (files/dirs starting with `.`) from each package into `$HOME`.
 
-## Testing Guidelines
+Example: `packages/zsh/.zshrc` → `~/.zshrc`; `packages/nvim/.config/nvim/init.lua` → `~/.config/nvim/init.lua`.
 
-- There is no automated test suite. Validate changes by running:
-  - `./install.sh` in a safe environment, or
-  - `mise run dotfiles:check-updates` for non-invasive checks.
-- For package edits, verify the symlinked paths under `$HOME` and ensure tools load cleanly.
+Key files:
+- **`Brewfile`** — source of truth for all Homebrew formulae/casks
+- **`packages/mise/.config/mise/config.toml`** — tool version pins (e.g., Node) and mise task definitions
+- **`packages/npm/global-packages.txt`** — global npm CLIs installed by `install.sh`
+- **`scripts/lib/ui.sh`** — shared shell UI helpers (`step`, `ok`, `warn`, `skip`, etc.) sourced by all scripts
+- **`scripts/checks/`** — individual check scripts invoked by `check-updates.sh`
 
-## Commit & Pull Request Guidelines
+## Shell Script Conventions
 
-- Commit messages are short, imperative, and capitalized (e.g., `Fix aliases`, `Update Brewfile`).
-- PRs should include a concise summary, any manual steps required after install, and the commands used to verify changes.
+- Scripts use `zsh` (`install.sh`) or `bash` (`scripts/`); always `set -e` / `set -euo pipefail`
+- 4-space indentation; explicit conditionals
+- Source `scripts/lib/ui.sh` for all user-facing output; never use raw `echo` for status messages
+- Kebab-case filenames in `scripts/`; package folder names match the tool name in lowercase
 
-## Security & Configuration Tips
+## Commit Style
 
-- Treat `Brewfile` and `packages/mise/.config/mise/config.toml` as the source of truth for installs and tool pins.
-- Prefer project-local npm tools; only add truly global CLIs to `packages/npm/global-packages.txt`.
+Short, imperative, capitalized: `Fix aliases`, `Update Brewfile`, `Add wezterm config`.
