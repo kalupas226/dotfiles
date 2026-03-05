@@ -89,6 +89,22 @@ install_mise_tools() {
     mise install
 }
 
+install_claude_code() {
+    step "Installing Claude Code"
+
+    if command -v claude &> /dev/null; then
+        skip "Claude Code already installed"
+        return
+    fi
+
+    if ! curl -fsSL https://claude.ai/install.sh | sh; then
+        warn "Claude Code install failed; check network and rerun"
+        return 1
+    fi
+
+    ok "Installed Claude Code"
+}
+
 install_global_npm_packages() {
     step "Installing global npm CLIs"
 
@@ -129,6 +145,7 @@ main() {
     eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null
     install_brew_packages
     install_mise_tools
+    install_claude_code
     install_global_npm_packages
     
     echo ""

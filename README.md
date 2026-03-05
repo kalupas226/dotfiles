@@ -47,6 +47,8 @@ Some tools require a one-time manual step after `install.sh`:
     - `yabai --start-service`
   - Restart after config changes: `yabai --restart-service`
   - Install guide (latest release): https://github.com/asmvik/yabai/wiki/Installing-yabai-(latest-release)
+- **Claude Code plugins**: reinstall plugins from the marketplace (`/plugins` in Claude Code)
+- **pfw (Point-Free Way CLI)**: follow the setup instructions at https://github.com/pointfreeco/pfw
 - **Logi Tune**: install manually (not managed by Homebrew in this repo). Reference: https://www.logitech.com/assets/66219/5/brio-500.pdf
 - **macOS settings**: set these in System Settings (paths can vary by macOS version)
   - Mission Control: `Desktop & Dock` → disable "Automatically rearrange Spaces based on most recent use"
