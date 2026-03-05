@@ -181,8 +181,8 @@ function fdp() {
 # Initialization
 # -----------------------------------------------------------------------------
 
-# Auto-start tmux (except in Codex/VS Code terminals)
-if [ -z "$TMUX" ] && [ -z "$CODEX_SHELL" ] && [ "$TERM_PROGRAM" != "vscode" ] && command -v tmux >/dev/null 2>&1; then
+# Auto-start tmux (except in AI agent / VS Code terminals)
+if [ -z "$TMUX" ] && [ -z "$CLAUDE_CODE" ] && [ "$TERM_PROGRAM" != "vscode" ] && command -v tmux >/dev/null 2>&1; then
   tmux attach-session -t main || tmux new-session -s main
 fi
 
@@ -190,5 +190,4 @@ fi
 eval "$(sheldon source)"
 eval "$(starship init zsh)"
 eval "$(mise activate zsh)"
-eval "$(codex completion zsh)"
 eval "$(zoxide init zsh)"

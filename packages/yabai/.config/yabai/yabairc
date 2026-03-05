@@ -22,6 +22,6 @@ yabai -m rule --add app="Slack" manage=off
 yabai -m rule --add app="Raycast" manage=off
 yabai -m rule --add app="Simulator" manage=off
 yabai -m rule --add app="Finder" manage=off
-yabai -m rule --add app="ChatGPT" manage=off
 yabai -m rule --add app="Code" manage=off
 yabai -m rule --add app="Xcode" manage=off
+yabai -m rule --add app="SmartGit" manage=off
