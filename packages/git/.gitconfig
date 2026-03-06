@@ -15,3 +15,4 @@
   cmd = nvim -n -c "DiffviewOpen" "$MERGED"
 [core]
   editor = nvim
+  excludesfile = ~/.gitignore_global
