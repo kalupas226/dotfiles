@@ -57,7 +57,14 @@ alias gfc='git fetch'
 alias gswc='git switch --create'
 alias gpsc='git push origin $(git rev-parse --abbrev-ref HEAD)'
 alias gpsuc='git push -u origin $(git rev-parse --abbrev-ref HEAD)'
-alias lg='lazygit'
+function lg() {
+  local newdir_file=~/.lazygit/newdir
+  LAZYGIT_NEW_DIR_FILE="$newdir_file" lazygit "$@"
+  if [[ -f "$newdir_file" ]]; then
+    cd "$(cat "$newdir_file")"
+    rm -f "$newdir_file"
+  fi
+}
 
 # -----------------------------------------------------------------------------
 # Completion & Key Bindings
