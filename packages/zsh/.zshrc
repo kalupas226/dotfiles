@@ -57,9 +57,7 @@ alias gfc='git fetch'
 alias gswc='git switch --create'
 alias gpsc='git push origin $(git rev-parse --abbrev-ref HEAD)'
 alias gpsuc='git push -u origin $(git rev-parse --abbrev-ref HEAD)'
-
-# Tig aliases
-alias t='tig'
+alias lg='lazygit'
 
 # -----------------------------------------------------------------------------
 # Completion & Key Bindings
