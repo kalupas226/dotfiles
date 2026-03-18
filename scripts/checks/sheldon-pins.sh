@@ -17,19 +17,19 @@ step "sheldon plugin rev check"
 while read -r name repo rev; do
   [[ -z "$rev" ]] && continue
   latest_tag=$(
-    git ls-remote --tags "https://github.com/${repo}.git" 2>/dev/null \
+    git ls-remote --tags --sort=-version:refname "https://github.com/${repo}.git" 2>/dev/null \
       | awk '{print $2}' \
       | sed 's#refs/tags/##' \
       | grep -v '\^{}' \
-      | sort -V \
-      | tail -1 \
+      | head -1 \
       || true
   )
-  tag_present=$(git ls-remote "https://github.com/${repo}.git" "refs/tags/${rev}" 2>/dev/null || true)
-  if [[ -z "$tag_present" ]]; then
-    printf "  [!] %s: pinned %s (not found upstream)\n" "$name" "$rev"
+  if [[ -z "$latest_tag" ]]; then
+    printf "  [?] %s: pinned %s (could not fetch tags)\n" "$name" "$rev"
+  elif [[ "$rev" != "$latest_tag" ]]; then
+    printf "  [OUTDATED] %s: pinned %s -> latest %s\n" "$name" "$rev" "$latest_tag"
   else
-    printf "  [OK] %s: pinned %s (latest tag: %s)\n" "$name" "$rev" "${latest_tag:-unknown}"
+    printf "  [OK] %s: %s\n" "$name" "$rev"
   fi
 done < <(
   awk '

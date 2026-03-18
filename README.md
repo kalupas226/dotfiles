@@ -25,7 +25,7 @@ cd ~/.dotfiles
 
 - **Homebrew** - Package manager for macOS
 - **mise** - Development environment manager
-- **CLI tools** - bat, eza, fzf, ripgrep, starship, tig, neovim, etc.
+- **CLI tools** - bat, eza, fzf, ripgrep, starship, neovim, etc.
 - **GUI applications** - ChatGPT, CleanShot, Wezterm, VSCode, Raycast, etc.
 - **Fonts** - Hack Nerd Font
 - **Node.js** - Pinned via mise
@@ -92,7 +92,6 @@ packages/
 ├── nvim/       # Neovim configuration
 ├── sheldon/    # Shell plugin manager configuration
 ├── starship/   # Starship prompt configuration  
-├── tig/        # Git browser configuration
 ├── tmux/       # Terminal multiplexer configuration
 ├── wezterm/    # Terminal emulator configuration
 ├── yabai/      # Tiling window manager configuration
