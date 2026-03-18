@@ -85,6 +85,7 @@ This repository uses a package-based organization:
 ```
 packages/
 ├── claude/     # Claude Code settings and configurations
+├── codex/      # OpenAI Codex settings and configurations
 ├── git/        # Git configuration
 ├── karabiner/  # Karabiner-Elements configuration
 ├── npm/        # npm CLI defaults
