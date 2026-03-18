@@ -48,6 +48,9 @@ return {
       capabilities = defaultCapabilities,
     }
 
+    -- Enable LSP servers
+    vim.lsp.enable({ "bashls", "sourcekit", "jsonls", "ts_ls" })
+
     -- LSP keymaps
     vim.api.nvim_create_autocmd("LspAttach", {
       group = vim.api.nvim_create_augroup("UserLspConfig", {}),
