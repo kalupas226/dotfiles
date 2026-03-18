@@ -17,9 +17,7 @@
       "Bash(sudo:*)",
       "Bash(chmod 777 /*)"
     ],
-    "additionalDirectories": [
-      "/Users/kalupas226/Development"
-    ]
+    "additionalDirectories": []
   },
   "hooks": {
     "Notification": [
