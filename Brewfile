@@ -23,6 +23,7 @@ brew "asmvik/formulae/yabai"
 brew "zoxide"
 
 cask "claude"
+cask "codex-app"
 cask "cleanshot"
 cask "font-hack-nerd-font"
 cask "karabiner-elements"
