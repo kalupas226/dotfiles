@@ -1,5 +1,3 @@
-tap "nikitabobko/tap"
-
 brew "bat"
 brew "coreutils"
 brew "docker"
@@ -32,5 +30,4 @@ cask "slack"
 cask "smartgit"
 cask "visual-studio-code"
 cask "wezterm"
-cask "nikitabobko/tap/aerospace"
 cask "1password"
