@@ -140,3 +140,8 @@ run = 'move-node-to-workspace 4'
 [[on-window-detected]]
 if.app-id = 'com.figma.Desktop'
 run = 'move-node-to-workspace 5'
+
+# Workspace 6: Knowledge management (Obsidian)
+[[on-window-detected]]
+if.app-id = 'md.obsidian'
+run = 'move-node-to-workspace 6'
