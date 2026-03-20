@@ -42,6 +42,7 @@ Some tools require a one-time manual step after `install.sh`:
 - **Homebrew apps/tools**: some packages need first-run setup, permissions (e.g. macOS Security & Privacy), or in-app configuration—check each tool as needed
 - **AeroSpace**:
   - Grant **Accessibility** permission in `System Settings → Privacy & Security → Accessibility`
+  - Run `defaults write com.apple.spaces spans-displays -bool true && killall SystemUIServer` (required for multi-monitor support)
   - Reload config: `alt-shift-; → esc`
 - **Claude Code plugins**: reinstall plugins from the marketplace (`/plugins` in Claude Code)
 - **pfw (Point-Free Way CLI)**: follow the setup instructions at https://github.com/pointfreeco/pfw
