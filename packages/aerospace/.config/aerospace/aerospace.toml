@@ -88,13 +88,17 @@ alt-shift-j = ['join-with down', 'mode main']
 alt-shift-k = ['join-with up', 'mode main']
 alt-shift-l = ['join-with right', 'mode main']
 
-# Workspace 1: Xcode, WezTerm
+# Workspace 1: Xcode, WezTerm, VS Code
 [[on-window-detected]]
 if.app-id = 'com.apple.dt.Xcode'
 run = 'move-node-to-workspace 1'
 
 [[on-window-detected]]
 if.app-id = 'com.github.wez.wezterm'
+run = 'move-node-to-workspace 1'
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.VSCode'
 run = 'move-node-to-workspace 1'
 
 # Workspace 2: Figma, Claude Desktop
