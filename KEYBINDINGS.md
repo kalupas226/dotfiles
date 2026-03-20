@@ -2,26 +2,28 @@
 
 Quick reference for custom shortcuts configured in this dotfiles repo.
 
-## macOS (Karabiner / yabai)
+## macOS (Karabiner)
 
 | Key | Action | Source |
 |---|---|---|
 | `Caps Lock` | Remapped to `Left Control` | `packages/karabiner/.config/karabiner/karabiner.json` |
 | `Left Command` (tap alone) | Switch input to `Eisuu` | `packages/karabiner/.config/karabiner/karabiner.json` |
 | `Right Command` (tap alone) | Switch input to `Kana` | `packages/karabiner/.config/karabiner/karabiner.json` |
-| `Left Option + f` | yabai: toggle float for current window | `packages/karabiner/.config/karabiner/karabiner.json` |
-| `Left Option + Left Shift + h` | yabai: move window to left half | `packages/karabiner/.config/karabiner/karabiner.json` |
-| `Left Option + Left Shift + l` | yabai: move window to right half | `packages/karabiner/.config/karabiner/karabiner.json` |
-| `Left Option + Left Shift + f` | yabai: maximize window (1x1 grid) | `packages/karabiner/.config/karabiner/karabiner.json` |
 
-## Raycast
+## AeroSpace (Window Manager)
 
 | Key | Action | Source |
 |---|---|---|
-| `Option + s` | Show/Hide Slack | Manual (Raycast app settings) |
-| `Option + e` | Show/Hide Visual Studio Code | Manual (Raycast app settings) |
-| `Option + Space` | Show/Hide WezTerm | Manual (Raycast app settings) |
-| `Command + Space` | Open Raycast | Manual (Raycast app settings) |
+| `Alt + h/j/k/l` | Focus left/down/up/right | `packages/aerospace/.config/aerospace/aerospace.toml` |
+| `Alt + Shift + h/j/k/l` | Move window left/down/up/right | `packages/aerospace/.config/aerospace/aerospace.toml` |
+| `Alt + 1-9` | Switch to workspace 1-9 | `packages/aerospace/.config/aerospace/aerospace.toml` |
+| `Alt + Shift + 1-9` | Move window to workspace 1-9 | `packages/aerospace/.config/aerospace/aerospace.toml` |
+| `Alt + m` | Toggle fullscreen | `packages/aerospace/.config/aerospace/aerospace.toml` |
+| `Alt + Tab` | Switch to previous workspace | `packages/aerospace/.config/aerospace/aerospace.toml` |
+| `Alt + /` | Toggle tiles horizontal/vertical | `packages/aerospace/.config/aerospace/aerospace.toml` |
+| `Alt + ,` | Toggle accordion horizontal/vertical | `packages/aerospace/.config/aerospace/aerospace.toml` |
+| `Alt + -/=` | Resize smart -50/+50 | `packages/aerospace/.config/aerospace/aerospace.toml` |
+| `Alt + Shift + ;` | Enter service mode | `packages/aerospace/.config/aerospace/aerospace.toml` |
 
 ## Terminal (WezTerm / zsh / tmux)
 
