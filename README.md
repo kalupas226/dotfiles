@@ -40,13 +40,9 @@ Some tools require a one-time manual step after `install.sh`:
 - **tmux plugins (TPM)**: open tmux and run `prefix + I` to install plugins (e.g. `vim-tmux-navigator`)
 - **Neovim plugins (lazy.nvim)**: open Neovim and run `:Lazy sync`
 - **Homebrew apps/tools**: some packages need first-run setup, permissions (e.g. macOS Security & Privacy), or in-app configuration—check each tool as needed
-- **yabai**:
-  - Grant **Accessibility** permission to the `yabai` binary in `System Settings → Privacy & Security → Accessibility`
-  - Install and start the service:
-    - `yabai --install-service`
-    - `yabai --start-service`
-  - Restart after config changes: `yabai --restart-service`
-  - Install guide (latest release): https://github.com/asmvik/yabai/wiki/Installing-yabai-(latest-release)
+- **AeroSpace**:
+  - Grant **Accessibility** permission in `System Settings → Privacy & Security → Accessibility`
+  - Reload config: `alt-shift-; → esc`
 - **Claude Code plugins**: reinstall plugins from the marketplace (`/plugins` in Claude Code)
 - **pfw (Point-Free Way CLI)**: follow the setup instructions at https://github.com/pointfreeco/pfw
 - **Logi Tune**: install manually (not managed by Homebrew in this repo). Reference: https://www.logitech.com/assets/66219/5/brio-500.pdf
@@ -95,7 +91,7 @@ packages/
 ├── starship/   # Starship prompt configuration  
 ├── tmux/       # Terminal multiplexer configuration
 ├── wezterm/    # Terminal emulator configuration
-├── yabai/      # Tiling window manager configuration
+├── aerospace/  # AeroSpace window manager configuration
 └── zsh/        # Zsh shell configuration
 ```
 

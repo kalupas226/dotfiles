@@ -19,7 +19,11 @@ brew "terminal-notifier"
 brew "tmux"
 brew "zoxide"
 
+tap "nikitabobko/tap"
+
+cask "nikitabobko/tap/aerospace"
 cask "claude"
+cask "figma"
 cask "codex-app"
 cask "cleanshot"
 cask "font-hack-nerd-font"
