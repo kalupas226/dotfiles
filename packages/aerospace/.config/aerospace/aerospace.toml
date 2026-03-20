@@ -3,7 +3,7 @@
 config-version = 2
 
 after-startup-command = [
-    'exec-and-forget borders active_color=0xffe0af68 inactive_color=0xff494d64 width=5.0'
+    'exec-and-forget borders style=round width=4.0 hidpi=on active_color=0xc0e0e6f0 inactive_color=0xc0333333'
 ]
 
 start-at-login = false
@@ -88,7 +88,7 @@ alt-shift-j = ['join-with down', 'mode main']
 alt-shift-k = ['join-with up', 'mode main']
 alt-shift-l = ['join-with right', 'mode main']
 
-# Workspace 1: Xcode, WezTerm, VS Code
+# Workspace 1: Xcode, WezTerm, VS Code, Claude Desktop, Codex, Figma
 [[on-window-detected]]
 if.app-id = 'com.apple.dt.Xcode'
 run = 'move-node-to-workspace 1'
@@ -101,37 +101,40 @@ run = 'move-node-to-workspace 1'
 if.app-id = 'com.microsoft.VSCode'
 run = 'move-node-to-workspace 1'
 
-# Workspace 2: Figma, Claude Desktop
-[[on-window-detected]]
-if.app-id = 'com.figma.Desktop'
-run = 'move-node-to-workspace 2'
-
 [[on-window-detected]]
 if.app-id = 'com.anthropic.claudefordesktop'
-run = 'move-node-to-workspace 2'
+run = 'move-node-to-workspace 1'
 
-# Workspace 3: Slack, Mail, Calendar, Outlook, Teams
+[[on-window-detected]]
+if.app-id = 'com.openai.codex'
+run = 'move-node-to-workspace 1'
+
+[[on-window-detected]]
+if.app-id = 'com.figma.Desktop'
+run = 'move-node-to-workspace 1'
+
+# Workspace 2: Slack, Mail, Calendar, Outlook, Teams
 [[on-window-detected]]
 if.app-id = 'com.tinyspeck.slackmacgap'
-run = 'move-node-to-workspace 3'
+run = 'move-node-to-workspace 2'
 
 [[on-window-detected]]
 if.app-id = 'com.apple.mail'
-run = 'move-node-to-workspace 3'
+run = 'move-node-to-workspace 2'
 
 [[on-window-detected]]
 if.app-id = 'com.apple.iCal'
-run = 'move-node-to-workspace 3'
+run = 'move-node-to-workspace 2'
 
 [[on-window-detected]]
 if.app-id = 'com.microsoft.Outlook'
-run = 'move-node-to-workspace 3'
+run = 'move-node-to-workspace 2'
 
 [[on-window-detected]]
 if.app-id = 'com.microsoft.teams2'
-run = 'move-node-to-workspace 3'
+run = 'move-node-to-workspace 2'
 
-# Workspace 4: Safari (horizontal tiles)
+# Workspace 3: Safari (horizontal tiles)
 [[on-window-detected]]
 if.app-id = 'com.apple.Safari'
-run = ['move-node-to-workspace 4', 'layout tiles horizontal']
+run = ['move-node-to-workspace 3', 'layout tiles horizontal']
