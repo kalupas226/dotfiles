@@ -9,7 +9,7 @@ function lg() {
 }
 
 # Git: delete merged branches
-function gbdmerged() {
+function gbdm() {
   git fetch --prune
   git branch --merged | egrep -v "\*|master|main|development" | xargs git branch -d
 }
@@ -64,6 +64,22 @@ function gadd() {
   files=("${(@f)$(git diff --name-only |
          fzf -m --preview 'git diff --color=always -- {}')}") || return
   (( ${#files[@]} )) && git add -- "${files[@]}" && git status --short
+}
+
+# Git: remove worktrees (fzf multi-select)
+function gwtd() {
+  local -a worktrees
+  worktrees=("${(@f)$(git worktree list |
+             awk 'NR>1 {print}' |
+             fzf -m --preview 'git log --oneline -15 $(echo {} | awk "{print \$NF}" | tr -d "[]")')}") || return
+  (( ${#worktrees[@]} )) || return
+  for entry in "${worktrees[@]}"; do
+    local dir=$(echo "$entry" | awk '{print $1}')
+    local branch=$(echo "$entry" | awk '{print $NF}' | tr -d '[]')
+    echo "Removing worktree: $dir (branch: $branch)"
+    git worktree remove --force "$dir"
+    git branch -D "$branch" 2>/dev/null
+  done
 }
 
 # Zoxide interactive selection (Ctrl+z)
