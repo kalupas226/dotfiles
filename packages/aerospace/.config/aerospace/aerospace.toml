@@ -115,7 +115,7 @@ run = 'move-node-to-workspace 2'
 if.app-id = 'com.apple.Safari'
 run = ['move-node-to-workspace 3', 'layout tiles horizontal']
 
-# Workspace 4: Communication (Slack, Mail, Calendar, Outlook, Teams)
+# Workspace 4: Communication (Slack, Mail, Calendar, Outlook, Teams, Zoom)
 [[on-window-detected]]
 if.app-id = 'com.tinyspeck.slackmacgap'
 run = 'move-node-to-workspace 4'
@@ -134,6 +134,10 @@ run = 'move-node-to-workspace 4'
 
 [[on-window-detected]]
 if.app-id = 'com.microsoft.teams2'
+run = 'move-node-to-workspace 4'
+
+[[on-window-detected]]
+if.app-id = 'us.zoom.xos'
 run = 'move-node-to-workspace 4'
 
 # Workspace 5: Design (Figma)
