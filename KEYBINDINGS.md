@@ -41,12 +41,14 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 
 | Key | Action | Source |
 |---|---|---|
-| `Ctrl + r` | Incremental history search (backward) | `packages/zsh/.zshrc` |
-| `Ctrl + s` | Incremental history search (forward) | `packages/zsh/.zshrc` |
+| `Ctrl + r` | `fzf` fuzzy history search | `packages/zsh/.zshrc` (fzf integration) |
+| `Ctrl + t` | `fzf` file finder (insert path) | `packages/zsh/.zshrc` (fzf integration) |
+| `Alt + c` | `fzf` directory search + cd | `packages/zsh/.zshrc` (fzf integration) |
+| `**<Tab>` | `fzf` completion trigger (e.g. `cd **<Tab>`) | `packages/zsh/.zshrc` (fzf integration) |
 | `Ctrl + p` | Prefix history search (previous) | `packages/zsh/.zshrc` |
 | `Ctrl + n` | Prefix history search (next) | `packages/zsh/.zshrc` |
 | `Ctrl + z` | `zoxide` interactive directory jump | `packages/zsh/.zshrc` |
-| `Ctrl + Space` (`Ctrl + @`) | `ghq` + `fzf` repo picker (`cdrepo`) | `packages/zsh/.zshrc` |
+| `Ctrl + @` | `ghq` + `fzf` repo picker (`cdrepo`) | `packages/zsh/.zshrc` |
 
 ### tmux
 
