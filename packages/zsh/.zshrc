@@ -57,6 +57,22 @@ alias gfc='git fetch'
 alias gswc='git switch --create'
 alias gpsc='git push origin $(git rev-parse --abbrev-ref HEAD)'
 alias gpsuc='git push -u origin $(git rev-parse --abbrev-ref HEAD)'
+
+# -----------------------------------------------------------------------------
+# fzf Configuration
+# -----------------------------------------------------------------------------
+export FZF_DEFAULT_OPTS='
+  --height=60%
+  --layout=reverse
+  --border
+  --info=inline
+  --bind=ctrl-d:half-page-down,ctrl-u:half-page-up
+'
+
+# fzf shell integration (Ctrl+R history search, Ctrl+T file finder, Alt+C cd)
+source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+source /opt/homebrew/opt/fzf/shell/completion.zsh
+
 function lg() {
   local newdir_file=~/.lazygit/newdir
   LAZYGIT_NEW_DIR_FILE="$newdir_file" lazygit "$@"
@@ -82,8 +98,6 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 # Key bindings
 setopt no_flow_control  # Disable Ctrl+s/Ctrl+q flow control
-bindkey '^r' history-incremental-pattern-search-backward
-bindkey '^s' history-incremental-pattern-search-forward
 
 # History search with partial input (original behavior)
 autoload -Uz history-search-end
@@ -117,17 +131,18 @@ function gbdmerged() {
 function gswl() {
   # Switch to local branch using fzf
   local branch
-  branch=$(git for-each-ref --format='%(refname:short)' refs/heads | fzf +m) || return
+  branch=$(git for-each-ref --format='%(refname:short)' refs/heads |
+           fzf +m --preview 'git log --oneline -15 {}') || return
   [[ -n "$branch" ]] && git switch "$branch"
 }
 
 function gswr() {
   # Switch to remote branch using fzf
-  local branches branch
-  branches=$(git branch --all | grep -v HEAD) &&
-  branch=$(echo "$branches" |
-           fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
-  git switch $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+  local branch
+  branch=$(git branch --all --format='%(refname:short)' |
+           grep -v HEAD |
+           fzf --preview 'git log --oneline -15 {1}') || return
+  git switch "${branch#origin/}"
 }
 
 function gbd() {
@@ -137,10 +152,38 @@ function gbd() {
   (( ${#branches[@]} )) && git branch -D -- "${branches[@]}"
 }
 
+function glog() {
+  # Browse git log with fzf, preview shows commit diff
+  git log --oneline --color=always |
+    fzf --ansi --no-sort \
+        --preview 'git show --color=always {1}' \
+        --preview-window=right:60% \
+        --bind 'enter:execute(git show --color=always {1} | less -R)'
+}
+
+function gstash() {
+  # Browse stashes with fzf, preview shows stash diff, enter applies
+  local stash
+  stash=$(git stash list |
+          fzf --preview 'git stash show -p --color=always $(echo {} | cut -d: -f1)' \
+              --preview-window=right:60%) || return
+  local stash_ref=$(echo "$stash" | cut -d: -f1)
+  echo "Apply $stash_ref? [y/N] "
+  read -q && git stash apply "$stash_ref"
+}
+
+function gadd() {
+  # Interactive git add with fzf multi-select and diff preview
+  local -a files
+  files=("${(@f)$(git diff --name-only |
+         fzf -m --preview 'git diff --color=always -- {}')}") || return
+  (( ${#files[@]} )) && git add -- "${files[@]}" && git status --short
+}
+
 # Directory navigation with fzf
 function cdrepo() {
   # Navigate to ghq managed repository using fzf (Ctrl+@)
-  local selected_dir=$(ghq list -p | fzf -q "$LBUFFER" --preview='eza -l {}')
+  local selected_dir=$(ghq list -p | fzf -q "$LBUFFER" --preview='eza -l --icons --color=always {}')
   if [ -n "$selected_dir" ]; then
     BUFFER="cd ${selected_dir}"
     zle accept-line
@@ -150,37 +193,6 @@ function cdrepo() {
 zle -N cdrepo
 bindkey '^@' cdrepo
 
-function fd() {
-  # Find and navigate to directory using fzf
-  local dir
-  dir=$(find ${1:-.} -path '*/\.*' -prune \
-                  -o -type d -print 2> /dev/null | fzf +m --preview 'eza -l {}') &&
-  cd "$dir"
-}
-
-function fdc() {
-  # Find and navigate to child directory using fzf
-  DIR=`find * -maxdepth 1 -type d -print 2> /dev/null | fzf-tmux --preview 'eza -l {}'` \
-  && cd "$DIR"
-}
-
-function fdp() {
-  # Find and navigate to parent directory using fzf
-  local -a dirs=()
-  get_parent_dirs() {
-    if [[ -d "${1}" ]]; then dirs+=("$1"); else return; fi
-    if [[ "${1}" == '/' ]]; then
-      for _dir in "${dirs[@]}"; do echo $_dir; done
-    else
-      get_parent_dirs $(dirname "$1")
-    fi
-  }
-  myrealpath() {
-    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
-  }
-  local DIR=$(get_parent_dirs $(myrealpath "${1:-$PWD}") | fzf-tmux --tac --preview 'eza -l {}')
-  cd "$DIR"
-}
 
 # -----------------------------------------------------------------------------
 # Initialization
