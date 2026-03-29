@@ -81,18 +81,19 @@ This repository uses a package-based organization:
 
 ```
 packages/
+├── aerospace/  # AeroSpace window manager configuration
 ├── claude/     # Claude Code settings and configurations
 ├── codex/      # OpenAI Codex settings and configurations
 ├── git/        # Git configuration
 ├── karabiner/  # Karabiner-Elements configuration
-├── npm/        # npm CLI defaults
+├── lazygit/    # Lazygit configuration
 ├── mise/       # Development environment manager configuration
+├── npm/        # npm CLI defaults
 ├── nvim/       # Neovim configuration
 ├── sheldon/    # Shell plugin manager configuration
-├── starship/   # Starship prompt configuration  
+├── starship/   # Starship prompt configuration
 ├── tmux/       # Terminal multiplexer configuration
 ├── wezterm/    # Terminal emulator configuration
-├── aerospace/  # AeroSpace window manager configuration
 └── zsh/        # Zsh shell configuration
 ```
 
