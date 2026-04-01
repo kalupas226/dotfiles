@@ -13,7 +13,7 @@ enable-normalization-opposite-orientation-for-nested-containers = true
 
 accordion-padding = 30
 
-default-root-container-layout = 'tiles'
+default-root-container-layout = 'accordion'
 default-root-container-orientation = 'vertical'
 
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
@@ -88,16 +88,16 @@ alt-shift-j = ['join-with down', 'mode main']
 alt-shift-k = ['join-with up', 'mode main']
 alt-shift-l = ['join-with right', 'mode main']
 
-# Workspace 1: Native development (Xcode, WezTerm)
+# Workspace 1: Native development (Xcode)
 [[on-window-detected]]
 if.app-id = 'com.apple.dt.Xcode'
 run = 'move-node-to-workspace 1'
 
+# Workspace 2: Terminal & AI (WezTerm, VS Code, Claude Desktop, Codex)
 [[on-window-detected]]
 if.app-id = 'com.github.wez.wezterm'
-run = 'move-node-to-workspace 1'
+run = 'move-node-to-workspace 2'
 
-# Workspace 2: AI-assisted development (VS Code, Claude Desktop, Codex)
 [[on-window-detected]]
 if.app-id = 'com.microsoft.VSCode'
 run = 'move-node-to-workspace 2'
@@ -110,46 +110,54 @@ run = 'move-node-to-workspace 2'
 if.app-id = 'com.openai.codex'
 run = 'move-node-to-workspace 2'
 
-# Workspace 3: Safari (horizontal tiles)
-[[on-window-detected]]
-if.app-id = 'com.apple.Safari'
-run = ['move-node-to-workspace 3', 'layout tiles horizontal']
-
-# Workspace 4: Communication (Slack, Mail, Calendar, Outlook, Teams, Zoom)
-[[on-window-detected]]
-if.app-id = 'com.tinyspeck.slackmacgap'
-run = 'move-node-to-workspace 4'
-
-[[on-window-detected]]
-if.app-id = 'com.apple.mail'
-run = 'move-node-to-workspace 4'
-
-[[on-window-detected]]
-if.app-id = 'com.apple.iCal'
-run = 'move-node-to-workspace 4'
-
-[[on-window-detected]]
-if.app-id = 'com.microsoft.Outlook'
-run = 'move-node-to-workspace 4'
-
-[[on-window-detected]]
-if.app-id = 'com.microsoft.teams2'
-run = 'move-node-to-workspace 4'
-
-[[on-window-detected]]
-if.app-id = 'us.zoom.xos'
-run = 'move-node-to-workspace 4'
-
-# Workspace 5: Design (Figma)
+# Workspace 3: Reference (Figma, Obsidian, Apple Notes)
 [[on-window-detected]]
 if.app-id = 'com.figma.Desktop'
-run = 'move-node-to-workspace 5'
+run = 'move-node-to-workspace 3'
 
-# Workspace 6: Knowledge management (Obsidian, Apple Notes)
 [[on-window-detected]]
 if.app-id = 'md.obsidian'
-run = 'move-node-to-workspace 6'
+run = 'move-node-to-workspace 3'
 
 [[on-window-detected]]
 if.app-id = 'com.apple.Notes'
+run = 'move-node-to-workspace 3'
+
+# Workspace 4: Safari (horizontal tiles)
+[[on-window-detected]]
+if.app-id = 'com.apple.Safari'
+run = ['move-node-to-workspace 4', 'layout tiles horizontal']
+
+# Workspace 5: Communication (Slack, Mail, Calendar, Outlook, Teams, Zoom)
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = 'move-node-to-workspace 5'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.mail'
+run = 'move-node-to-workspace 5'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.iCal'
+run = 'move-node-to-workspace 5'
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.Outlook'
+run = 'move-node-to-workspace 5'
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.teams2'
+run = 'move-node-to-workspace 5'
+
+[[on-window-detected]]
+if.app-id = 'us.zoom.xos'
+run = 'move-node-to-workspace 5'
+
+# Workspace 6: iOS Simulator
+[[on-window-detected]]
+if.app-id = 'com.apple.iphonesimulator'
 run = 'move-node-to-workspace 6'
+
+# Workspace 7: Catch-all (any app not matched above)
+[[on-window-detected]]
+run = 'move-node-to-workspace 7'
