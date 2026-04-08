@@ -1,5 +1,5 @@
 [tools]
-node = "24"
+node = "24.14.1"
 
 [tasks."dotfiles:install"]
 dir = "{{ env.DOTFILES_DIR | default(value=env.HOME ~ '/.dotfiles') }}"
