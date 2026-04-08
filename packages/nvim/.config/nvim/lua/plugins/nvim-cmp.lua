@@ -13,6 +13,18 @@ return {
     -- Setup LSP capabilities
     local defaultCapabilities = cmp_nvim_lsp.default_capabilities()
 
+    -- Bash Language Server
+    vim.lsp.config.bashls = {
+      cmd = { "bash-language-server", "start" },
+      capabilities = defaultCapabilities,
+      settings = {
+        bashIde = {
+          globPattern = "**/*@(.sh|.inc|.bash|.command)",
+          shellcheckPath = "shellcheck",
+        },
+      },
+    }
+
     -- Swift (sourcekit-lsp)
     local swift_capabilities = vim.deepcopy(defaultCapabilities)
     swift_capabilities.workspace = {
@@ -37,7 +49,7 @@ return {
     }
 
     -- Enable LSP servers
-    vim.lsp.enable({ "sourcekit", "jsonls", "ts_ls" })
+    vim.lsp.enable({ "bashls", "sourcekit", "jsonls", "ts_ls" })
 
     -- LSP keymaps
     vim.api.nvim_create_autocmd("LspAttach", {

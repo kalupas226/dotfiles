@@ -1,3 +1,4 @@
 # Global npm CLIs to install (no version pin). install.sh installs them.
+bash-language-server
 vscode-langservers-extracted
 @openai/codex
