@@ -13,7 +13,7 @@ return {
     -- Setup LSP capabilities
     local defaultCapabilities = cmp_nvim_lsp.default_capabilities()
 
-    -- bash-language-server
+    -- Bash Language Server
     vim.lsp.config.bashls = {
       cmd = { "bash-language-server", "start" },
       capabilities = defaultCapabilities,

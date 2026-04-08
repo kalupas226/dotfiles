@@ -126,8 +126,8 @@ install_global_npm_packages() {
         case "$pkg" in
             \#*) continue ;;
         esac
-        note "npm install -g ${pkg}"
-        if ! npm install -g "$pkg"; then
+        note "npm install -g --no-audit ${pkg}"
+        if ! npm install -g --no-audit "$pkg"; then
             warn "Failed to install ${pkg}"
         fi
     done < "$list_file"
