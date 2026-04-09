@@ -83,7 +83,6 @@ This repository uses a package-based organization:
 packages/
 ├── aerospace/  # AeroSpace window manager configuration
 ├── claude/     # Claude Code settings and configurations
-├── codex/      # OpenAI Codex settings and configurations
 ├── git/        # Git configuration
 ├── karabiner/  # Karabiner-Elements configuration
 ├── lazygit/    # Lazygit configuration
