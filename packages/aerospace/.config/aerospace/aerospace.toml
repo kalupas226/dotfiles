@@ -131,43 +131,39 @@ run = 'move-node-to-workspace 3'
 if.app-id = 'com.apple.Notes'
 run = 'move-node-to-workspace 3'
 
-# Workspace 4: Web browsing (Safari opens here and switches to horizontal tiles)
-[[on-window-detected]]
-if.app-id = 'com.apple.Safari'
-run = ['move-node-to-workspace 4', 'layout tiles horizontal']
-
-# Workspace 5: Communication and meetings (chat, mail, calendar, calls)
+# Workspace 4: Communication and meetings (chat, mail, calendar, calls)
 [[on-window-detected]]
 if.app-id = 'com.tinyspeck.slackmacgap'
-run = 'move-node-to-workspace 5'
+run = 'move-node-to-workspace 4'
 
 [[on-window-detected]]
 if.app-id = 'com.apple.mail'
-run = 'move-node-to-workspace 5'
+run = 'move-node-to-workspace 4'
 
 [[on-window-detected]]
 if.app-id = 'com.apple.iCal'
-run = 'move-node-to-workspace 5'
+run = 'move-node-to-workspace 4'
 
 [[on-window-detected]]
 if.app-id = 'com.microsoft.Outlook'
-run = 'move-node-to-workspace 5'
+run = 'move-node-to-workspace 4'
 
 [[on-window-detected]]
 if.app-id = 'com.microsoft.teams2'
-run = 'move-node-to-workspace 5'
+run = 'move-node-to-workspace 4'
 
 [[on-window-detected]]
 if.app-id = 'us.zoom.xos'
-run = 'move-node-to-workspace 5'
+run = 'move-node-to-workspace 4'
+
+# Workspace 5: Web browsing (Safari opens here and switches to horizontal tiles)
+[[on-window-detected]]
+if.app-id = 'com.apple.Safari'
+run = ['move-node-to-workspace 5', 'layout tiles horizontal']
 
 # Workspace 6: iOS Simulator
 [[on-window-detected]]
 if.app-id = 'com.apple.iphonesimulator'
 run = 'move-node-to-workspace 6'
 
-# Workspace 7: Catch-all for unmatched apps
-[[on-window-detected]]
-run = 'move-node-to-workspace 7'
-
-# Workspaces 8-9: Reserved for manual or temporary use
+# Workspace 7-9: Reserved for manual or temporary use
