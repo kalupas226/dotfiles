@@ -1,6 +1,0 @@
-# Codex configuration
-# See: https://developers.openai.com/codex/config-reference
-
-[mcp_servers.xcode]
-command = "xcrun"
-args = ["mcpbridge"]
