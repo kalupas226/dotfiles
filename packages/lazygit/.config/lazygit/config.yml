@@ -6,9 +6,3 @@ git:
   paging:
     colorArg: always
     pager: delta --dark --paging=never
-customCommands:
-  - key: "W"
-    context: "localBranches"
-    description: "Create worktree (auto path: .worktrees/branch)"
-    command: 'git worktree add "$(git rev-parse --show-toplevel)/.worktrees/{{.SelectedLocalBranch.Name}}" {{.SelectedLocalBranch.Name}}'
-    loadingText: "Creating worktree..."

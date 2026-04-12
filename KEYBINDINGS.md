@@ -61,8 +61,7 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | `prefix + H/J/K/L` | Resize pane | `packages/tmux/.tmux.conf` |
 | `prefix + t` | New window (keep cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + n/p` | Next/previous window | `packages/tmux/.tmux.conf` |
-| `prefix + L` | Apply saved layout | `packages/tmux/.tmux.conf` |
-| `prefix + P` | Sync all pane cwd to current pane | `packages/tmux/.tmux.conf` |
+| `prefix + s` | Open session chooser (`choose-tree`) | `packages/tmux/.tmux.conf` |
 | `copy-mode` + `v` | Begin selection | `packages/tmux/.tmux.conf` |
 | `copy-mode` + `y` | Copy selection to macOS clipboard | `packages/tmux/.tmux.conf` |
 

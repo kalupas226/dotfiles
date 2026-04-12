@@ -1,0 +1,805 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+STATUS_IDLE_SECONDS="${GWT_STATUS_IDLE_SECONDS:-2}"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  gwt new <task> --agent <codex|claude|copilot> [--branch <branch>] [--base <branch>]
+  gwt open [--force] <task>
+  gwt ls
+  gwt rm [--force] <task>
+
+Notes:
+  - gwt metadata under .worktrees/.gwt/tasks/*.tsv is the source of truth for managed tasks
+  - if metadata is missing, the task will not appear in 'gwt ls'; inspect or clean it up with 'git worktree list' and 'git worktree remove .worktrees/<task>'
+EOF
+}
+
+die() {
+  printf 'gwt: %s\n' "$*" >&2
+  exit 1
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+require_git_repo() {
+  git rev-parse --path-format=absolute --git-common-dir >/dev/null 2>&1 ||
+    die "not inside a git repository"
+}
+
+script_dir() {
+  cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P
+}
+
+status_loop_command() {
+  printf '%s/gwt-status-loop\n' "$(script_dir)"
+}
+
+repo_root() {
+  local git_common_dir
+
+  git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" || return 1
+  dirname "$git_common_dir"
+}
+
+root_window_label() {
+  printf '%s\n' '@root'
+}
+
+project_name() {
+  local root
+  local base
+  root="$(repo_root)"
+  base="$(basename "$root")"
+  base="$(printf '%s' "$base" | tr -c '[:alnum:]_-' '-')"
+  base="${base##[-_]}"
+  base="${base%%[-_]}"
+  printf '%s\n' "${base:-project}"
+}
+
+session_name_for_repo() {
+  printf '%s-%s\n' "$(project_name)" "$(repo_hash_for_root)"
+}
+
+gwt_dir() {
+  printf '%s/.worktrees/.gwt\n' "$(repo_root)"
+}
+
+metadata_dir() {
+  printf '%s/tasks\n' "$(gwt_dir)"
+}
+
+ensure_metadata_dirs() {
+  mkdir -p "$(metadata_dir)"
+}
+
+repo_hash_for_root() {
+  repo_root | shasum | awk '{print substr($1, 1, 10)}'
+}
+
+task_key_for_name() {
+  printf '%s' "$1" | shasum | awk '{print $1}'
+}
+
+meta_file_for_task() {
+  printf '%s/%s.tsv\n' "$(metadata_dir)" "$(task_key_for_name "$1")"
+}
+
+validate_task_name() {
+  local task="$1"
+
+  [[ -n "$task" ]] || die "task is required"
+  [[ "$task" != -* ]] || die "task must not start with '-'"
+  [[ "$task" != *..* ]] || die "task must not contain '..'"
+  [[ "$task" =~ ^[A-Za-z0-9._-]+$ ]] || die "task may only contain letters, numbers, '.', '_' and '-'"
+}
+
+validate_branch_name() {
+  local branch="$1"
+
+  [[ -n "$branch" ]] || die "branch is required"
+  git check-ref-format --branch "$branch" >/dev/null 2>&1 || die "invalid branch name: $branch"
+}
+
+assert_no_tsv_control_chars() {
+  local value="$1"
+  local field_name="$2"
+
+  [[ "$value" != *$'\t'* ]] || die "$field_name must not contain tabs"
+  [[ "$value" != *$'\n'* ]] || die "$field_name must not contain newlines"
+}
+
+write_task_metadata() {
+  local task="$1"
+  local agent="$2"
+  local worktree="$3"
+  local branch="$4"
+  local root
+  local file
+
+  root="$(repo_root)"
+  file="$(meta_file_for_task "$task")"
+  ensure_metadata_dirs
+
+  assert_no_tsv_control_chars "$task" "task"
+  assert_no_tsv_control_chars "$agent" "agent"
+  assert_no_tsv_control_chars "$worktree" "worktree"
+  assert_no_tsv_control_chars "$branch" "branch"
+  assert_no_tsv_control_chars "$root" "root"
+
+  printf '%s\t%s\t%s\t%s\t%s\n' "$task" "$agent" "$worktree" "$branch" "$root" >"$file"
+}
+
+load_task_metadata() {
+  local requested_task="$1"
+  local file
+
+  file="$(meta_file_for_task "$requested_task")"
+  [[ -f "$file" ]] || return 1
+
+  IFS=$'\t' read -r task agent worktree branch root <"$file" || return 1
+
+  [[ -n "${task:-}" && -n "${agent:-}" && -n "${worktree:-}" && -n "${branch:-}" && -n "${root:-}" ]] ||
+    die "invalid metadata file: $file"
+  [[ "$task" == "$requested_task" ]] || die "metadata task mismatch: $file"
+}
+
+agent_command() {
+  case "$1" in
+    codex)
+      printf '%s\n' "codex"
+      ;;
+    claude)
+      printf '%s\n' "claude"
+      ;;
+    copilot)
+      printf '%s\n' "copilot"
+      ;;
+    *)
+      die "unsupported agent: $1"
+      ;;
+  esac
+}
+
+agent_command_name() {
+  local command
+  command="$(agent_command "$1")"
+  printf '%s\n' "${command%% *}"
+}
+
+pane_has_agent_process() {
+  local pane_id="$1"
+  local agent="$2"
+  local expected_cmd
+  local tty
+  local process_list
+
+  expected_cmd="$(agent_command_name "$agent")"
+  tty="$(tmux display-message -p -t "$pane_id" '#{pane_tty}' 2>/dev/null || true)"
+  [[ -n "$tty" ]] || return 1
+
+  process_list="$(ps -t "$tty" -o command= 2>/dev/null || true)"
+  [[ -n "$process_list" ]] || return 1
+
+  printf '%s\n' "$process_list" | grep -E "(^|[[:space:]/])${expected_cmd}([[:space:]]|$)" >/dev/null 2>&1
+}
+
+window_label() {
+  local task="$1"
+  local agent="$2"
+  local status="$3"
+  local status_symbol
+
+  case "$status" in
+    busy)
+      status_symbol="●"
+      ;;
+    idle)
+      status_symbol="◌"
+      ;;
+    *)
+      status_symbol="·"
+      ;;
+  esac
+
+  printf '%s [%s:%s]\n' "$task" "$agent" "$status_symbol"
+}
+
+find_window_by_task() {
+  local session="$1"
+  local task="$2"
+
+  tmux list-windows -t "$session" -F '#{window_id}	#{@gwt_task}' 2>/dev/null |
+    awk -F '\t' -v task="$task" '$2 == task { print $1; exit }'
+}
+
+is_dirty_worktree() {
+  local worktree="$1"
+  if [[ -n "$(git -C "$worktree" status --porcelain 2>/dev/null)" ]]; then
+    printf 'yes\n'
+  else
+    printf 'no\n'
+  fi
+}
+
+registered_worktree_branch() {
+  local worktree="$1"
+  local root
+
+  root="$(repo_root)"
+  git -C "$root" worktree list --porcelain |
+    awk -v target="$worktree" '
+      $1 == "worktree" {
+        current = substr($0, index($0, " ") + 1)
+        next
+      }
+      $1 == "branch" && current == target {
+        print substr($0, index($0, " ") + 1)
+        found = 1
+        exit
+      }
+      $0 == "" {
+        current = ""
+      }
+      END {
+        if (!found) {
+          exit 1
+        }
+      }
+    '
+}
+
+registered_worktree_for_task() {
+  local task="$1"
+  printf '%s/.worktrees/%s\n' "$(repo_root)" "$task"
+}
+
+ensure_session() {
+  local session="$1"
+  local root="$2"
+
+  if ! tmux has-session -t "$session" 2>/dev/null; then
+    tmux new-session -d -s "$session" -c "$root" -n "$(root_window_label)"
+  fi
+
+  ensure_status_refresher "$session"
+}
+
+ensure_status_refresher() {
+  local session="$1"
+  local command
+
+  if pgrep -f "[/]gwt-status-loop --session ${session}$" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  command="$(status_loop_command)"
+  [[ -x "$command" ]] || die "required command not found: $command"
+  nohup "$command" --session "$session" >/dev/null 2>&1 &
+}
+
+cleanup_session_if_idle() {
+  local session="$1"
+  local task_window_count
+  local window_count
+
+  tmux has-session -t "$session" 2>/dev/null || return 0
+
+  task_window_count="$(tmux list-windows -t "$session" -F '#{@gwt_task}' 2>/dev/null | awk 'NF { count++ } END { print count + 0 }')"
+  [[ "$task_window_count" == "0" ]] || return 0
+
+  window_count="$(tmux list-windows -t "$session" 2>/dev/null | wc -l | tr -d ' ')"
+  [[ "$window_count" == "1" ]] || return 0
+
+  tmux kill-session -t "$session"
+}
+
+prepare_window_layout() {
+  local session="$1"
+  local task="$2"
+  local worktree="$3"
+  local agent="$4"
+  local window_id
+  local top_pane
+  local bottom_pane
+  local command
+  local current_agent=""
+  local agent_running="0"
+
+  window_id="$(find_window_by_task "$session" "$task")"
+  if [[ -n "$window_id" ]]; then
+    top_pane="$(tmux show-options -w -v -t "$window_id" @gwt_agent_pane 2>/dev/null || true)"
+    if [[ -z "$top_pane" ]] || ! tmux list-panes -t "$window_id" -F '#{pane_id}' | grep -Fx "$top_pane" >/dev/null 2>&1; then
+      top_pane="$(tmux list-panes -t "$window_id" -F '#{pane_id}' | head -n1)"
+    fi
+
+    bottom_pane="$(tmux show-options -w -v -t "$window_id" @gwt_shell_pane 2>/dev/null || true)"
+    if [[ -z "$bottom_pane" ]] || ! tmux list-panes -t "$window_id" -F '#{pane_id}' | grep -Fx "$bottom_pane" >/dev/null 2>&1; then
+      bottom_pane="$(tmux split-window -d -v -p 25 -t "$top_pane" -c "$worktree" -P -F '#{pane_id}')"
+      tmux select-layout -t "$window_id" main-horizontal >/dev/null 2>&1 || true
+    fi
+
+    current_agent="$(tmux show-options -w -v -t "$window_id" @gwt_agent 2>/dev/null || true)"
+    command="$(agent_command "$agent")"
+
+    if pane_has_agent_process "$top_pane" "$agent"; then
+      agent_running="1"
+    fi
+
+    tmux set-option -w -t "$window_id" @gwt_task "$task"
+    tmux set-option -w -t "$window_id" @gwt_agent "$agent"
+    tmux set-option -w -t "$window_id" @gwt_worktree "$worktree"
+    tmux set-option -w -t "$window_id" @gwt_root "$(repo_root)"
+    tmux set-option -w -t "$window_id" @gwt_agent_pane "$top_pane"
+    tmux set-option -w -t "$window_id" @gwt_shell_pane "$bottom_pane"
+
+    if [[ "$current_agent" != "$agent" || "$agent_running" != "1" ]]; then
+      tmux respawn-pane -k -t "$top_pane" -c "$worktree" "$command"
+      tmux set-option -w -t "$window_id" @gwt_last_hash ""
+      tmux set-option -w -t "$window_id" @gwt_last_change_epoch "0"
+    fi
+
+    tmux rename-window -t "$window_id" "$(window_label "$task" "$agent" "-")"
+    tmux select-pane -t "$top_pane"
+    printf '%s\n' "$window_id"
+    return 0
+  fi
+
+  window_id="$(tmux new-window -d -P -F '#{window_id}' -t "$session" -n "$task" -c "$worktree")"
+  top_pane="$(tmux list-panes -t "$window_id" -F '#{pane_id}' | head -n1)"
+  bottom_pane="$(tmux split-window -d -v -p 25 -t "$top_pane" -c "$worktree" -P -F '#{pane_id}')"
+  command="$(agent_command "$agent")"
+
+  tmux set-option -w -t "$window_id" @gwt_task "$task"
+  tmux set-option -w -t "$window_id" @gwt_agent "$agent"
+  tmux set-option -w -t "$window_id" @gwt_worktree "$worktree"
+  tmux set-option -w -t "$window_id" @gwt_root "$(repo_root)"
+  tmux set-option -w -t "$window_id" @gwt_agent_pane "$top_pane"
+  tmux set-option -w -t "$window_id" @gwt_shell_pane "$bottom_pane"
+  tmux set-option -w -t "$window_id" @gwt_last_hash ""
+  tmux set-option -w -t "$window_id" @gwt_last_change_epoch "0"
+  tmux rename-window -t "$window_id" "$(window_label "$task" "$agent" "-")"
+  tmux select-layout -t "$window_id" main-horizontal >/dev/null 2>&1 || true
+  tmux send-keys -t "$top_pane" "$command" C-m
+  tmux select-pane -t "$top_pane"
+
+  printf '%s\n' "$window_id"
+}
+
+attach_or_switch() {
+  local session="$1"
+  local window_target="${2:-}"
+
+  if [[ -n "$window_target" ]]; then
+    tmux select-window -t "$window_target"
+  fi
+
+  if [[ -n "${TMUX:-}" ]]; then
+    tmux switch-client -t "$session"
+  else
+    tmux attach-session -t "$session"
+  fi
+}
+
+parse_status() {
+  local window_id="$1"
+  local agent="$2"
+  local pane_id
+  local expected_cmd
+  local current_cmd
+  local snapshot
+  local new_hash
+  local last_hash
+  local now
+  local last_change
+  local age
+
+  pane_id="$(tmux show-options -w -v -t "$window_id" @gwt_agent_pane 2>/dev/null || true)"
+  [[ -n "$pane_id" ]] || {
+    printf '%s\n' "-"
+    return 0
+  }
+
+  expected_cmd="$(agent_command_name "$agent")"
+  current_cmd="$(tmux display-message -p -t "$pane_id" '#{pane_current_command}' 2>/dev/null || true)"
+
+  if [[ "$current_cmd" != "$expected_cmd" ]] && ! pane_has_agent_process "$pane_id" "$agent"; then
+    printf '%s\n' "-"
+    return 0
+  fi
+
+  snapshot="$(tmux capture-pane -p -t "$pane_id" -S -200 2>/dev/null || true)"
+  new_hash="$(printf '%s' "$snapshot" | shasum | awk '{print $1}')"
+  last_hash="$(tmux show-options -w -v -t "$window_id" @gwt_last_hash 2>/dev/null || true)"
+  last_change="$(tmux show-options -w -v -t "$window_id" @gwt_last_change_epoch 2>/dev/null || printf '0')"
+  now="$(date +%s)"
+
+  if [[ "$new_hash" != "$last_hash" ]]; then
+    tmux set-option -w -t "$window_id" @gwt_last_hash "$new_hash" >/dev/null
+    tmux set-option -w -t "$window_id" @gwt_last_change_epoch "$now" >/dev/null
+    printf '%s\n' "busy"
+    return 0
+  fi
+
+  age=$((now - last_change))
+  if (( age <= STATUS_IDLE_SECONDS )); then
+    printf '%s\n' "busy"
+  else
+    printf '%s\n' "idle"
+  fi
+}
+
+refresh_status() {
+  local target_session="${1:-}"
+  local window_id
+  local task
+  local agent
+  local status
+
+  require_cmd tmux
+  require_git_repo
+
+  if [[ -z "$target_session" ]]; then
+    if [[ -n "${TMUX:-}" ]]; then
+      target_session="$(tmux display-message -p '#{session_name}')"
+    else
+      target_session="$(session_name_for_repo)"
+    fi
+  fi
+
+  tmux has-session -t "$target_session" 2>/dev/null || return 0
+
+  while IFS=$'\t' read -r window_id task agent; do
+    [[ -n "$window_id" && -n "$task" && -n "$agent" ]] || continue
+    status="$(parse_status "$window_id" "$agent")"
+    tmux rename-window -t "$window_id" "$(window_label "$task" "$agent" "$status")"
+  done < <(tmux list-windows -t "$target_session" -F '#{window_id}	#{@gwt_task}	#{@gwt_agent}')
+}
+
+cmd_new() {
+  local task="${1:-}"
+  local agent=""
+  local agent_cmd=""
+  local branch=""
+  local base=""
+  local actual_branch=""
+  local session
+  local root
+  local worktree
+  local window_id
+  local metadata_file
+
+  cleanup_new_task() {
+    [[ "${GWT_NEW_SUCCESS:-0}" == "1" ]] && return 0
+
+    if [[ "${GWT_NEW_CREATED_METADATA:-0}" == "1" ]]; then
+      rm -f "${GWT_NEW_METADATA_FILE:-}"
+    fi
+
+    if [[ "${GWT_NEW_CREATED_WORKTREE:-0}" == "1" && -d "${GWT_NEW_WORKTREE:-}" ]]; then
+      git -C "${GWT_NEW_ROOT:-$(repo_root)}" worktree remove --force "${GWT_NEW_WORKTREE:-}" >/dev/null 2>&1 || true
+    fi
+
+    if [[ "${GWT_NEW_CREATED_BRANCH:-0}" == "1" ]]; then
+      git -C "${GWT_NEW_ROOT:-$(repo_root)}" branch -D "${GWT_NEW_BRANCH:-}" >/dev/null 2>&1 || true
+    fi
+  }
+
+  trap cleanup_new_task RETURN
+  GWT_NEW_SUCCESS="0"
+  GWT_NEW_CREATED_BRANCH="0"
+  GWT_NEW_CREATED_WORKTREE="0"
+  GWT_NEW_CREATED_METADATA="0"
+
+  validate_task_name "$task"
+  shift || true
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --agent)
+        [[ $# -ge 2 ]] || die "--agent requires a value"
+        agent="${2:-}"
+        shift 2
+        ;;
+      --branch)
+        [[ $# -ge 2 ]] || die "--branch requires a value"
+        branch="${2:-}"
+        shift 2
+        ;;
+      --base)
+        [[ $# -ge 2 ]] || die "--base requires a value"
+        base="${2:-}"
+        shift 2
+        ;;
+      *)
+        die "unknown option: $1"
+        ;;
+    esac
+  done
+
+  [[ -n "$agent" ]] || die "--agent is required"
+  require_cmd git
+  require_cmd tmux
+  require_git_repo
+  agent_cmd="$(agent_command_name "$agent")"
+  require_cmd "$agent_cmd"
+  if [[ -z "$branch" ]]; then
+    branch="$task"
+  fi
+  validate_branch_name "$branch"
+  root="$(repo_root)"
+  session="$(session_name_for_repo)"
+  worktree="${root}/.worktrees/${task}"
+  metadata_file="$(meta_file_for_task "$task")"
+  GWT_NEW_ROOT="$root"
+  GWT_NEW_BRANCH="$branch"
+  GWT_NEW_WORKTREE="$worktree"
+  GWT_NEW_METADATA_FILE="$metadata_file"
+
+  ensure_metadata_dirs
+
+  if [[ -f "$metadata_file" ]]; then
+    die "task '$task' already has metadata; remove it with 'gwt rm $task' or clean up $(gwt_dir)"
+  fi
+
+  if [[ -d "$worktree" ]]; then
+    actual_branch="$(registered_worktree_branch "$worktree" 2>/dev/null || true)"
+    if [[ -n "$actual_branch" ]]; then
+      actual_branch="${actual_branch#refs/heads/}"
+      die "task '$task' already exists on branch '$actual_branch' but is not tracked in gwt metadata; restore metadata in $(metadata_dir) or manage the worktree with git directly"
+    fi
+    die "path exists but is not a registered git worktree: $worktree"
+  fi
+
+  if [[ -z "$base" ]]; then
+    base="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || printf 'HEAD')"
+  fi
+
+  if git -C "$root" show-ref --verify --quiet "refs/heads/${branch}"; then
+    git -C "$root" worktree add "$worktree" "$branch"
+  else
+    git -C "$root" worktree add -b "$branch" "$worktree" "$base"
+    GWT_NEW_CREATED_BRANCH="1"
+  fi
+  GWT_NEW_CREATED_WORKTREE="1"
+
+  write_task_metadata "$task" "$agent" "$worktree" "$branch"
+  GWT_NEW_CREATED_METADATA="1"
+
+  ensure_session "$session" "$root"
+  window_id="$(prepare_window_layout "$session" "$task" "$worktree" "$agent")"
+  refresh_status "$session"
+  attach_or_switch "$session" "$window_id"
+  GWT_NEW_SUCCESS="1"
+}
+
+cmd_open() {
+  local task=""
+  local force="0"
+  local session
+  local window_id
+  local agent_cmd=""
+  local actual_branch=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --force)
+        force="1"
+        shift
+        ;;
+      *)
+        if [[ -z "$task" ]]; then
+          task="$1"
+          shift
+        else
+          die "unknown option: $1"
+        fi
+        ;;
+    esac
+  done
+
+  validate_task_name "$task"
+
+  [[ $# -eq 0 ]] || die "unknown option: $1"
+
+  require_cmd git
+  require_cmd tmux
+  require_git_repo
+
+  load_task_metadata "$task" || die "unknown gwt-managed task: $task (metadata not found in $(metadata_dir))"
+  [[ -d "$worktree" ]] || die "worktree missing: $worktree"
+  actual_branch="$(registered_worktree_branch "$worktree" 2>/dev/null || true)"
+  [[ -n "$actual_branch" ]] || die "worktree is not registered with git: $worktree"
+  actual_branch="${actual_branch#refs/heads/}"
+  if [[ "$actual_branch" != "$branch" ]]; then
+    if [[ "$force" != "1" ]]; then
+      die "task '$task' metadata is stale: metadata branch=$branch, worktree branch=$actual_branch (use 'gwt open --force $task' to continue)"
+    fi
+    printf 'gwt: warning: task %s metadata is stale: metadata branch=%s, worktree branch=%s; continuing because --force was provided\n' \
+      "$task" "$branch" "$actual_branch" >&2
+  fi
+  agent_cmd="$(agent_command_name "$agent")"
+  require_cmd "$agent_cmd"
+  session="$(session_name_for_repo)"
+  ensure_session "$session" "$(repo_root)"
+  window_id="$(prepare_window_layout "$session" "$task" "$worktree" "$agent")"
+
+  refresh_status "$session"
+  attach_or_switch "$session" "$window_id"
+}
+
+cmd_ls() {
+  local session
+  local metadata
+  local task_name
+  local agent_name
+  local worktree_path
+  local branch_name
+  local worktree_state
+  local window_id
+  local status
+  local dirty
+  local stale
+  local actual_branch
+
+  require_cmd git
+  require_cmd tmux
+  require_git_repo
+  ensure_metadata_dirs
+  session="$(session_name_for_repo)"
+
+  printf '%-20s %-8s %-6s %-5s %-8s %-5s\n' "TASK" "AGENT" "STATUS" "DIRTY" "WORKTREE" "STALE"
+
+  shopt -s nullglob
+  for metadata in "$(metadata_dir)"/*.tsv; do
+    IFS=$'\t' read -r task agent worktree branch root <"$metadata" || continue
+    [[ -n "${task:-}" && -n "${agent:-}" && -n "${worktree:-}" && -n "${branch:-}" && -n "${root:-}" ]] || continue
+    task_name="$task"
+    agent_name="$agent"
+    worktree_path="$worktree"
+    branch_name="$branch"
+    window_id=""
+    status="-"
+    stale="no"
+
+    if [[ -d "$worktree_path" ]]; then
+      worktree_state="present"
+      dirty="$(is_dirty_worktree "$worktree_path")"
+      actual_branch="$(registered_worktree_branch "$worktree_path" 2>/dev/null || true)"
+
+      if tmux has-session -t "$session" 2>/dev/null; then
+        window_id="$(find_window_by_task "$session" "$task_name")"
+        if [[ -n "$window_id" ]]; then
+          status="$(parse_status "$window_id" "$agent_name")"
+        fi
+      fi
+
+      if [[ -z "$actual_branch" ]]; then
+        stale="yes"
+      else
+        actual_branch="${actual_branch#refs/heads/}"
+        if [[ "$actual_branch" != "$branch_name" ]]; then
+          stale="yes"
+        fi
+      fi
+    else
+      worktree_state="missing"
+      dirty="-"
+      stale="yes"
+    fi
+
+    printf '%-20s %-8s %-6s %-5s %-8s %-5s\n' "$task_name" "$agent_name" "$status" "$dirty" "$worktree_state" "$stale"
+  done
+}
+
+cmd_rm() {
+  local task=""
+  local force="0"
+  local session
+  local window_id
+  local metadata_file=""
+  local dirty="no"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --force)
+        force="1"
+        shift
+        ;;
+      *)
+        if [[ -z "$task" ]]; then
+          task="$1"
+          shift
+        else
+          die "unknown option: $1"
+        fi
+        ;;
+    esac
+  done
+
+  validate_task_name "$task"
+  require_cmd git
+  require_git_repo
+  load_task_metadata "$task" || die "unknown gwt-managed task: $task (metadata not found in $(metadata_dir))"
+  metadata_file="$(meta_file_for_task "$task")"
+
+  if [[ -d "$worktree" ]]; then
+    dirty="$(is_dirty_worktree "$worktree")"
+    if [[ "$dirty" == "yes" && "$force" != "1" ]]; then
+      die "worktree has uncommitted changes: $worktree (use 'gwt rm --force $task' to discard them)"
+    fi
+  fi
+
+  session="$(session_name_for_repo)"
+
+  if command -v tmux >/dev/null 2>&1 && tmux has-session -t "$session" 2>/dev/null; then
+    window_id="$(find_window_by_task "$session" "$task")"
+    if [[ -n "$window_id" ]]; then
+      tmux kill-window -t "$window_id"
+    fi
+  fi
+
+  if [[ -d "$worktree" ]]; then
+    if [[ "$force" == "1" ]]; then
+      git -C "$(repo_root)" worktree remove --force "$worktree"
+    else
+      git -C "$(repo_root)" worktree remove "$worktree"
+    fi
+  fi
+
+  rm -f "$metadata_file"
+  cleanup_session_if_idle "$session"
+}
+
+main() {
+  local command="${1:-}"
+  local session=""
+
+  case "$command" in
+    new)
+      shift
+      cmd_new "$@"
+      ;;
+    open)
+      shift
+      cmd_open "$@"
+      ;;
+    ls)
+      shift
+      cmd_ls "$@"
+      ;;
+    rm)
+      shift
+      cmd_rm "$@"
+      ;;
+    refresh-status)
+      shift
+      while [[ $# -gt 0 ]]; do
+        case "$1" in
+          --session)
+            [[ $# -ge 2 ]] || die "--session requires a value"
+            session="${2:-}"
+            shift 2
+            ;;
+          *)
+            die "unknown option: $1"
+            ;;
+        esac
+      done
+      refresh_status "$session"
+      ;;
+    ""|-h|--help|help)
+      usage
+      ;;
+    *)
+      die "unknown command: $command"
+      ;;
+  esac
+}
+
+main "$@"
