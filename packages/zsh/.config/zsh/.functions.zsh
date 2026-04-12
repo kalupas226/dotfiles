@@ -66,22 +66,6 @@ function gadd() {
   (( ${#files[@]} )) && git add -- "${files[@]}" && git status --short
 }
 
-# Git: remove worktrees (fzf multi-select)
-function gwtd() {
-  local -a worktrees
-  worktrees=("${(@f)$(git worktree list |
-             awk 'NR>1 {print}' |
-             fzf -m --preview 'git log --oneline -15 $(echo {} | awk "{print \$NF}" | tr -d "[]")')}") || return
-  (( ${#worktrees[@]} )) || return
-  for entry in "${worktrees[@]}"; do
-    local dir=$(echo "$entry" | awk '{print $1}')
-    local branch=$(echo "$entry" | awk '{print $NF}' | tr -d '[]')
-    echo "Removing worktree: $dir (branch: $branch)"
-    git worktree remove --force "$dir"
-    git branch -D "$branch" 2>/dev/null
-  done
-}
-
 # Zoxide interactive selection (Ctrl+z)
 function zoxide_interactive() {
   local dir=$(zoxide query -i)

@@ -72,6 +72,21 @@ Custom location: set `DOTFILES_DIR` before running tasks, e.g.
   - Homebrew (`brew update --quiet` + `brew outdated`)
   - mise tools (`mise outdated`)
   - sheldon plugins (pinned `rev` vs latest tags)
+- AI agent worktrees:
+  - Requires `tmux`; after `./install.sh`, use `gwt` from `~/.local/bin/gwt`
+  - Requires the selected agent CLI on `PATH` (`codex`, `claude`, or `copilot`); `gwt new` and `gwt open` validate it before opening the task window
+  - New project sessions start with window `1` named `@root` for repo-level shell work, overview, and non-worktree commands
+  - `task` names are restricted to letters, numbers, `.`, `_`, and `-` (for example `tmux-status`); names like `feat/tmux-status` are rejected
+  - `gwt new <task> --agent <codex|claude|copilot>` creates a new `.worktrees/<task>` plus a tmux window in the project session
+  - `gwt open <task>` reopens an existing task window for a task recorded in `gwt` metadata and works across tmux sessions
+  - `gwt open --force <task>` bypasses stale branch-metadata checks after warning; use it only for recovery when the recorded branch no longer matches the registered worktree branch
+  - `gwt ls` shows `task / agent / status / dirty / worktree / stale`
+  - `stale=yes` means the recorded metadata no longer matches reality (for example the worktree is missing or no longer registered on the recorded branch)
+  - `gwt rm <task>` closes the window and removes the worktree for a `gwt`-managed task; it refuses dirty worktrees, and local branches are left alone
+  - `gwt rm --force <task>` also discards uncommitted changes in that worktree; use it only for recovery
+  - `gwt` treats `.worktrees/.gwt/tasks/*.tsv` as the source of truth for managed tasks; if that metadata is missing, the task no longer appears in `gwt ls` and must be inspected or cleaned up with raw `git worktree` commands
+  - Useful recovery commands for orphaned worktrees: `git worktree list`, `git worktree remove .worktrees/<task>`, and `git branch -d <branch>` when you also want to drop the branch
+  - tmux window names are refreshed automatically as `task [agent:●|◌|·]` for busy, idle, and inactive states
 - If `brew bundle` or `mise install` fails mid-run, fix the cause then rerun `mise run dotfiles:install`.
   - If you don't use mise tasks, run `./scripts/check-updates.sh`
 
@@ -82,6 +97,7 @@ This repository uses a package-based organization:
 ```
 packages/
 ├── aerospace/  # AeroSpace window manager configuration
+├── bin/        # User-facing CLI helpers installed into ~/.local/bin
 ├── claude/     # Claude Code settings and configurations
 ├── git/        # Git configuration
 ├── karabiner/  # Karabiner-Elements configuration
@@ -103,6 +119,8 @@ Each package contains dotfiles in their expected directory structure. The instal
 - **packages/mise/.config/mise/config.toml** - tool pins and mise tasks (`dotfiles:install`, `dotfiles:check-updates`)
 - **Brewfile** - Homebrew package definitions
 - **install.sh** - Main installation script with custom symlinking logic
-- **scripts/** - helper scripts (e.g. `check-updates.sh`, `lib/ui.sh`)
+- **scripts/** - repository maintenance scripts (install/check/update helpers such as `check-updates.sh`, `lib/ui.sh`)
+- **packages/bin/.local/bin/gwt** - tmux + git worktree launcher for AI-agent tasks
+- **packages/bin/.local/bin/** - user-facing CLI helpers; prefer this location for agent/task utilities instead of `scripts/`
 - **packages/** - Individual application configurations
 - **KEYBINDINGS.md** - cheat sheet for custom macOS/terminal/Neovim keybindings

@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+REFRESH_INTERVAL_SECONDS="${GWT_REFRESH_INTERVAL_SECONDS:-1}"
+MAX_CONSECUTIVE_FAILURES="${GWT_MAX_CONSECUTIVE_FAILURES:-3}"
+
+die() {
+  printf 'gwt-status-loop: %s\n' "$*" >&2
+  exit 1
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+script_dir() {
+  cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P
+}
+
+gwt_command() {
+  printf '%s/gwt\n' "$(script_dir)"
+}
+
+refresh_status() {
+  local session="$1"
+  local command
+
+  command="$(gwt_command)"
+  [[ -x "$command" ]] || die "required command not found: $command"
+  "$command" refresh-status --session "$session"
+}
+
+main() {
+  local session=""
+  local consecutive_failures=0
+
+  require_cmd tmux
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --session)
+        [[ $# -ge 2 ]] || die "--session requires a value"
+        session="${2:-}"
+        shift 2
+        ;;
+      *)
+        die "unknown option: $1"
+        ;;
+    esac
+  done
+
+  [[ -n "$session" ]] || die "--session is required"
+
+  while tmux has-session -t "$session" 2>/dev/null; do
+    if refresh_status "$session"; then
+      consecutive_failures=0
+    else
+      consecutive_failures=$((consecutive_failures + 1))
+      printf 'gwt-status-loop: refresh failed for session %s (%s/%s)\n' \
+        "$session" "$consecutive_failures" "$MAX_CONSECUTIVE_FAILURES" >&2
+      if (( consecutive_failures >= MAX_CONSECUTIVE_FAILURES )); then
+        die "stopping after repeated refresh failures"
+      fi
+    fi
+    sleep "$REFRESH_INTERVAL_SECONDS"
+  done
+}
+
+main "$@"
