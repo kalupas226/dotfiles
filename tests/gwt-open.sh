@@ -72,7 +72,7 @@ case "$cmd" in
         exit 0
         ;;
     list-windows)
-        exit 0
+        printf '%%root\tproject@root\t\n'
         ;;
     new-window)
         printf '%%1\n'

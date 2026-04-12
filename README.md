@@ -75,14 +75,14 @@ Custom location: set `DOTFILES_DIR` before running tasks, e.g.
 - AI agent worktrees:
   - Requires `tmux`; after `./install.sh`, use `gwt` from `~/.local/bin/gwt`
   - Requires the selected agent CLI on `PATH` (`codex`, `claude`, or `copilot`); `gwt add` and `gwt open` validate it before opening the task window
-  - New project sessions start with window `1` named `@root` for repo-level shell work, overview, and non-worktree commands
+  - New project sessions start with window `1` named `<repo>@root` for repo-level shell work and as the parent-worktree hub for creating more task worktrees
   - `task` names are restricted to letters, numbers, `.`, `_`, and `-` (for example `tmux-status`); names like `feat/tmux-status` are rejected
   - `gwt add <task> --agent <codex|claude|copilot>` creates a new `.worktrees/<task>` plus a tmux window in the project session
   - `gwt open <task>` reopens an existing task window for a task recorded in `gwt` metadata and works across tmux sessions
   - `gwt open --force <task>` bypasses stale branch-metadata checks after warning; use it only for recovery when the recorded branch no longer matches the registered worktree branch
   - `gwt ls` shows `task / agent / status / dirty / worktree / stale`
   - `stale=yes` means the recorded metadata no longer matches reality (for example the worktree is missing or no longer registered on the recorded branch)
-  - `gwt rm <task>` closes the window and removes the worktree for a `gwt`-managed task; it refuses dirty worktrees, and local branches are left alone
+  - `gwt rm <task>` closes the task window and removes the worktree for a `gwt`-managed task; it refuses dirty worktrees, leaves the parent `<repo>@root` window/session alone, and local branches are left alone
   - `gwt rm --force <task>` also discards uncommitted changes in that worktree; use it only for recovery
   - `gwt` treats `.worktrees/.gwt/tasks/*.tsv` as the source of truth for managed tasks; if that metadata is missing, the task no longer appears in `gwt ls` and must be inspected or cleaned up with raw `git worktree` commands
   - Useful recovery commands for orphaned worktrees: `git worktree list`, `git worktree remove .worktrees/<task>`, and `git branch -d <branch>` when you also want to drop the branch
