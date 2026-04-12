@@ -74,10 +74,10 @@ Custom location: set `DOTFILES_DIR` before running tasks, e.g.
   - sheldon plugins (pinned `rev` vs latest tags)
 - AI agent worktrees:
   - Requires `tmux`; after `./install.sh`, use `gwt` from `~/.local/bin/gwt`
-  - Requires the selected agent CLI on `PATH` (`codex`, `claude`, or `copilot`); `gwt new` and `gwt open` validate it before opening the task window
+  - Requires the selected agent CLI on `PATH` (`codex`, `claude`, or `copilot`); `gwt add` and `gwt open` validate it before opening the task window
   - New project sessions start with window `1` named `@root` for repo-level shell work, overview, and non-worktree commands
   - `task` names are restricted to letters, numbers, `.`, `_`, and `-` (for example `tmux-status`); names like `feat/tmux-status` are rejected
-  - `gwt new <task> --agent <codex|claude|copilot>` creates a new `.worktrees/<task>` plus a tmux window in the project session
+  - `gwt add <task> --agent <codex|claude|copilot>` creates a new `.worktrees/<task>` plus a tmux window in the project session
   - `gwt open <task>` reopens an existing task window for a task recorded in `gwt` metadata and works across tmux sessions
   - `gwt open --force <task>` bypasses stale branch-metadata checks after warning; use it only for recovery when the recorded branch no longer matches the registered worktree branch
   - `gwt ls` shows `task / agent / status / dirty / worktree / stale`

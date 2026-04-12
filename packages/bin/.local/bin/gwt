@@ -7,7 +7,7 @@ STATUS_IDLE_SECONDS="${GWT_STATUS_IDLE_SECONDS:-2}"
 usage() {
   cat <<'EOF'
 Usage:
-  gwt new <task> --agent <codex|claude|copilot> [--branch <branch>] [--base <branch>]
+  gwt add <task> --agent <codex|claude|copilot> [--branch <branch>] [--base <branch>]
   gwt open [--force] <task>
   gwt ls
   gwt rm [--force] <task>
@@ -461,7 +461,7 @@ refresh_status() {
   done < <(tmux list-windows -t "$target_session" -F '#{window_id}	#{@gwt_task}	#{@gwt_agent}')
 }
 
-cmd_new() {
+cmd_add() {
   local task="${1:-}"
   local agent=""
   local agent_cmd=""
@@ -474,27 +474,27 @@ cmd_new() {
   local window_id
   local metadata_file
 
-  cleanup_new_task() {
-    [[ "${GWT_NEW_SUCCESS:-0}" == "1" ]] && return 0
+  cleanup_add_task() {
+    [[ "${GWT_ADD_SUCCESS:-0}" == "1" ]] && return 0
 
-    if [[ "${GWT_NEW_CREATED_METADATA:-0}" == "1" ]]; then
-      rm -f "${GWT_NEW_METADATA_FILE:-}"
+    if [[ "${GWT_ADD_CREATED_METADATA:-0}" == "1" ]]; then
+      rm -f "${GWT_ADD_METADATA_FILE:-}"
     fi
 
-    if [[ "${GWT_NEW_CREATED_WORKTREE:-0}" == "1" && -d "${GWT_NEW_WORKTREE:-}" ]]; then
-      git -C "${GWT_NEW_ROOT:-$(repo_root)}" worktree remove --force "${GWT_NEW_WORKTREE:-}" >/dev/null 2>&1 || true
+    if [[ "${GWT_ADD_CREATED_WORKTREE:-0}" == "1" && -d "${GWT_ADD_WORKTREE:-}" ]]; then
+      git -C "${GWT_ADD_ROOT:-$(repo_root)}" worktree remove --force "${GWT_ADD_WORKTREE:-}" >/dev/null 2>&1 || true
     fi
 
-    if [[ "${GWT_NEW_CREATED_BRANCH:-0}" == "1" ]]; then
-      git -C "${GWT_NEW_ROOT:-$(repo_root)}" branch -D "${GWT_NEW_BRANCH:-}" >/dev/null 2>&1 || true
+    if [[ "${GWT_ADD_CREATED_BRANCH:-0}" == "1" ]]; then
+      git -C "${GWT_ADD_ROOT:-$(repo_root)}" branch -D "${GWT_ADD_BRANCH:-}" >/dev/null 2>&1 || true
     fi
   }
 
-  trap cleanup_new_task RETURN
-  GWT_NEW_SUCCESS="0"
-  GWT_NEW_CREATED_BRANCH="0"
-  GWT_NEW_CREATED_WORKTREE="0"
-  GWT_NEW_CREATED_METADATA="0"
+  trap cleanup_add_task RETURN
+  GWT_ADD_SUCCESS="0"
+  GWT_ADD_CREATED_BRANCH="0"
+  GWT_ADD_CREATED_WORKTREE="0"
+  GWT_ADD_CREATED_METADATA="0"
 
   validate_task_name "$task"
   shift || true
@@ -536,10 +536,10 @@ cmd_new() {
   session="$(session_name_for_repo)"
   worktree="${root}/.worktrees/${task}"
   metadata_file="$(meta_file_for_task "$task")"
-  GWT_NEW_ROOT="$root"
-  GWT_NEW_BRANCH="$branch"
-  GWT_NEW_WORKTREE="$worktree"
-  GWT_NEW_METADATA_FILE="$metadata_file"
+  GWT_ADD_ROOT="$root"
+  GWT_ADD_BRANCH="$branch"
+  GWT_ADD_WORKTREE="$worktree"
+  GWT_ADD_METADATA_FILE="$metadata_file"
 
   ensure_metadata_dirs
 
@@ -564,18 +564,18 @@ cmd_new() {
     git -C "$root" worktree add "$worktree" "$branch"
   else
     git -C "$root" worktree add -b "$branch" "$worktree" "$base"
-    GWT_NEW_CREATED_BRANCH="1"
+    GWT_ADD_CREATED_BRANCH="1"
   fi
-  GWT_NEW_CREATED_WORKTREE="1"
+  GWT_ADD_CREATED_WORKTREE="1"
 
   write_task_metadata "$task" "$agent" "$worktree" "$branch"
-  GWT_NEW_CREATED_METADATA="1"
+  GWT_ADD_CREATED_METADATA="1"
 
   ensure_session "$session" "$root"
   window_id="$(prepare_window_layout "$session" "$task" "$worktree" "$agent")"
   refresh_status "$session"
   attach_or_switch "$session" "$window_id"
-  GWT_NEW_SUCCESS="1"
+  GWT_ADD_SUCCESS="1"
 }
 
 cmd_open() {
@@ -761,9 +761,9 @@ main() {
   local session=""
 
   case "$command" in
-    new)
+    add)
       shift
-      cmd_new "$@"
+      cmd_add "$@"
       ;;
     open)
       shift
