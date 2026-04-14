@@ -7,14 +7,25 @@ STATUS_IDLE_SECONDS="${GWT_STATUS_IDLE_SECONDS:-2}"
 usage() {
   cat <<'EOF'
 Usage:
-  gwt add <task> --agent <codex|claude|copilot> [--branch <branch>] [--base <branch>]
-  gwt open [--force] <task>
+  gwt add --agent <agent> [--branch <branch>] [--base <branch>] <task-name>
+  gwt open [--force] <task-name>
   gwt ls
-  gwt rm [--force] <task>
+  gwt rm [--force] <task-name>
+
+Examples:
+  gwt add --agent codex feature-login
+  gwt add --agent claude --branch feat/login-ui ui-login
+  gwt add --agent copilot --base main hotfix-123
+  gwt open --force feature-login
 
 Notes:
+  - options may be passed before or after <task-name>
+  - <task-name> controls the worktree directory, tmux window label, and metadata key
+  - --branch overrides the git branch name; the task name still controls gwt's internal naming
+  - --base is only used when creating a new branch; if --branch already exists, gwt reuses it
   - gwt metadata under .worktrees/.gwt/tasks/*.tsv is the source of truth for managed tasks
   - if metadata is missing, the task will not appear in 'gwt ls'; inspect or clean it up with 'git worktree list' and 'git worktree remove .worktrees/<task>'
+  - internal commands such as 'refresh-status' are omitted from this help
 EOF
 }
 
@@ -153,27 +164,112 @@ load_task_metadata() {
   [[ "$task" == "$requested_task" ]] || die "metadata task mismatch: $file"
 }
 
+list_agents() {
+  cat <<'EOF'
+codex	OpenAI Codex
+claude	Anthropic Claude
+copilot	GitHub Copilot
+EOF
+}
+
+agent_exists() {
+  local requested_agent="$1"
+
+  list_agents | awk -F '\t' -v requested_agent="$requested_agent" '$1 == requested_agent { found = 1 } END { exit(found ? 0 : 1) }'
+}
+
 agent_command() {
-  case "$1" in
-    codex)
-      printf '%s\n' "codex"
-      ;;
-    claude)
-      printf '%s\n' "claude"
-      ;;
-    copilot)
-      printf '%s\n' "copilot"
-      ;;
-    *)
-      die "unsupported agent: $1"
-      ;;
-  esac
+  agent_exists "$1" || die "unsupported agent: $1"
+  printf '%s\n' "$1"
 }
 
 agent_command_name() {
-  local command
-  command="$(agent_command "$1")"
-  printf '%s\n' "${command%% *}"
+  agent_command "$1" | awk '{print $1}'
+}
+
+set_single_task_argument() {
+  local var_name="$1"
+  local value="$2"
+  local current_value="${!var_name:-}"
+
+  if [[ -z "$current_value" ]]; then
+    printf -v "$var_name" '%s' "$value"
+  else
+    die "unexpected extra argument: $value"
+  fi
+}
+
+parse_task_and_force_args() {
+  local task_var_name="$1"
+  local force_var_name="$2"
+
+  shift 2
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --force)
+        printf -v "$force_var_name" '1'
+        shift
+        ;;
+      --)
+        shift
+        while [[ $# -gt 0 ]]; do
+          set_single_task_argument "$task_var_name" "$1"
+          shift
+        done
+        ;;
+      -*)
+        die "unknown option: $1"
+        ;;
+      *)
+        set_single_task_argument "$task_var_name" "$1"
+        shift
+        ;;
+    esac
+  done
+}
+
+parse_add_args() {
+  local task_var_name="$1"
+  local agent_var_name="$2"
+  local branch_var_name="$3"
+  local base_var_name="$4"
+
+  shift 4
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --agent)
+        [[ $# -ge 2 ]] || die "--agent requires a value"
+        printf -v "$agent_var_name" '%s' "${2:-}"
+        shift 2
+        ;;
+      --branch)
+        [[ $# -ge 2 ]] || die "--branch requires a value"
+        printf -v "$branch_var_name" '%s' "${2:-}"
+        shift 2
+        ;;
+      --base)
+        [[ $# -ge 2 ]] || die "--base requires a value"
+        printf -v "$base_var_name" '%s' "${2:-}"
+        shift 2
+        ;;
+      --)
+        shift
+        while [[ $# -gt 0 ]]; do
+          set_single_task_argument "$task_var_name" "$1"
+          shift
+        done
+        ;;
+      -*)
+        die "unknown option: $1"
+        ;;
+      *)
+        set_single_task_argument "$task_var_name" "$1"
+        shift
+        ;;
+    esac
+  done
 }
 
 pane_has_agent_process() {
@@ -479,7 +575,7 @@ refresh_status() {
 }
 
 cmd_add() {
-  local task="${1:-}"
+  local task=""
   local agent=""
   local agent_cmd=""
   local branch=""
@@ -513,32 +609,9 @@ cmd_add() {
   GWT_ADD_CREATED_WORKTREE="0"
   GWT_ADD_CREATED_METADATA="0"
 
+  parse_add_args task agent branch base "$@"
+
   validate_task_name "$task"
-  shift || true
-
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      --agent)
-        [[ $# -ge 2 ]] || die "--agent requires a value"
-        agent="${2:-}"
-        shift 2
-        ;;
-      --branch)
-        [[ $# -ge 2 ]] || die "--branch requires a value"
-        branch="${2:-}"
-        shift 2
-        ;;
-      --base)
-        [[ $# -ge 2 ]] || die "--base requires a value"
-        base="${2:-}"
-        shift 2
-        ;;
-      *)
-        die "unknown option: $1"
-        ;;
-    esac
-  done
-
   [[ -n "$agent" ]] || die "--agent is required"
   require_cmd git
   require_cmd tmux
@@ -603,26 +676,9 @@ cmd_open() {
   local agent_cmd=""
   local actual_branch=""
 
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      --force)
-        force="1"
-        shift
-        ;;
-      *)
-        if [[ -z "$task" ]]; then
-          task="$1"
-          shift
-        else
-          die "unknown option: $1"
-        fi
-        ;;
-    esac
-  done
+  parse_task_and_force_args task force "$@"
 
   validate_task_name "$task"
-
-  [[ $# -eq 0 ]] || die "unknown option: $1"
 
   require_cmd git
   require_cmd tmux
@@ -722,22 +778,7 @@ cmd_rm() {
   local metadata_file=""
   local dirty="no"
 
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      --force)
-        force="1"
-        shift
-        ;;
-      *)
-        if [[ -z "$task" ]]; then
-          task="$1"
-          shift
-        else
-          die "unknown option: $1"
-        fi
-        ;;
-    esac
-  done
+  parse_task_and_force_args task force "$@"
 
   validate_task_name "$task"
   require_cmd git
@@ -794,7 +835,7 @@ main() {
       shift
       cmd_rm "$@"
       ;;
-    refresh-status)
+    refresh-status|__refresh-status)
       shift
       while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -809,6 +850,11 @@ main() {
         esac
       done
       refresh_status "$session"
+      ;;
+    __list-agents)
+      shift
+      [[ $# -eq 0 ]] || die "unknown option: $1"
+      list_agents
       ;;
     ""|-h|--help|help)
       usage

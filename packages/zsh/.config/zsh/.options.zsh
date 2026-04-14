@@ -4,6 +4,8 @@ setopt IGNOREEOF correct no_flow_control
 autoload -Uz colors && colors
 
 # Completion
+# Register local completion functions before initializing zsh completion.
+fpath=("$ZSHDIR/completions" $fpath)
 autoload -Uz compinit && compinit
 setopt complete_aliases
 autoload -Uz select-word-style && select-word-style default

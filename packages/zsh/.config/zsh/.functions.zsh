@@ -10,8 +10,44 @@ function lg() {
 
 # Git: delete merged branches
 function gbdm() {
+  local default_branch=""
+  local base_ref=""
+  local current_branch=""
+  local -a branches
+
   git fetch --prune
-  git branch --merged | egrep -v "\*|master|main|development" | xargs git branch -d
+
+  default_branch="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)"
+  default_branch="${default_branch#origin/}"
+
+  if [[ -n "$default_branch" ]] && git rev-parse --verify "refs/remotes/origin/${default_branch}" >/dev/null 2>&1; then
+    base_ref="refs/remotes/origin/${default_branch}"
+  elif git rev-parse --verify "refs/heads/main" >/dev/null 2>&1; then
+    default_branch="main"
+    base_ref="refs/heads/main"
+  elif git rev-parse --verify "refs/remotes/origin/main" >/dev/null 2>&1; then
+    default_branch="main"
+    base_ref="refs/remotes/origin/main"
+  elif git rev-parse --verify "refs/heads/master" >/dev/null 2>&1; then
+    default_branch="master"
+    base_ref="refs/heads/master"
+  elif git rev-parse --verify "refs/remotes/origin/master" >/dev/null 2>&1; then
+    default_branch="master"
+    base_ref="refs/remotes/origin/master"
+  else
+    printf 'gbdm: could not determine default branch\n' >&2
+    return 1
+  fi
+
+  current_branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+  branches=("${(@f)$(git for-each-ref --format='%(refname:short)' --merged "$base_ref" refs/heads | grep -E -v "^(${default_branch}|main|master|development)$" || true)}")
+
+  if [[ -n "$current_branch" ]]; then
+    branches=("${(@)branches:#$current_branch}")
+  fi
+
+  (( ${#branches[@]} )) || return 0
+  git branch -d -- "${branches[@]}"
 }
 
 # Git: switch to local branch (fzf)
@@ -29,41 +65,6 @@ function gswr() {
            grep -v HEAD |
            fzf --preview 'git log --oneline -15 {1}') || return
   git switch "${branch#origin/}"
-}
-
-# Git: force delete branches (fzf multi-select)
-function gbd() {
-  local -a branches
-  branches=("${(@f)$(git for-each-ref --format='%(refname:short)' refs/heads | fzf -m)}") || return
-  (( ${#branches[@]} )) && git branch -D -- "${branches[@]}"
-}
-
-# Git: browse log (fzf)
-function glog() {
-  git log --oneline --color=always |
-    fzf --ansi --no-sort \
-        --preview 'git show --color=always {1}' \
-        --preview-window=right:60% \
-        --bind 'enter:execute(git show --color=always {1} | less -R)'
-}
-
-# Git: browse and apply stash (fzf)
-function gstash() {
-  local stash
-  stash=$(git stash list |
-          fzf --preview 'git stash show -p --color=always $(echo {} | cut -d: -f1)' \
-              --preview-window=right:60%) || return
-  local stash_ref=$(echo "$stash" | cut -d: -f1)
-  echo "Apply $stash_ref? [y/N] "
-  read -q && git stash apply "$stash_ref"
-}
-
-# Git: interactive add (fzf multi-select)
-function gadd() {
-  local -a files
-  files=("${(@f)$(git diff --name-only |
-         fzf -m --preview 'git diff --color=always -- {}')}") || return
-  (( ${#files[@]} )) && git add -- "${files[@]}" && git status --short
 }
 
 # Zoxide interactive selection (Ctrl+z)

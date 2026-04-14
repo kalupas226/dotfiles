@@ -1,0 +1,172 @@
+#compdef gwt
+
+_gwt_agents() {
+  local -a agents
+  agents=(${(f)"$(gwt __list-agents 2>/dev/null | awk -F $'\t' '{ print $1 }')"})
+  (( ${#agents[@]} )) || return 1
+  compadd -- "${agents[@]}"
+}
+
+_gwt_branches() {
+  local -a branches
+
+  command git rev-parse --git-dir >/dev/null 2>&1 || return 1
+  branches=(${(f)"$(git for-each-ref --format='%(refname:short)' refs/heads 2>/dev/null)"})
+  (( ${#branches[@]} )) || return 1
+  compadd -- "${branches[@]}"
+}
+
+_gwt_task_names() {
+  setopt local_options null_glob
+  local root metadata_dir
+  local -a metadata_files
+
+  root="$(git rev-parse --show-toplevel 2>/dev/null)" || return 1
+  metadata_dir="${root}/.worktrees/.gwt/tasks"
+  [[ -d "$metadata_dir" ]] || return 1
+
+  metadata_files=("$metadata_dir"/*.tsv)
+  (( ${#metadata_files[@]} )) || return 1
+
+  awk -F $'\t' 'NF { print $1 }' "${metadata_files[@]}" 2>/dev/null
+}
+
+_gwt_tasks() {
+  local -a tasks
+
+  tasks=(${(f)"$(_gwt_task_names)"})
+  (( ${#tasks[@]} )) || return 1
+  compadd -- "${tasks[@]}"
+}
+
+_gwt_add_has_task() {
+  local word
+  local expecting_value=""
+
+  for word in "${words[@]:3}"; do
+    [[ "$word" == "$PREFIX" ]] && continue
+
+    if [[ -n "$expecting_value" ]]; then
+      expecting_value=""
+      continue
+    fi
+
+    case "$word" in
+      --agent|--branch|--base)
+        expecting_value="1"
+        ;;
+      --*)
+        ;;
+      *)
+        return 0
+        ;;
+    esac
+  done
+
+  return 1
+}
+
+_gwt_open_rm_has_task() {
+  local word
+
+  for word in "${words[@]:3}"; do
+    [[ "$word" == "$PREFIX" ]] && continue
+
+    case "$word" in
+      --force|--*)
+        ;;
+      *)
+        return 0
+        ;;
+    esac
+  done
+
+  return 1
+}
+
+_gwt_has_option() {
+  local option="$1"
+  local word
+
+  for word in "${words[@]:2}"; do
+    [[ "$word" == "$option" ]] && return 0
+  done
+
+  return 1
+}
+
+_gwt_complete_add() {
+  local previous_word="${words[CURRENT-1]:-}"
+  local -a options
+
+  case "$previous_word" in
+    --agent)
+      _gwt_agents
+      return
+      ;;
+    --branch|--base)
+      _gwt_branches
+      return
+      ;;
+  esac
+
+  options=(--agent --branch --base)
+  _gwt_has_option --agent && options=("${(@)options:#--agent}")
+  _gwt_has_option --branch && options=("${(@)options:#--branch}")
+  _gwt_has_option --base && options=("${(@)options:#--base}")
+
+  if [[ -z "$PREFIX" || "$PREFIX" == -* ]]; then
+    (( ${#options[@]} )) && compadd -- "${options[@]}"
+    return
+  fi
+
+  if ! _gwt_add_has_task; then
+    return 0
+  fi
+}
+
+_gwt_complete_open_or_rm() {
+  local -a options
+
+  options=(--force)
+  _gwt_has_option --force && options=()
+
+  if [[ -z "$PREFIX" || "$PREFIX" == -* ]]; then
+    (( ${#options[@]} )) && compadd -- "${options[@]}"
+    _gwt_tasks
+    return
+  fi
+
+  _gwt_tasks
+}
+
+_gwt() {
+  local subcommand="${words[2]:-}"
+  local -a commands
+
+  commands=(add open ls rm help)
+
+  if (( CURRENT == 2 )); then
+    compadd -- "${commands[@]}"
+    return
+  fi
+
+  case "$subcommand" in
+    add)
+      _gwt_complete_add
+      ;;
+    open)
+      _gwt_complete_open_or_rm
+      ;;
+    rm)
+      _gwt_complete_open_or_rm
+      ;;
+    ls|help)
+      ;;
+    *)
+      compadd -- "${commands[@]}"
+      ;;
+  esac
+}
+
+_gwt "$@"
