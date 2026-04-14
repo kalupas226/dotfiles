@@ -28,7 +28,7 @@ refresh_status() {
 
   command="$(gwt_command)"
   [[ -x "$command" ]] || die "required command not found: $command"
-  "$command" refresh-status --session "$session"
+  "$command" __refresh-status --session "$session"
 }
 
 main() {
