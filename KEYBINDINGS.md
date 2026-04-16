@@ -67,7 +67,7 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 
 ## Neovim
 
-`<leader>` is currently default (`\`) because no custom mapleader is set.
+`<leader>` is `Space`.
 
 | Key | Action | Source |
 |---|---|---|
