@@ -76,8 +76,8 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | `<leader>bd` | Delete buffer | `packages/nvim/.config/nvim/lua/config/base-keymaps.lua` |
 | `<leader>bw` | Wipeout buffer | `packages/nvim/.config/nvim/lua/config/base-keymaps.lua` |
 | `<leader>bl` | List buffers | `packages/nvim/.config/nvim/lua/config/base-keymaps.lua` |
-| `<C-e>` | Toggle NvimTree | `packages/nvim/.config/nvim/lua/plugins/nvim-tree.lua` |
-| `<leader>n` | Find current file in NvimTree | `packages/nvim/.config/nvim/lua/plugins/nvim-tree.lua` |
+| `<leader>e` | Toggle Explorer | `packages/nvim/.config/nvim/lua/plugins/nvim-tree.lua` |
+| `<leader>E` | Reveal current file in Explorer | `packages/nvim/.config/nvim/lua/plugins/nvim-tree.lua` |
 | `<leader>g` | Telescope: git files | `packages/nvim/.config/nvim/lua/plugins/telescope.lua` |
 | `<leader>h` | Telescope: recent files | `packages/nvim/.config/nvim/lua/plugins/telescope.lua` |
 | `<leader>r` | Telescope: live grep | `packages/nvim/.config/nvim/lua/plugins/telescope.lua` |
