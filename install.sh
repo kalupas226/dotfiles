@@ -3,9 +3,66 @@
 set -e
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
+SKIP_CONFIRMATION=0
 
 UI_HELPERS="${DOTFILES_DIR}/scripts/lib/ui.sh"
 . "$UI_HELPERS"
+
+usage() {
+    cat <<'EOF'
+Usage: ./install.sh [--skip-confirmation]
+
+Options:
+  --skip-confirmation    Do not prompt before running official remote installer scripts
+EOF
+}
+
+die() {
+    warn "$*"
+    exit 1
+}
+
+parse_args() {
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --skip-confirmation)
+                SKIP_CONFIRMATION=1
+                shift
+                ;;
+            --help|-h)
+                usage
+                exit 0
+                ;;
+            *)
+                die "Unknown option: $1"
+                ;;
+        esac
+    done
+}
+
+confirm_remote_installer() {
+    local name="$1"
+    local url="$2"
+    local answer
+
+    if [ "$SKIP_CONFIRMATION" -eq 1 ]; then
+        return 0
+    fi
+
+    note "About to run the official ${name} installer script:"
+    printf "  %s\n" "$url"
+    printf "Continue? [y/N] "
+    read -r answer
+
+    case "$answer" in
+        y|Y|yes|YES)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
 
 link_dotfiles() {
     step "Linking dotfiles"
@@ -64,6 +121,10 @@ install_brew() {
         return
     fi
 
+    if ! confirm_remote_installer "Homebrew" "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"; then
+        die "Homebrew install cancelled"
+    fi
+
     if ! curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash; then
         warn "Homebrew install failed; check network/CLT and rerun"
         return 1
@@ -95,6 +156,10 @@ install_claude_code() {
     if command -v claude &> /dev/null; then
         skip "Claude Code already installed"
         return
+    fi
+
+    if ! confirm_remote_installer "Claude Code" "https://claude.ai/install.sh"; then
+        die "Claude Code install cancelled"
     fi
 
     if ! curl -fsSL https://claude.ai/install.sh | sh; then
@@ -135,10 +200,12 @@ install_global_npm_packages() {
 
 main() {
     local border="${CYAN}${LINE_EQUAL}${RESET}"
+
+    parse_args "$@"
     printf "%s\n" "$border"
     echo "${BOLD}${CYAN}🌟 Starting dotfiles installation${RESET}"
     printf "%s\n\n" "$border"
-    
+
     link_dotfiles
     install_tpm
     install_brew
