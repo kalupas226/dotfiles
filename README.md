@@ -21,6 +21,12 @@ cd ~/.dotfiles
 ./install.sh
 ```
 
+Skip prompts before running official remote installer scripts:
+
+```bash
+./install.sh --skip-confirmation
+```
+
 ### What gets installed
 
 - **Homebrew** - Package manager for macOS

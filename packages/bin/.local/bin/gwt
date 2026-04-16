@@ -3,6 +3,7 @@
 set -euo pipefail
 
 STATUS_IDLE_SECONDS="${GWT_STATUS_IDLE_SECONDS:-2}"
+MAIN_PANE_HEIGHT="${GWT_MAIN_PANE_HEIGHT:-75%}"
 
 usage() {
   cat <<'EOF'
@@ -424,6 +425,13 @@ prepare_window_layout() {
   local current_agent=""
   local agent_running="0"
 
+  apply_managed_window_layout() {
+    local target_window="$1"
+
+    tmux set-option -w -t "$target_window" main-pane-height "$MAIN_PANE_HEIGHT"
+    tmux select-layout -t "$target_window" main-horizontal >/dev/null 2>&1 || true
+  }
+
   window_id="$(find_window_by_task "$session" "$task")"
   if [[ -n "$window_id" ]]; then
     top_pane="$(tmux show-options -w -v -t "$window_id" @gwt_agent_pane 2>/dev/null || true)"
@@ -434,7 +442,6 @@ prepare_window_layout() {
     bottom_pane="$(tmux show-options -w -v -t "$window_id" @gwt_shell_pane 2>/dev/null || true)"
     if [[ -z "$bottom_pane" ]] || ! tmux list-panes -t "$window_id" -F '#{pane_id}' | grep -Fx "$bottom_pane" >/dev/null 2>&1; then
       bottom_pane="$(tmux split-window -d -v -p 25 -t "$top_pane" -c "$worktree" -P -F '#{pane_id}')"
-      tmux select-layout -t "$window_id" main-horizontal >/dev/null 2>&1 || true
     fi
 
     current_agent="$(tmux show-options -w -v -t "$window_id" @gwt_agent 2>/dev/null || true)"
@@ -457,6 +464,7 @@ prepare_window_layout() {
       tmux set-option -w -t "$window_id" @gwt_last_change_epoch "0"
     fi
 
+    apply_managed_window_layout "$window_id"
     tmux rename-window -t "$window_id" "$(window_label "$task" "$agent" "-")"
     tmux select-pane -t "$top_pane"
     printf '%s\n' "$window_id"
@@ -477,7 +485,7 @@ prepare_window_layout() {
   tmux set-option -w -t "$window_id" @gwt_last_hash ""
   tmux set-option -w -t "$window_id" @gwt_last_change_epoch "0"
   tmux rename-window -t "$window_id" "$(window_label "$task" "$agent" "-")"
-  tmux select-layout -t "$window_id" main-horizontal >/dev/null 2>&1 || true
+  apply_managed_window_layout "$window_id"
   tmux send-keys -t "$top_pane" "$command" C-m
   tmux select-pane -t "$top_pane"
 
