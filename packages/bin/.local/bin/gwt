@@ -9,7 +9,7 @@ usage() {
   cat <<'EOF'
 Usage:
   gwt add --agent <agent> [--branch <branch>] [--base <branch>] <task-name>
-  gwt open [--force] <task-name>
+  gwt open [--agent <agent>] <task-name>
   gwt ls
   gwt rm [--force] <task-name>
 
@@ -17,7 +17,7 @@ Examples:
   gwt add --agent codex feature-login
   gwt add --agent claude --branch feat/login-ui ui-login
   gwt add --agent copilot --base main hotfix-123
-  gwt open --force feature-login
+  gwt open --agent claude feature-login
 
 Notes:
   - options may be passed before or after <task-name>
@@ -273,11 +273,42 @@ parse_add_args() {
   done
 }
 
+parse_open_args() {
+  local task_var_name="$1"
+  local agent_var_name="$2"
+
+  shift 2
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --agent)
+        [[ $# -ge 2 ]] || die "--agent requires a value"
+        printf -v "$agent_var_name" '%s' "${2:-}"
+        shift 2
+        ;;
+      --)
+        shift
+        while [[ $# -gt 0 ]]; do
+          set_single_task_argument "$task_var_name" "$1"
+          shift
+        done
+        ;;
+      -*)
+        die "unknown option: $1"
+        ;;
+      *)
+        set_single_task_argument "$task_var_name" "$1"
+        shift
+        ;;
+    esac
+  done
+}
+
 pane_has_agent_process() {
   local pane_id="$1"
   local agent="$2"
   local expected_cmd
- 
+
   expected_cmd="$(agent_command_name "$agent")"
   pane_has_process_command "$pane_id" "$expected_cmd"
 }
@@ -507,6 +538,40 @@ attach_or_switch() {
   fi
 }
 
+confirm_stale_metadata_update() {
+  local task="$1"
+  local metadata_branch="$2"
+  local actual_branch="$3"
+  local current_agent="$4"
+  local selected_agent="$5"
+  local reply
+
+  printf "gwt: task '%s' metadata does not match the worktree:\n" "$task" >&2
+  printf '  metadata branch: %s\n' "$metadata_branch" >&2
+  printf '  worktree branch: %s\n' "$actual_branch" >&2
+  if [[ "$current_agent" != "$selected_agent" ]]; then
+    printf '  current agent: %s\n' "$current_agent" >&2
+    printf '  requested agent: %s\n' "$selected_agent" >&2
+    printf "\nUpdate metadata to branch '%s' and agent '%s', then open this task? [Y/n] " "$actual_branch" "$selected_agent" >&2
+  else
+    printf "\nUpdate metadata to branch '%s' and open this task? [Y/n] " "$actual_branch" >&2
+  fi
+
+  if ! IFS= read -r reply; then
+    printf '\n' >&2
+    die "open aborted"
+  fi
+
+  case "$reply" in
+    ""|[Yy]|[Yy][Ee][Ss])
+      return 0
+      ;;
+    *)
+      die "open aborted"
+      ;;
+  esac
+}
+
 parse_status() {
   local window_id="$1"
   local agent="$2"
@@ -678,13 +743,15 @@ cmd_add() {
 
 cmd_open() {
   local task=""
-  local force="0"
+  local requested_agent=""
+  local selected_agent=""
   local session
   local window_id
   local agent_cmd=""
   local actual_branch=""
+  local metadata_changed="0"
 
-  parse_task_and_force_args task force "$@"
+  parse_open_args task requested_agent "$@"
 
   validate_task_name "$task"
 
@@ -697,15 +764,29 @@ cmd_open() {
   actual_branch="$(registered_worktree_branch "$worktree" 2>/dev/null || true)"
   [[ -n "$actual_branch" ]] || die "worktree is not registered with git: $worktree"
   actual_branch="${actual_branch#refs/heads/}"
-  if [[ "$actual_branch" != "$branch" ]]; then
-    if [[ "$force" != "1" ]]; then
-      die "task '$task' metadata is stale: metadata branch=$branch, worktree branch=$actual_branch (use 'gwt open --force $task' to continue)"
-    fi
-    printf 'gwt: warning: task %s metadata is stale: metadata branch=%s, worktree branch=%s; continuing because --force was provided\n' \
-      "$task" "$branch" "$actual_branch" >&2
+
+  selected_agent="$agent"
+  if [[ -n "$requested_agent" ]]; then
+    selected_agent="$requested_agent"
   fi
-  agent_cmd="$(agent_command_name "$agent")"
+  agent_cmd="$(agent_command_name "$selected_agent")"
   require_cmd "$agent_cmd"
+
+  if [[ "$actual_branch" != "$branch" ]]; then
+    confirm_stale_metadata_update "$task" "$branch" "$actual_branch" "$agent" "$selected_agent"
+    branch="$actual_branch"
+    metadata_changed="1"
+  fi
+
+  if [[ "$selected_agent" != "$agent" ]]; then
+    agent="$selected_agent"
+    metadata_changed="1"
+  fi
+
+  if [[ "$metadata_changed" == "1" ]]; then
+    write_task_metadata "$task" "$agent" "$worktree" "$branch"
+  fi
+
   session="$(session_name_for_repo)"
   ensure_session "$session" "$(repo_root)"
   window_id="$(prepare_window_layout "$session" "$task" "$worktree" "$agent")"
