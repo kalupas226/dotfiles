@@ -85,7 +85,8 @@ Custom location: set `DOTFILES_DIR` before running tasks, e.g.
   - `task` names are restricted to letters, numbers, `.`, `_`, and `-` (for example `tmux-status`); names like `feat/tmux-status` are rejected
   - `gwt add <task> --agent <codex|claude|copilot>` creates a new `.worktrees/<task>` plus a tmux window in the project session
   - `gwt open <task>` reopens an existing task window for a task recorded in `gwt` metadata and works across tmux sessions
-  - `gwt open --force <task>` bypasses stale branch-metadata checks after warning; use it only for recovery when the recorded branch no longer matches the registered worktree branch
+  - `gwt open --agent <codex|claude|copilot> <task>` updates the task's recorded agent and reopens it with that agent
+  - if `gwt open` finds stale branch metadata, it asks whether to update the recorded branch to match the actual worktree branch before opening
   - `gwt ls` shows `task / agent / status / dirty / worktree / stale`
   - `stale=yes` means the recorded metadata no longer matches reality (for example the worktree is missing or no longer registered on the recorded branch)
   - `gwt rm <task>` closes the task window and removes the worktree for a `gwt`-managed task; it refuses dirty worktrees, leaves the parent `<repo>@root` window/session alone, and local branches are left alone

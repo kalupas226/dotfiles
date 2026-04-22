@@ -101,7 +101,7 @@ If you add or rename maintenance entry points, keep mise tasks aligned.
 
 Supported commands:
 - `gwt add --agent <codex|claude|copilot> [--branch <branch>] [--base <branch>] <task>`
-- `gwt open [--force] <task>`
+- `gwt open [--agent <codex|claude|copilot>] <task>`
 - `gwt ls`
 - `gwt rm [--force] <task>`
 
@@ -109,7 +109,8 @@ Important invariants:
 - task names may only contain letters, numbers, `.`, `_`, and `-`
 - `.worktrees/.gwt/tasks/*.tsv` is the source of truth for managed tasks
 - `gwt rm` removes metadata and the worktree, but intentionally leaves the git branch in place
-- `gwt open` rejects stale metadata unless `--force` is supplied
+- `gwt open --agent <agent>` updates the recorded agent before opening the task
+- `gwt open` asks to repair stale branch metadata before opening the task
 - window status is refreshed by `gwt-status-loop`
 
 If you change `gwt`, update or add tests in `tests/`.
