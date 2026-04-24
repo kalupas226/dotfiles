@@ -202,6 +202,10 @@ test_add_applies_main_pane_height_for_new_windows() {
 
     grep -F "set-option -w -t %1 main-pane-height 75%" "$tmux_log" >/dev/null ||
         fail "expected add to set main-pane-height for new windows"
+    grep -F "set-option -p -t %2 @pane_label codex" "$tmux_log" >/dev/null ||
+        fail "expected add to label the agent pane"
+    grep -F "set-option -p -t %3 @pane_label shell" "$tmux_log" >/dev/null ||
+        fail "expected add to label the shell pane"
 
     rm -rf "$repo_root" "$wrapper_dir" "$tmux_log"
 }
@@ -241,6 +245,10 @@ test_open_applies_main_pane_height_when_reusing_windows() {
 
     grep -F "set-option -w -t %1 main-pane-height 75%" "$tmux_log" >/dev/null ||
         fail "expected open to reapply main-pane-height for reused windows"
+    grep -F "set-option -p -t %2 @pane_label codex" "$tmux_log" >/dev/null ||
+        fail "expected open to label the agent pane"
+    grep -F "set-option -p -t %3 @pane_label shell" "$tmux_log" >/dev/null ||
+        fail "expected open to label the shell pane"
 
     rm -rf "$repo_root" "$wrapper_dir" "$tmux_log"
 }
