@@ -16,15 +16,15 @@ truncation_length = 3
 truncate_to_repo = true
 
 [character]
-success_symbol = "[❯](bold #a6e3a1)"
+success_symbol = "[❯](bold #94e2d5)"
 error_symbol = "[❯](bold #f38ba8)"
 
 [git_branch]
 format = "[$symbol$branch]($style)"
-style = "bold #cba6f7"
+style = "bold #b4befe"
 
 [git_status]
-style = "bold #f38ba8"
+style = "bold #7f849c"
 format = '[$all_status$ahead_behind]($style)'
 
 [cmd_duration]
