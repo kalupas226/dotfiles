@@ -18,6 +18,7 @@ truncate_to_repo = true
 [character]
 success_symbol = "[❯](bold #94e2d5)"
 error_symbol = "[❯](bold #f38ba8)"
+vicmd_symbol = "[N](bold #f9e2af)"
 
 [git_branch]
 format = "[$symbol$branch]($style)"
