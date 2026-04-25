@@ -52,7 +52,7 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 
 ### tmux
 
-`prefix` is the tmux default (`Ctrl + b`).
+`prefix` is `Ctrl + a`.
 
 | Key | Action | Source |
 |---|---|---|
@@ -60,6 +60,8 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | `prefix + -` | Split pane horizontally (keep cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + H/J/K/L` | Resize pane | `packages/tmux/.tmux.conf` |
 | `prefix + t` | New window (keep cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + u` | Open a shell in a centered tmux popup | `packages/tmux/.tmux.conf` |
+| `prefix + g` | Open `lazygit` in centered tmux popup | `packages/tmux/.tmux.conf` |
 | `prefix + n/p` | Next/previous window | `packages/tmux/.tmux.conf` |
 | `prefix + s` | Open session chooser (`choose-tree`) | `packages/tmux/.tmux.conf` |
 | `copy-mode` + `v` | Begin selection | `packages/tmux/.tmux.conf` |

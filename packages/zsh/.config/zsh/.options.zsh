@@ -1,5 +1,5 @@
 # Shell basics
-bindkey -e
+bindkey -v
 setopt IGNOREEOF correct no_flow_control
 autoload -Uz colors && colors
 
@@ -21,6 +21,8 @@ HISTSIZE=10000
 SAVEHIST=10000
 bindkey "^p" history-substring-search-up
 bindkey "^n" history-substring-search-down
+bindkey -M viins "^?" backward-delete-char
+bindkey -M viins "^H" backward-delete-char
 
 # Directory navigation
 setopt auto_cd auto_pushd pushd_ignore_dups
