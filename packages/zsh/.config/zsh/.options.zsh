@@ -19,11 +19,8 @@ setopt share_history histignorealldups
 HISTFILE=$HOME/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
-autoload -Uz history-search-end
-zle -N history-beginning-search-backward-end history-search-end
-zle -N history-beginning-search-forward-end history-search-end
-bindkey "^p" history-beginning-search-backward-end
-bindkey "^n" history-beginning-search-forward-end
+bindkey "^p" history-substring-search-up
+bindkey "^n" history-substring-search-down
 
 # Directory navigation
 setopt auto_cd auto_pushd pushd_ignore_dups
