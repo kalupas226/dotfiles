@@ -2,9 +2,18 @@ return {
   "nvim-lualine/lualine.nvim",
   dependencies = { "nvim-tree/nvim-web-devicons" },
   config = function()
+    local colors = require("catppuccin.palettes").get_palette("mocha")
+    local theme = require("lualine.themes.catppuccin-nvim")
+
+    local statusline_bg = colors.surface0
+    for _, mode in ipairs({ "normal", "insert", "visual", "replace", "command", "terminal", "inactive" }) do
+      theme[mode].c = theme[mode].c or {}
+      theme[mode].c.bg = statusline_bg
+    end
+
     require("lualine").setup({
       options = {
-        theme = "catppuccin-nvim",
+        theme = theme,
         component_separators = { left = "", right = "" },
         section_separators = { left = "", right = "" },
         disabled_filetypes = {

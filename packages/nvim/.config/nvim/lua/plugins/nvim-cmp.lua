@@ -17,6 +17,7 @@ return {
     vim.lsp.config.bashls = {
       cmd = { "bash-language-server", "start" },
       capabilities = defaultCapabilities,
+      filetypes = { "sh", "bash" },
       settings = {
         bashIde = {
           globPattern = "**/*@(.sh|.inc|.bash|.command)",
@@ -66,7 +67,7 @@ return {
 
         -- Documentation
         vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-        vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
+        vim.keymap.set("n", "<leader>k", vim.lsp.buf.signature_help, opts)
 
         -- Code actions
         vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)

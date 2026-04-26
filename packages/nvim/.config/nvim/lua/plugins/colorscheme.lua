@@ -16,6 +16,8 @@ return {
           DiffAdd = { fg = colors.green },
           DiffDelete = { fg = colors.red },
           DiffText = { fg = colors.blue },
+          NvimTreeWinSeparator = { fg = colors.overlay1 },
+          WinSeparator = { fg = colors.overlay1 },
         }
       end,
     })
