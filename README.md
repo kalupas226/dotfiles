@@ -45,6 +45,7 @@ Some tools require a one-time manual step after `install.sh`:
 
 - **tmux plugins (TPM)**: open tmux and run `prefix + I` to install plugins (e.g. `vim-tmux-navigator`)
 - **Neovim plugins (lazy.nvim)**: open Neovim and run `:Lazy sync`
+- **Neovim plugin updates**: plugins are locked by `packages/nvim/.config/nvim/lazy-lock.json`; update intentionally with `:Lazy check` and targeted `:Lazy update <plugin>`, then review the lockfile diff before committing
 - **Homebrew apps/tools**: some packages need first-run setup, permissions (e.g. macOS Security & Privacy), or in-app configuration—check each tool as needed
 - **AeroSpace**:
   - Grant **Accessibility** permission in `System Settings → Privacy & Security → Accessibility`
