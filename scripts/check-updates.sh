@@ -22,7 +22,6 @@ Usage: check-updates.sh [check...]
 Checks:
   brew      Homebrew outdated
   mise      mise outdated
-  npm       npm global packages
   sheldon   sheldon plugin pinned revs
 Options:
   --list    Show available checks
@@ -35,7 +34,6 @@ resolve_script() {
   case "$1" in
     brew) echo "$DOTFILES_DIR/scripts/checks/brew-outdated.sh" ;;
     mise) echo "$DOTFILES_DIR/scripts/checks/mise-outdated.sh" ;;
-    npm) echo "$DOTFILES_DIR/scripts/checks/npm-globals.sh" ;;
     sheldon) echo "$DOTFILES_DIR/scripts/checks/sheldon-pins.sh" ;;
     *) return 1 ;;
   esac
@@ -44,7 +42,7 @@ resolve_script() {
 run_checks() {
   local checks=("$@")
   if [ ${#checks[@]} -eq 0 ]; then
-    checks=(brew mise npm sheldon)
+    checks=(brew mise sheldon)
   fi
 
   for check in "${checks[@]}"; do
@@ -63,14 +61,13 @@ next_steps() {
   step "Next steps"
   printf "%s  • Homebrew:%s run 'brew upgrade <pkg>' (or 'brew upgrade' for all)\n" "$MAGENTA" "$RESET"
   printf "%s  • mise:%s edit packages/mise/.config/mise/config.toml, then run 'mise install <tool>'\n" "$MAGENTA" "$RESET"
-  printf "%s  • npm:%s run 'npm update -g <pkg>'\n" "$MAGENTA" "$RESET"
   printf "%s  • sheldon:%s bump rev in packages/sheldon/.config/sheldon/plugins.toml and run 'sheldon lock --relock'\n" "$MAGENTA" "$RESET"
 }
 
 main() {
   case "${1:-}" in
     --help|-h) usage; exit 0 ;;
-    --list) printf "brew\nmise\nnpm\nsheldon\n"; exit 0 ;;
+    --list) printf "brew\nmise\nsheldon\n"; exit 0 ;;
   esac
 
   banner

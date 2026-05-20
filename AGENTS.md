@@ -23,7 +23,7 @@ The repo contains both user configuration and maintenance tooling:
 - Install via mise task: `mise run dotfiles:install`
 - Check all updates: `./scripts/check-updates.sh`
 - Check updates via mise task: `mise run dotfiles:check-updates`
-- Run one update check: `./scripts/check-updates.sh brew|mise|npm|sheldon`
+- Run one update check: `./scripts/check-updates.sh brew|mise|sheldon`
 - List available update checks: `./scripts/check-updates.sh --list`
 
 ## Validation
@@ -44,7 +44,7 @@ For dotfile-only changes, also sanity-check the target symlink under `$HOME` aft
 
 Top-level files:
 - `Brewfile` - source of truth for Homebrew formulae/casks
-- `install.sh` - main installer; links dotfiles, installs TPM/Homebrew packages/mise tools/Claude Code/global npm CLIs
+- `install.sh` - main installer; links dotfiles, installs TPM/Homebrew packages/mise tools/Claude Code
 - `README.md` - most complete human-facing setup and maintenance guide
 - `KEYBINDINGS.md` - reference for configured shortcuts across macOS, AeroSpace, WezTerm, zsh, tmux, and Neovim
 - `CLAUDE.md` - currently mirrors agent guidance; check whether changes should stay aligned with `AGENTS.md`
@@ -57,7 +57,7 @@ Packages:
 - `packages/karabiner` - Karabiner-Elements config
 - `packages/lazygit` - Lazygit config
 - `packages/mise` - mise tool pins and task definitions
-- `packages/npm` - `.npmrc` and global npm package list
+- `packages/npm` - npm safety defaults (`.npmrc`)
 - `packages/nvim` - Neovim config
 - `packages/sheldon` - shell plugin manager config
 - `packages/starship` - prompt config
@@ -68,7 +68,7 @@ Packages:
 Maintenance code:
 - `scripts/lib/ui.sh` - shared shell UI helpers (`step`, `note`, `ok`, `warn`, `skip`, `section_line`)
 - `scripts/check-updates.sh` - dispatcher for update checks
-- `scripts/checks/` - individual checks for brew/mise/npm/sheldon
+- `scripts/checks/` - individual checks for brew/mise/sheldon
 - `tests/` - regression tests for `gwt`
 
 ## Important Behaviors
@@ -82,7 +82,6 @@ Maintenance code:
 - runs `brew bundle -v --file=Brewfile`
 - activates mise and runs `mise install`
 - installs Claude Code if missing
-- installs global npm CLIs from `packages/npm/global-packages.txt`
 
 When editing `install.sh`, preserve the current ordering unless you have a concrete reason to change it.
 
@@ -133,7 +132,7 @@ Repository-specific placement rules:
 
 - Update `README.md` too if you change setup flow, package coverage, or documented workflows
 - Update `KEYBINDINGS.md` when changing shortcuts in AeroSpace, Karabiner, tmux, WezTerm, zsh, or Neovim
-- Update `Brewfile`, `packages/mise/.config/mise/config.toml`, and `packages/npm/global-packages.txt` consistently when changing installed tooling
+- Update `Brewfile` and `packages/mise/.config/mise/config.toml` consistently when changing installed tooling
 - Do not assume an empty repo-local `.gitignore` means generated paths are meant to be tracked; global ignore rules may be active via `core.excludesFile`
 - Prefer minimal, targeted edits because many files are installed directly into `$HOME`
 

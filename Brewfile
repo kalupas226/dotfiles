@@ -22,6 +22,7 @@ tap "nikitabobko/tap"
 
 cask "nikitabobko/tap/aerospace"
 cask "claude"
+cask "codex"
 cask "figma"
 cask "codex-app"
 cask "docker-desktop"
