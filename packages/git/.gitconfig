@@ -6,13 +6,6 @@
   name = kalupas226
 [pull]
   rebase = false
-[merge]
-  tool = diffview
-[mergetool]
-  prompt = false
-  keepBackup = false
-[mergetool "diffview"]
-  cmd = nvim -n -c "DiffviewOpen" "$MERGED"
 [core]
   editor = nvim
   excludesfile = ~/.gitignore_global
