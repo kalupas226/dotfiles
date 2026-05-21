@@ -43,9 +43,14 @@ Restart your terminal or run `source ~/.zshrc` to load the new configuration.
 
 Some tools require a one-time manual step after `install.sh`:
 
-- **tmux plugins (TPM)**: open tmux and run `prefix + I` to install plugins (e.g. `vim-tmux-navigator`)
+- **tmux plugins (TPM)**: open tmux and run `prefix + I`
+  - TPM plugins are not lockfile-pinned
+  - Update intentionally with `prefix + U`
 - **Neovim plugins (lazy.nvim)**: open Neovim and run `:Lazy sync`
-- **Neovim plugin updates**: plugins are locked by `packages/nvim/.config/nvim/lazy-lock.json`; update intentionally with `:Lazy check` and targeted `:Lazy update <plugin>`, then review the lockfile diff before committing
+  - Plugins are locked by `packages/nvim/.config/nvim/lazy-lock.json`
+  - Check updates with `:Lazy check`
+  - Update intentionally with targeted `:Lazy update <plugin>`
+  - Review the lockfile diff before committing
 - **Homebrew apps/tools**: some packages need first-run setup, permissions (e.g. macOS Security & Privacy), or in-app configuration—check each tool as needed
 - **AeroSpace**:
   - Grant **Accessibility** permission in `System Settings → Privacy & Security → Accessibility`
@@ -75,6 +80,7 @@ Custom location: set `DOTFILES_DIR` before running tasks, e.g.
 
 - Node: pinned via mise in `packages/mise/.config/mise/config.toml`
 - npm CLIs: prefer project-local `devDependencies`, `npm dlx`/`npx`, or Homebrew casks/formulae over global npm installs
+- Git: default identity uses GitHub noreply; override per machine with `~/.gitconfig.local` if needed
 - Updates check (one-shot, no writes): `mise run dotfiles:check-updates`
   - Homebrew (`brew update --quiet` + `brew outdated`)
   - mise tools (`mise outdated`)

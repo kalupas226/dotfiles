@@ -8,4 +8,6 @@
   rebase = false
 [core]
   editor = nvim
-  excludesfile = ~/.gitignore_global
+  excludesfile = ~/.gitignore.global
+[include]
+  path = ~/.gitconfig.local
