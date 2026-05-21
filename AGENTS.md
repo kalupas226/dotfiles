@@ -9,6 +9,7 @@ This is a personal macOS dotfiles repo built around a package-based layout. Each
 Examples:
 - `packages/zsh/.zshrc` -> `~/.zshrc`
 - `packages/nvim/.config/nvim/init.lua` -> `~/.config/nvim/init.lua`
+- `packages/bin/.local/bin/dotfiles` -> `~/.local/bin/dotfiles`
 - `packages/bin/.local/bin/gwt` -> `~/.local/bin/gwt`
 
 The repo contains both user configuration and maintenance tooling:
@@ -20,10 +21,10 @@ The repo contains both user configuration and maintenance tooling:
 ## Commands
 
 - Install everything: `./install.sh`
-- Install via mise task: `mise run dotfiles:install`
-- Check all updates: `./scripts/check-updates.sh`
-- Check updates via mise task: `mise run dotfiles:check-updates`
-- Run one update check: `./scripts/check-updates.sh brew|mise|sheldon`
+- Install everything via installed helper: `dotfiles install`
+- Check all updates via installed helper: `dotfiles check`
+- Check all updates directly: `./scripts/check-updates.sh`
+- Run one update check: `dotfiles check brew`, `dotfiles check mise`, or `dotfiles check sheldon`
 - List available update checks: `./scripts/check-updates.sh --list`
 
 ## Validation
@@ -51,12 +52,12 @@ Top-level files:
 
 Packages:
 - `packages/aerospace` - AeroSpace config
-- `packages/bin` - installed helper CLIs such as `gwt` and `gwt-status-loop`
+- `packages/bin` - installed helper CLIs such as `dotfiles`, `gwt`, and `gwt-status-loop`
 - `packages/claude` - Claude Code settings
 - `packages/git` - `.gitconfig` and global ignore file
 - `packages/karabiner` - Karabiner-Elements config
 - `packages/lazygit` - Lazygit config
-- `packages/mise` - mise tool pins and task definitions
+- `packages/mise` - mise tool pins
 - `packages/npm` - npm safety defaults (`.npmrc`)
 - `packages/nvim` - Neovim config
 - `packages/sheldon` - shell plugin manager config
@@ -89,10 +90,15 @@ When editing `install.sh`, preserve the current ordering unless you have a concr
 
 `packages/mise/.config/mise/config.toml` currently defines:
 - `node = "24.14.1"`
-- `dotfiles:install`
-- `dotfiles:check-updates`
 
-If you add or rename maintenance entry points, keep mise tasks aligned.
+### dotfiles helper
+
+`packages/bin/.local/bin/dotfiles` is the user-facing launcher for routine dotfiles maintenance.
+
+Supported commands:
+- `dotfiles install`
+- `dotfiles check [brew|mise|sheldon...]`
+- `dotfiles help`
 
 ### gwt
 

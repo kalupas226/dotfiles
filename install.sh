@@ -188,7 +188,7 @@ main() {
     
     echo ""
     echo "${GREEN}🎉 Installation complete!${RESET}"
-    echo "Please restart your terminal or run 'source ~/.zshrc' to apply the new setup."
+    echo "Please restart your terminal or run 'exec zsh' to apply the new setup."
 }
 
 main "$@"
