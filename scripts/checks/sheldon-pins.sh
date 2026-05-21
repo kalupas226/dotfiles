@@ -25,17 +25,29 @@ while read -r name repo rev; do
       || true
   )
   if [[ -z "$latest_tag" ]]; then
-    printf "  [?] %s: pinned %s (could not fetch tags)\n" "$name" "$rev"
+    printf "  %s (%s) ? unknown\n" "$name" "$rev"
   elif [[ "$rev" != "$latest_tag" ]]; then
-    printf "  [OUTDATED] %s: pinned %s -> latest %s\n" "$name" "$rev" "$latest_tag"
+    printf "  %s (%s) < %s\n" "$name" "$rev" "$latest_tag"
   else
-    printf "  [OK] %s: %s\n" "$name" "$rev"
+    printf "  %s (%s) = %s\n" "$name" "$rev" "$latest_tag"
   fi
 done < <(
   awk '
-    /^\[plugins\./ {p=$0; sub(/^\[plugins\./,"",p); sub(/\]/,"",p)}
-    /^github[[:space:]]*=/ {split($3,a,"\""); repos[p]=a[2]}
-    /^rev[[:space:]]*=/ {split($3,a,"\""); revs[p]=a[2]}
-    END {for (p in repos) printf "%s %s %s\n", p, repos[p], revs[p]}
+    function emit() {
+      if (plugin != "" && repo != "") {
+        printf "%s %s %s\n", plugin, repo, rev
+      }
+    }
+    /^\[plugins\./ {
+      emit()
+      plugin=$0
+      sub(/^\[plugins\./,"",plugin)
+      sub(/\]/,"",plugin)
+      repo=""
+      rev=""
+    }
+    /^github[[:space:]]*=/ {split($3,a,"\""); repo=a[2]}
+    /^rev[[:space:]]*=/ {split($3,a,"\""); rev=a[2]}
+    END {emit()}
   ' "$plugins_file"
 )
