@@ -11,6 +11,13 @@ return {
   },
   config = function()
     require("nvim-tree").setup({
+      on_attach = function(bufnr)
+        local api = require("nvim-tree.api")
+        api.config.mappings.default_on_attach(bufnr)
+
+        local opts = { buffer = bufnr, silent = true, nowait = true }
+        vim.keymap.set("n", "<C-k>", "<cmd>TmuxNavigateUp<CR>", opts)
+      end,
       view = {
         width = 30,
       },

@@ -37,14 +37,26 @@ Skip prompts before running official remote installer scripts:
 - **Node.js** - Pinned via mise
 - **Dotfiles** - Automatically symlinked to your home directory
 
-Restart your terminal or run `source ~/.zshrc` to load the new configuration.
+Restart your terminal or run `exec zsh` to load the new configuration.
+
+After that, use the `dotfiles` helper from `~/.local/bin` for routine maintenance:
+
+```bash
+dotfiles check
+```
 
 ### Post-install manual steps
 
 Some tools require a one-time manual step after `install.sh`:
 
-- **tmux plugins (TPM)**: open tmux and run `prefix + I` to install plugins (e.g. `vim-tmux-navigator`)
+- **tmux plugins (TPM)**: open tmux and run `prefix + I`
+  - TPM plugins are not lockfile-pinned
+  - Update intentionally with `prefix + U`
 - **Neovim plugins (lazy.nvim)**: open Neovim and run `:Lazy sync`
+  - Plugins are locked by `packages/nvim/.config/nvim/lazy-lock.json`
+  - Check updates with `:Lazy check`
+  - Update intentionally with targeted `:Lazy update <plugin>`
+  - Review the lockfile diff before committing
 - **Homebrew apps/tools**: some packages need first-run setup, permissions (e.g. macOS Security & Privacy), or in-app configuration—check each tool as needed
 - **AeroSpace**:
   - Grant **Accessibility** permission in `System Settings → Privacy & Security → Accessibility`
@@ -58,23 +70,12 @@ Some tools require a one-time manual step after `install.sh`:
   - Trackpad: `Trackpad` → enable "Tap to click"
   - Trackpad: `Accessibility` → `Pointer Control` → `Trackpad Options...` → enable dragging and choose "Three Finger Drag"
 
-### Using mise tasks
-
-- Install/link everything (runs `install.sh` under the hood):  
-  `mise run dotfiles:install`
-- Check for updates (brew/mise/npm/sheldon):  
-  `mise run dotfiles:check-updates`
-
-Tasks are defined in `packages/mise/.config/mise/config.toml`.
-
-Custom location: set `DOTFILES_DIR` before running tasks, e.g.  
-`DOTFILES_DIR=/path/to/dotfiles mise run dotfiles:install`
-
 ## Maintenance
 
 - Node: pinned via mise in `packages/mise/.config/mise/config.toml`
-- npm CLIs: prefer project-local `devDependencies` or `npm dlx`/`npx`; only keep truly global needs in `packages/npm/global-packages.txt` and `install.sh` will install them
-- Updates check (one-shot, no writes): `mise run dotfiles:check-updates`
+- npm CLIs: prefer project-local `devDependencies`, `npm dlx`/`npx`, or Homebrew casks/formulae over global npm installs
+- Git: default identity uses GitHub noreply; override per machine with `~/.gitconfig.local` if needed
+- Updates check (one-shot, no writes): `dotfiles check`
   - Homebrew (`brew update --quiet` + `brew outdated`)
   - mise tools (`mise outdated`)
   - sheldon plugins (pinned `rev` vs latest tags)
@@ -94,8 +95,7 @@ Custom location: set `DOTFILES_DIR` before running tasks, e.g.
   - `gwt` treats `.worktrees/.gwt/tasks/*.tsv` as the source of truth for managed tasks; if that metadata is missing, the task no longer appears in `gwt ls` and must be inspected or cleaned up with raw `git worktree` commands
   - Useful recovery commands for orphaned worktrees: `git worktree list`, `git worktree remove .worktrees/<task>`, and `git branch -d <branch>` when you also want to drop the branch
   - tmux window names are refreshed automatically as `task [agent:●|◌|·]` for busy, idle, and inactive states
-- If `brew bundle` or `mise install` fails mid-run, fix the cause then rerun `mise run dotfiles:install`.
-  - If you don't use mise tasks, run `./scripts/check-updates.sh`
+- If `brew bundle` or `mise install` fails mid-run, fix the cause then rerun `dotfiles install`.
 
 ## Repository Structure
 
@@ -123,10 +123,11 @@ Each package contains dotfiles in their expected directory structure. The instal
 
 ## Configuration Files
 
-- **packages/mise/.config/mise/config.toml** - tool pins and mise tasks (`dotfiles:install`, `dotfiles:check-updates`)
+- **packages/mise/.config/mise/config.toml** - mise tool pins
 - **Brewfile** - Homebrew package definitions
 - **install.sh** - Main installation script with custom symlinking logic
 - **scripts/** - repository maintenance scripts (install/check/update helpers such as `check-updates.sh`, `lib/ui.sh`)
+- **packages/bin/.local/bin/dotfiles** - small launcher for install/check/help commands
 - **packages/bin/.local/bin/gwt** - tmux + git worktree launcher for AI-agent tasks
 - **packages/bin/.local/bin/** - user-facing CLI helpers; prefer this location for agent/task utilities instead of `scripts/`
 - **packages/** - Individual application configurations

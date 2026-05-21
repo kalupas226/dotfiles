@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage:
+  dotfiles install [--skip-confirmation]
+  dotfiles check [brew|mise|sheldon...]
+  dotfiles help
+
+Commands:
+  install   Link dotfiles and install managed tools
+  check     Check Homebrew, mise, and sheldon updates
+  help      Show this message
+
+Examples:
+  dotfiles install
+  dotfiles check
+  dotfiles check brew
+EOF
+}
+
+die() {
+  printf 'dotfiles: %s\n' "$*" >&2
+  exit 1
+}
+
+script_dir() {
+  local source="${BASH_SOURCE[0]}"
+  local dir
+
+  while [[ -L "$source" ]]; do
+    dir="$(cd -- "$(dirname -- "$source")" && pwd -P)"
+    source="$(readlink "$source")"
+    [[ "$source" == /* ]] || source="$dir/$source"
+  done
+
+  cd -- "$(dirname -- "$source")" && pwd -P
+}
+
+dotfiles_dir() {
+  local dir
+
+  dir="$(script_dir)"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -f "$dir/install.sh" && -d "$dir/scripts" && -d "$dir/packages" ]]; then
+      printf '%s\n' "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+
+  die "could not find dotfiles repository root"
+}
+
+main() {
+  local command="${1:-help}"
+  local root
+
+  case "$command" in
+    install)
+      shift
+      root="$(dotfiles_dir)"
+      exec "$root/install.sh" "$@"
+      ;;
+    check)
+      shift
+      root="$(dotfiles_dir)"
+      exec "$root/scripts/check-updates.sh" "$@"
+      ;;
+    help|--help|-h)
+      usage
+      ;;
+    *)
+      die "unknown command: $command"
+      ;;
+  esac
+}
+
+main "$@"

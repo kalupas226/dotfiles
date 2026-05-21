@@ -8,6 +8,12 @@ UI_HELPERS="$DOTFILES_DIR/scripts/lib/ui.sh"
 . "$UI_HELPERS"
 
 STEP_ICON="🔍"
+CHECKS=(brew mise sheldon)
+CHECK_DESCRIPTIONS=(
+  "Homebrew outdated"
+  "mise outdated"
+  "sheldon plugin pinned revs"
+)
 
 banner() {
   local border="${CYAN}${LINE_EQUAL}${RESET}"
@@ -20,10 +26,12 @@ usage() {
   cat <<'EOF'
 Usage: check-updates.sh [check...]
 Checks:
-  brew      Homebrew outdated
-  mise      mise outdated
-  npm       npm global packages
-  sheldon   sheldon plugin pinned revs
+EOF
+  local i
+  for i in "${!CHECKS[@]}"; do
+    printf "  %-8s %s\n" "${CHECKS[$i]}" "${CHECK_DESCRIPTIONS[$i]}"
+  done
+  cat <<'EOF'
 Options:
   --list    Show available checks
   --help    Show this message
@@ -35,7 +43,6 @@ resolve_script() {
   case "$1" in
     brew) echo "$DOTFILES_DIR/scripts/checks/brew-outdated.sh" ;;
     mise) echo "$DOTFILES_DIR/scripts/checks/mise-outdated.sh" ;;
-    npm) echo "$DOTFILES_DIR/scripts/checks/npm-globals.sh" ;;
     sheldon) echo "$DOTFILES_DIR/scripts/checks/sheldon-pins.sh" ;;
     *) return 1 ;;
   esac
@@ -43,42 +50,58 @@ resolve_script() {
 
 run_checks() {
   local checks=("$@")
+  local failed=0
+  local script_path
   if [ ${#checks[@]} -eq 0 ]; then
-    checks=(brew mise npm sheldon)
+    checks=("${CHECKS[@]}")
   fi
 
   for check in "${checks[@]}"; do
-    script_path="$(resolve_script "$check")" || { warn "Unknown check '$check'"; continue; }
+    script_path="$(resolve_script "$check")" || { warn "Unknown check '$check'"; failed=1; continue; }
     if [ ! -x "$script_path" ]; then
       warn "Check script missing or not executable: $script_path"
+      failed=1
       continue
     fi
     if ! "$script_path"; then
       warn "Check '$check' failed"
+      failed=1
     fi
   done
+
+  return "$failed"
 }
 
 next_steps() {
   step "Next steps"
   printf "%s  • Homebrew:%s run 'brew upgrade <pkg>' (or 'brew upgrade' for all)\n" "$MAGENTA" "$RESET"
   printf "%s  • mise:%s edit packages/mise/.config/mise/config.toml, then run 'mise install <tool>'\n" "$MAGENTA" "$RESET"
-  printf "%s  • npm:%s run 'npm update -g <pkg>'\n" "$MAGENTA" "$RESET"
   printf "%s  • sheldon:%s bump rev in packages/sheldon/.config/sheldon/plugins.toml and run 'sheldon lock --relock'\n" "$MAGENTA" "$RESET"
 }
 
 main() {
+  local result
+
   case "${1:-}" in
     --help|-h) usage; exit 0 ;;
-    --list) printf "brew\nmise\nnpm\nsheldon\n"; exit 0 ;;
+    --list) printf "%s\n" "${CHECKS[@]}"; exit 0 ;;
   esac
 
   banner
-  run_checks "$@"
+  if run_checks "$@"; then
+    result=0
+  else
+    result=$?
+  fi
   printf "\n"
   next_steps
   printf "\n"
-  ok "Checks finished"
+  if [ "$result" -eq 0 ]; then
+    ok "Checks finished"
+  else
+    warn "Checks finished with warnings"
+  fi
+  return "$result"
 }
 
 main "$@"

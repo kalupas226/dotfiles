@@ -1,12 +1,2 @@
 [tools]
 node = "24.14.1"
-
-[tasks."dotfiles:install"]
-dir = "{{ env.DOTFILES_DIR | default(value=env.HOME ~ '/.dotfiles') }}"
-run = "./install.sh"
-description = "Link dotfiles and install packages"
-
-[tasks."dotfiles:check-updates"]
-dir = "{{ env.DOTFILES_DIR | default(value=env.HOME ~ '/.dotfiles') }}"
-run = "scripts/check-updates.sh"
-description = "Check Homebrew/mise/sheldon updates"

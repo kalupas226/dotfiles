@@ -9,6 +9,7 @@ This is a personal macOS dotfiles repo built around a package-based layout. Each
 Examples:
 - `packages/zsh/.zshrc` -> `~/.zshrc`
 - `packages/nvim/.config/nvim/init.lua` -> `~/.config/nvim/init.lua`
+- `packages/bin/.local/bin/dotfiles` -> `~/.local/bin/dotfiles`
 - `packages/bin/.local/bin/gwt` -> `~/.local/bin/gwt`
 
 The repo contains both user configuration and maintenance tooling:
@@ -20,10 +21,10 @@ The repo contains both user configuration and maintenance tooling:
 ## Commands
 
 - Install everything: `./install.sh`
-- Install via mise task: `mise run dotfiles:install`
-- Check all updates: `./scripts/check-updates.sh`
-- Check updates via mise task: `mise run dotfiles:check-updates`
-- Run one update check: `./scripts/check-updates.sh brew|mise|npm|sheldon`
+- Install everything via installed helper: `dotfiles install`
+- Check all updates via installed helper: `dotfiles check`
+- Check all updates directly: `./scripts/check-updates.sh`
+- Run one update check: `dotfiles check brew`, `dotfiles check mise`, or `dotfiles check sheldon`
 - List available update checks: `./scripts/check-updates.sh --list`
 
 ## Validation
@@ -44,20 +45,20 @@ For dotfile-only changes, also sanity-check the target symlink under `$HOME` aft
 
 Top-level files:
 - `Brewfile` - source of truth for Homebrew formulae/casks
-- `install.sh` - main installer; links dotfiles, installs TPM/Homebrew packages/mise tools/Claude Code/global npm CLIs
+- `install.sh` - main installer; links dotfiles, installs TPM/Homebrew packages/mise tools/Claude Code
 - `README.md` - most complete human-facing setup and maintenance guide
 - `KEYBINDINGS.md` - reference for configured shortcuts across macOS, AeroSpace, WezTerm, zsh, tmux, and Neovim
 - `CLAUDE.md` - currently mirrors agent guidance; check whether changes should stay aligned with `AGENTS.md`
 
 Packages:
 - `packages/aerospace` - AeroSpace config
-- `packages/bin` - installed helper CLIs such as `gwt` and `gwt-status-loop`
+- `packages/bin` - installed helper CLIs such as `dotfiles`, `gwt`, and `gwt-status-loop`
 - `packages/claude` - Claude Code settings
 - `packages/git` - `.gitconfig` and global ignore file
 - `packages/karabiner` - Karabiner-Elements config
 - `packages/lazygit` - Lazygit config
-- `packages/mise` - mise tool pins and task definitions
-- `packages/npm` - `.npmrc` and global npm package list
+- `packages/mise` - mise tool pins
+- `packages/npm` - npm safety defaults (`.npmrc`)
 - `packages/nvim` - Neovim config
 - `packages/sheldon` - shell plugin manager config
 - `packages/starship` - prompt config
@@ -68,7 +69,7 @@ Packages:
 Maintenance code:
 - `scripts/lib/ui.sh` - shared shell UI helpers (`step`, `note`, `ok`, `warn`, `skip`, `section_line`)
 - `scripts/check-updates.sh` - dispatcher for update checks
-- `scripts/checks/` - individual checks for brew/mise/npm/sheldon
+- `scripts/checks/` - individual checks for brew/mise/sheldon
 - `tests/` - regression tests for `gwt`
 
 ## Important Behaviors
@@ -82,7 +83,6 @@ Maintenance code:
 - runs `brew bundle -v --file=Brewfile`
 - activates mise and runs `mise install`
 - installs Claude Code if missing
-- installs global npm CLIs from `packages/npm/global-packages.txt`
 
 When editing `install.sh`, preserve the current ordering unless you have a concrete reason to change it.
 
@@ -90,10 +90,15 @@ When editing `install.sh`, preserve the current ordering unless you have a concr
 
 `packages/mise/.config/mise/config.toml` currently defines:
 - `node = "24.14.1"`
-- `dotfiles:install`
-- `dotfiles:check-updates`
 
-If you add or rename maintenance entry points, keep mise tasks aligned.
+### dotfiles helper
+
+`packages/bin/.local/bin/dotfiles` is the user-facing launcher for routine dotfiles maintenance.
+
+Supported commands:
+- `dotfiles install`
+- `dotfiles check [brew|mise|sheldon...]`
+- `dotfiles help`
 
 ### gwt
 
@@ -133,7 +138,7 @@ Repository-specific placement rules:
 
 - Update `README.md` too if you change setup flow, package coverage, or documented workflows
 - Update `KEYBINDINGS.md` when changing shortcuts in AeroSpace, Karabiner, tmux, WezTerm, zsh, or Neovim
-- Update `Brewfile`, `packages/mise/.config/mise/config.toml`, and `packages/npm/global-packages.txt` consistently when changing installed tooling
+- Update `Brewfile` and `packages/mise/.config/mise/config.toml` consistently when changing installed tooling
 - Do not assume an empty repo-local `.gitignore` means generated paths are meant to be tracked; global ignore rules may be active via `core.excludesFile`
 - Prefer minimal, targeted edits because many files are installed directly into `$HOME`
 

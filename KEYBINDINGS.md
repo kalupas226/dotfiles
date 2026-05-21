@@ -86,10 +86,5 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | `[d` / `]d` | Previous/next diagnostic | `packages/nvim/.config/nvim/lua/config/diagnostics.lua` |
 | `<leader>d` | Open diagnostic float | `packages/nvim/.config/nvim/lua/config/diagnostics.lua` |
 | `<leader>q` | Open diagnostic location list | `packages/nvim/.config/nvim/lua/config/diagnostics.lua` |
-| `gd` / `gD` / `gi` / `gr` / `gy` | LSP def/decl/impl/refs/type def | `packages/nvim/.config/nvim/lua/plugins/nvim-cmp.lua` |
-| `K` / `<C-k>` | LSP hover / signature help | `packages/nvim/.config/nvim/lua/plugins/nvim-cmp.lua` |
-| `<leader>rn` | LSP rename | `packages/nvim/.config/nvim/lua/plugins/nvim-cmp.lua` |
-| `<leader>ca` | LSP code action | `packages/nvim/.config/nvim/lua/plugins/nvim-cmp.lua` |
-| `<leader>f` | LSP format | `packages/nvim/.config/nvim/lua/plugins/nvim-cmp.lua` |
 | Insert `<Tab>` / `<S-Tab>` | Next/previous completion item | `packages/nvim/.config/nvim/lua/plugins/nvim-cmp.lua` |
 | Insert `<C-Space>` | Trigger completion | `packages/nvim/.config/nvim/lua/plugins/nvim-cmp.lua` |

@@ -1,0 +1,53 @@
+#compdef dotfiles
+
+_dotfiles() {
+  local subcommand="${words[2]:-}"
+  local previous_word="${words[CURRENT-1]:-}"
+  local -a commands checks check_options install_options
+
+  commands=(
+    install:"Link dotfiles and install managed tools"
+    check:"Check Homebrew, mise, and sheldon updates"
+    help:"Show help"
+  )
+  checks=(
+    brew:"Homebrew outdated"
+    mise:"mise outdated"
+    sheldon:"sheldon plugin pinned revs"
+  )
+  check_options=(
+    --list:"Show available checks"
+    --help:"Show check help"
+  )
+  install_options=(
+    --skip-confirmation:"Do not prompt before running official remote installer scripts"
+  )
+
+  if (( CURRENT == 2 )); then
+    _describe -t commands "dotfiles command" commands
+    return
+  fi
+
+  case "$subcommand" in
+    install)
+      if [[ "$previous_word" == -- ]]; then
+        return
+      fi
+      _describe -t options "install option" install_options
+      ;;
+    check)
+      if [[ "$PREFIX" == -* ]]; then
+        _describe -t options "check option" check_options
+        return
+      fi
+      _describe -t checks "update check" checks
+      ;;
+    help|--help|-h)
+      ;;
+    *)
+      _describe -t commands "dotfiles command" commands
+      ;;
+  esac
+}
+
+_dotfiles "$@"
