@@ -79,6 +79,7 @@ Some tools require a one-time manual step after `install.sh`:
   - Homebrew (`brew update --quiet` + `brew outdated`)
   - mise tools (`mise outdated`)
   - sheldon plugins (pinned `rev` vs latest tags)
+- Agent skills: see `skills/README.md`
 - AI agent worktrees:
   - Requires `tmux`; after `./install.sh`, use `gwt` from `~/.local/bin/gwt`
   - Requires the selected agent CLI on `PATH` (`codex`, `claude`, or `copilot`); `gwt add` and `gwt open` validate it before opening the task window
@@ -99,24 +100,26 @@ Some tools require a one-time manual step after `install.sh`:
 
 ## Repository Structure
 
-This repository uses a package-based organization:
+This repository uses a package-based organization, with shared agent skills at the repository root:
 
 ```
-packages/
-├── aerospace/  # AeroSpace window manager configuration
-├── bin/        # User-facing CLI helpers installed into ~/.local/bin
-├── claude/     # Claude Code settings and configurations
-├── git/        # Git configuration
-├── karabiner/  # Karabiner-Elements configuration
-├── lazygit/    # Lazygit configuration
-├── mise/       # Development environment manager configuration
-├── npm/        # npm CLI defaults
-├── nvim/       # Neovim configuration
-├── sheldon/    # Shell plugin manager configuration
-├── starship/   # Starship prompt configuration
-├── tmux/       # Terminal multiplexer configuration
-├── wezterm/    # Terminal emulator configuration
-└── zsh/        # Zsh shell configuration
+.
+├── packages/
+│   ├── aerospace/  # AeroSpace window manager configuration
+│   ├── bin/        # User-facing CLI helpers installed into ~/.local/bin
+│   ├── claude/     # Claude Code settings and configurations
+│   ├── git/        # Git configuration
+│   ├── karabiner/  # Karabiner-Elements configuration
+│   ├── lazygit/    # Lazygit configuration
+│   ├── mise/       # Development environment manager configuration
+│   ├── npm/        # npm CLI defaults
+│   ├── nvim/       # Neovim configuration
+│   ├── sheldon/    # Shell plugin manager configuration
+│   ├── starship/   # Starship prompt configuration
+│   ├── tmux/       # Terminal multiplexer configuration
+│   ├── wezterm/    # Terminal emulator configuration
+│   └── zsh/        # Zsh shell configuration
+└── skills/         # Shared Agent Skills; see skills/README.md
 ```
 
 Each package contains dotfiles in their expected directory structure. The installation script automatically creates symlinks from package files to their target locations in your home directory.
