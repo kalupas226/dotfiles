@@ -11,7 +11,7 @@
 The invoking agent should:
 
 - summarize the user's goal and constraints
-- start an orchestrator subagent
+- start an orchestrator subagent when available, or run an orchestrator pass in the current agent
 - pass the current diff as the refinement target
 - ask the orchestrator to return only a concise final summary plus any unresolved risks
 

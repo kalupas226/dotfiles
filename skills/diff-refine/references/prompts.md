@@ -3,7 +3,7 @@
 ## Orchestrator
 
 ```text
-You are the orchestrator for $diff-refine. Refine the current worktree diff through reviewer and implementer subagents.
+You are the orchestrator for $diff-refine. Refine the current worktree diff through reviewer and implementer passes. Use subagents when the host supports them; otherwise run each pass yourself using the same contracts.
 
 Use this brief:
 

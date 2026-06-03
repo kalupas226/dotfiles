@@ -1,11 +1,11 @@
 ---
 name: tmd-markdown
-description: Use when an agent needs to present, open, preview, or ask the user to review a Markdown file in the terminal, especially plans, review notes, task summaries, or agent-written .md files. Prefer the local `tmd FILE` command so Markdown opens with glow, and in tmux it appears in a centered popup.
+description: Use when an agent needs to present, open, preview, or ask the user to review a Markdown file in this dotfiles environment, especially plans, review notes, task summaries, or agent-written .md files. Prefer the local `tmd FILE` command when available so Markdown opens with glow, and in tmux it appears in a centered popup.
 ---
 
 # TMD Markdown
 
-Use `tmd FILE` as the default way to present a Markdown file to the user from the terminal.
+Use `tmd FILE` as the default way to present a Markdown file to the user from this dotfiles terminal environment.
 
 Examples:
 
@@ -15,6 +15,8 @@ tmd notes/review.md
 ```
 
 Inside tmux, `tmd` opens the file in a centered popup with `glow`. Outside tmux, it falls back to `glow -p`.
+
+Before using it, check that `tmd` is available on `PATH`. If it is missing, tell the user that this dotfiles helper is not installed in the current environment instead of trying to emulate it.
 
 Use `tmd` when:
 

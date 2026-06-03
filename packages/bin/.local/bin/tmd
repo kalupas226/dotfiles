@@ -57,7 +57,7 @@ have glow || die "glow is not installed"
 [[ -f "$file" ]] || die "file not found: $file"
 
 if [[ -n "${TMUX:-}" && "$inside_popup" == false ]]; then
-    command_args=(tmd --inside "$file")
+    command_args=(tmd --inside -- "$file")
     popup_command="${command_args[0]}$(quote_args "${command_args[@]:1}")"
     exec tmux display-popup -d "$PWD" -xC -yC -w 90% -h 90% -E "$popup_command"
 fi
