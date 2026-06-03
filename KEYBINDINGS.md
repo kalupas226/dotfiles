@@ -9,6 +9,7 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | `Caps Lock` | Remapped to `Left Control` | `packages/karabiner/.config/karabiner/karabiner.json` |
 | `Left Command` (tap alone) | Switch input to `Eisuu` | `packages/karabiner/.config/karabiner/karabiner.json` |
 | `Right Command` (tap alone) | Switch input to `Kana` | `packages/karabiner/.config/karabiner/karabiner.json` |
+| `Cmd + Q` twice | Quit app; first press is ignored for accident prevention | `packages/karabiner/.config/karabiner/karabiner.json` |
 
 ## AeroSpace (Window Manager)
 

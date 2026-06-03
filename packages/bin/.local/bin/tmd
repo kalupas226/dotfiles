@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    cat <<'USAGE'
+Usage: tmd FILE
+
+Show Markdown with glow. Inside tmux, open it in a centered popup.
+USAGE
+}
+
+die() {
+    printf 'tmd: %s\n' "$*" >&2
+    exit 1
+}
+
+have() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+quote_args() {
+    local arg
+    for arg in "$@"; do
+        printf ' %q' "$arg"
+    done
+}
+
+inside_popup=false
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --inside)
+            inside_popup=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            die "unknown option: $1"
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+[[ $# -eq 1 ]] || die "expected one Markdown file"
+file="$1"
+
+have glow || die "glow is not installed"
+[[ -f "$file" ]] || die "file not found: $file"
+
+if [[ -n "${TMUX:-}" && "$inside_popup" == false ]]; then
+    command_args=(tmd --inside -- "$file")
+    popup_command="${command_args[0]}$(quote_args "${command_args[@]:1}")"
+    exec tmux display-popup -d "$PWD" -xC -yC -w 90% -h 90% -E "$popup_command"
+fi
+
+exec glow -p "$file"
