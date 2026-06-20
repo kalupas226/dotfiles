@@ -10,5 +10,4 @@ gh skill --help
 
 ## Skills
 
-- `diff-refine` - Iteratively refine an existing code or config diff with reviewer and implementer agents.
-- `tmd-markdown` - Present Markdown files in the terminal with `tmd`.
+- `plan-html` - Render an implementation or task plan as a self-contained HTML page and open it in the browser.
