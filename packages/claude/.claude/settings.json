@@ -1,7 +1,18 @@
 {
-  "includeCoAuthoredBy": false,
   "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(ls:*)"
+    ],
     "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
       "Bash(curl:*)",
       "Bash(wget:*)",
       "Bash(ssh:*)",
@@ -10,14 +21,15 @@
       "Bash(npm publish:*)",
       "Bash(pip install:*)",
       "Bash(brew install:*)",
-      "Bash(rm -rf /)",
-      "Bash(rm -rf ~)",
-      "Bash(rm -rf /*)",
-      "Bash(rm -rf .git)",
       "Bash(sudo:*)",
-      "Bash(chmod 777 /*)"
-    ],
-    "additionalDirectories": []
+      "Bash(chmod 777 /*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf .git)"
+    ]
   },
   "statusLine": {
     "type": "command",
