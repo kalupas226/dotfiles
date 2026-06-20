@@ -1,7 +1,18 @@
 {
-  "includeCoAuthoredBy": false,
   "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(ls:*)"
+    ],
     "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
       "Bash(curl:*)",
       "Bash(wget:*)",
       "Bash(ssh:*)",
@@ -10,38 +21,19 @@
       "Bash(npm publish:*)",
       "Bash(pip install:*)",
       "Bash(brew install:*)",
-      "Bash(rm -rf /)",
-      "Bash(rm -rf ~)",
-      "Bash(rm -rf /*)",
-      "Bash(rm -rf .git)",
       "Bash(sudo:*)",
-      "Bash(chmod 777 /*)"
-    ],
-    "additionalDirectories": []
-  },
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "terminal-notifier -title \"🤖 Claude Code\" -message \"Task completed successfully\" -sound \"Ping\""
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "terminal-notifier -title \"🤖 Claude Code\" -message \"Response finished\" -sound \"Breeze\""
-          }
-        ]
-      }
+      "Bash(chmod 777 /*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf .git)"
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "code-review@claude-plugins-official": true,
