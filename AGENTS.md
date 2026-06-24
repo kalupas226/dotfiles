@@ -10,13 +10,13 @@ Examples:
 - `packages/zsh/.zshrc` -> `~/.zshrc`
 - `packages/nvim/.config/nvim/init.lua` -> `~/.config/nvim/init.lua`
 - `packages/bin/.local/bin/dotfiles` -> `~/.local/bin/dotfiles`
-- `packages/bin/.local/bin/gwt` -> `~/.local/bin/gwt`
+- `packages/bin/.local/bin/tmux-open` -> `~/.local/bin/tmux-open`
 
 The repo contains both user configuration and maintenance tooling:
 - `install.sh` installs/link everything
 - `scripts/` contains maintenance and update-check scripts
 - `packages/bin/.local/bin/` contains user-facing CLI helpers that are installed into `$HOME`
-- `tests/` contains shell regression tests for `gwt`
+- `tests/` contains shell regression tests for helper scripts
 
 ## Commands
 
@@ -29,13 +29,11 @@ The repo contains both user configuration and maintenance tooling:
 
 ## Validation
 
-There is no single unified automated test suite for the whole repo, but there are automated shell regression tests for `gwt` under `tests/`.
+There is no single unified automated test suite for the whole repo, but there are automated shell regression tests for focused helper scripts under `tests/`.
 
 Use the narrowest validation that matches your change:
-- `bash tests/gwt-ls.sh`
-- `bash tests/gwt-add.sh`
-- `bash tests/gwt-open.sh`
-- `bash tests/gwt-rm.sh`
+- `bash tests/claude-statusline.sh`
+- `bash tests/tmux-open.sh`
 - `./scripts/check-updates.sh --list` for CLI/script sanity
 - `./install.sh` when you change installation flow, symlinking behavior, package lists, or anything cross-cutting
 
@@ -52,7 +50,7 @@ Top-level files:
 
 Packages:
 - `packages/aerospace` - AeroSpace config
-- `packages/bin` - installed helper CLIs such as `dotfiles`, `gwt`, and `gwt-status-loop`
+- `packages/bin` - installed helper CLIs such as `dotfiles` and `tmux-open`
 - `packages/claude` - Claude Code settings
 - `packages/git` - `.gitconfig` and global ignore file
 - `packages/karabiner` - Karabiner-Elements config
@@ -70,7 +68,7 @@ Maintenance code:
 - `scripts/lib/ui.sh` - shared shell UI helpers (`step`, `note`, `ok`, `warn`, `skip`, `section_line`)
 - `scripts/check-updates.sh` - dispatcher for update checks
 - `scripts/checks/` - individual checks for brew/mise/sheldon
-- `tests/` - regression tests for `gwt`
+- `tests/` - regression tests for helper scripts
 
 ## Important Behaviors
 
@@ -99,26 +97,6 @@ Supported commands:
 - `dotfiles install`
 - `dotfiles check [brew|mise|sheldon...]`
 - `dotfiles help`
-
-### gwt
-
-`packages/bin/.local/bin/gwt` is a real supported user-facing tool, not an internal helper. It manages git worktrees plus tmux windows for agent sessions.
-
-Supported commands:
-- `gwt add --agent <codex|claude|copilot> [--branch <branch>] [--base <branch>] <task>`
-- `gwt open [--agent <codex|claude|copilot>] <task>`
-- `gwt ls`
-- `gwt rm [--force] <task>`
-
-Important invariants:
-- task names may only contain letters, numbers, `.`, `_`, and `-`
-- `.worktrees/.gwt/tasks/*.tsv` is the source of truth for managed tasks
-- `gwt rm` removes metadata and the worktree, but intentionally leaves the git branch in place
-- `gwt open --agent <agent>` updates the recorded agent before opening the task
-- `gwt open` asks to repair stale branch metadata before opening the task
-- window status is refreshed by `gwt-status-loop`
-
-If you change `gwt`, update or add tests in `tests/`.
 
 ## Shell Conventions
 

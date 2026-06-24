@@ -4,6 +4,9 @@ local keybinds = require('keybinds')
 return {
   font = wezterm.font_with_fallback({
     'JetBrains Mono',
+    -- Full Nerd Font glyph coverage (WezTerm's built-in symbols font misses
+    -- some ranges, e.g. nf-fa-robot). Mono variant keeps icons single-cell.
+    'Hack Nerd Font Mono',
     'Hiragino Sans',
   }),
   font_size = 16.0,

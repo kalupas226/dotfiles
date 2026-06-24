@@ -2,10 +2,6 @@
 
 config-version = 2
 
-after-startup-command = [
-    'exec-and-forget borders style=round width=4.0 hidpi=on active_color=0xc0e0e6f0 inactive_color=0xc0333333'
-]
-
 start-at-login = false
 
 enable-normalization-flatten-containers = true

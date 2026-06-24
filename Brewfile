@@ -1,14 +1,13 @@
+# Formulae
 brew "bat"
 brew "coreutils"
 brew "eza"
-brew "FelixKratz/formulae/borders"
 brew "fzf"
 brew "gh"
 brew "ghq"
 brew "lazygit"
 brew "mise"
 brew "neovim"
-brew "pointfreeco/tap/pfw"
 brew "ripgrep"
 brew "shellcheck"
 brew "sheldon"
@@ -16,23 +15,24 @@ brew "starship"
 brew "tmux"
 brew "zoxide"
 
-tap "nikitabobko/tap"
-
+# Casks
 cask "1password"
-cask "claude"
 cask "cleanshot"
-cask "codex"
 cask "codex-app"
-cask "docker-desktop"
 cask "figma"
 cask "font-hack-nerd-font"
 cask "karabiner-elements"
-cask "nikitabobko/tap/aerospace"
 cask "notion"
 cask "obsidian"
-cask "proxyman"
 cask "raycast"
 cask "slack"
 cask "smartgit"
 cask "visual-studio-code"
 cask "wezterm"
+
+# Taps
+tap "nikitabobko/tap", trusted: { casks: ["aerospace"] }
+tap "pointfreeco/tap", trusted: { formulae: ["pfw"] }
+
+brew "pointfreeco/tap/pfw"
+cask "nikitabobko/tap/aerospace"
