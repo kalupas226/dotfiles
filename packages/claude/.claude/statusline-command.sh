@@ -11,22 +11,24 @@
 # --- Helpers ------------------------------------------------------------------
 sync_tmux_preferred_cwd() {
     local preferred_cwd="$1"
+    # Claude Code does not pass the standard TMUX_PANE to the statusLine command,
+    # but it does export CLAUDE_TMUX_PANE with the owning pane id (and it survives
+    # into agent view / child sessions). Prefer the standard var if ever present.
+    local pane="${TMUX_PANE:-${CLAUDE_TMUX_PANE:-}}"
     local pane_command
 
-    # Claude Code's statusLine command is intended for display, but it is also
-    # the only Claude callback we have found that reliably inherits TMUX_PANE in
-    # agent view. Keep this side effect tiny and idempotent: cache the active
-    # Claude worktree cwd on the pane so tmux-open can open from it.
-    # All failures are ignored so statusline rendering never depends on tmux.
-    if [ -z "${TMUX_PANE:-}" ] || [ -z "$preferred_cwd" ] || [ ! -d "$preferred_cwd" ]; then
+    # The statusLine is meant for display, but it is the only Claude callback that
+    # reliably knows its tmux pane, so we (idempotently, briefly, ignoring every
+    # failure) cache the active worktree cwd on the pane for tmux-open to read.
+    if [ -z "$pane" ] || [ -z "$preferred_cwd" ] || [ ! -d "$preferred_cwd" ]; then
         return 0
     fi
     command -v tmux >/dev/null 2>&1 || return 0
 
-    pane_command="$(tmux display-message -p -t "$TMUX_PANE" '#{pane_current_command}' 2>/dev/null || true)"
-    tmux set-option -p -t "$TMUX_PANE" @preferred_cwd "$preferred_cwd" >/dev/null 2>&1 || true
-    tmux set-option -p -t "$TMUX_PANE" @preferred_cwd_owner "$pane_command" >/dev/null 2>&1 || true
-    tmux set-option -p -t "$TMUX_PANE" @preferred_cwd_updated_at "$(date +%s)" >/dev/null 2>&1 || true
+    pane_command="$(tmux display-message -p -t "$pane" '#{pane_current_command}' 2>/dev/null || true)"
+    tmux set-option -p -t "$pane" @preferred_cwd "$preferred_cwd" >/dev/null 2>&1 || true
+    tmux set-option -p -t "$pane" @preferred_cwd_owner "$pane_command" >/dev/null 2>&1 || true
+    tmux set-option -p -t "$pane" @preferred_cwd_updated_at "$(date +%s)" >/dev/null 2>&1 || true
 }
 
 text_len() {

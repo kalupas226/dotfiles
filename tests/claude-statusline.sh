@@ -150,13 +150,37 @@ test_statusline_works_outside_tmux() {
     local visible
 
     cwd="$(mktemp -d /tmp/claude-statusline-outside.XXXXXX)"
-    output="$(mock_input "$cwd" | env -u TMUX_PANE COLUMNS=80 bash "$STATUSLINE")"
+    # Drop both pane hints so the sync truly no-ops (and never touches a real pane).
+    output="$(mock_input "$cwd" | env -u TMUX_PANE -u CLAUDE_TMUX_PANE COLUMNS=80 bash "$STATUSLINE")"
     visible="$(printf '%s' "$output" | strip_ansi)"
 
     [[ "$(printf '%s\n' "$visible" | visible_line_count)" == "2" ]] ||
         fail "expected statusline to render two rows outside tmux"
 
     rm -rf "$cwd"
+}
+
+test_statusline_uses_claude_tmux_pane_when_tmux_pane_absent() {
+    local cwd
+    local worktree_path
+    local wrapper_dir
+    local tmux_log
+
+    cwd="$(mktemp -d /tmp/claude-statusline-cpane-cwd.XXXXXX)"
+    worktree_path="$(mktemp -d /tmp/claude-statusline-cpane-wt.XXXXXX)"
+    wrapper_dir="$(mktemp -d /tmp/claude-statusline-cpane-wrapper.XXXXXX)"
+    tmux_log="$(mktemp /tmp/claude-statusline-cpane-log.XXXXXX)"
+    write_tmux_wrapper "${wrapper_dir}/tmux" "$tmux_log"
+
+    # Claude Code does not pass TMUX_PANE but exports CLAUDE_TMUX_PANE; the sync
+    # must fall back to it (agent view / child sessions).
+    mock_input "$cwd" "$worktree_path" |
+        env -u TMUX_PANE CLAUDE_TMUX_PANE="%9" PATH="${wrapper_dir}:$PATH" COLUMNS=80 bash "$STATUSLINE" >/dev/null
+
+    grep -F "set-option -p -t %9 @preferred_cwd ${worktree_path}" "$tmux_log" >/dev/null ||
+        fail "expected statusline to use CLAUDE_TMUX_PANE when TMUX_PANE is absent"
+
+    rm -rf "$cwd" "$worktree_path" "$wrapper_dir" "$tmux_log"
 }
 
 test_statusline_shows_context_tokens() {
@@ -242,6 +266,8 @@ main() {
     ok "statusline records preferred cwd in tmux"
     test_statusline_works_outside_tmux
     ok "statusline works outside tmux"
+    test_statusline_uses_claude_tmux_pane_when_tmux_pane_absent
+    ok "statusline uses CLAUDE_TMUX_PANE when TMUX_PANE is absent"
     test_statusline_shows_context_tokens
     ok "statusline shows context tokens when available"
     test_statusline_shows_tokens_without_percentage
