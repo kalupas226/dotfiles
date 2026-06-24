@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage:
+  tmux-open <popup|popup-lazygit|split-h|split-v|split-v-lazygit|new-window> <pane-id>
+
+Opens tmux UI from a pane-aware working directory.
+
+If the target pane has a valid @preferred_cwd pane option, tmux-open uses it.
+Otherwise it falls back to the pane's current path.
+EOF
+}
+
+die() {
+    printf 'tmux-open: %s\n' "$*" >&2
+    exit 1
+}
+
+require_cmd() {
+    command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+pane_option() {
+    local pane_id="$1"
+    local option="$2"
+
+    tmux show-options -p -v -t "$pane_id" "$option" 2>/dev/null || true
+}
+
+pane_format() {
+    local pane_id="$1"
+    local format="$2"
+
+    tmux display-message -p -t "$pane_id" "$format" 2>/dev/null || true
+}
+
+is_fresh_preferred_cwd() {
+    local updated_at="$1"
+    local max_age="${TMUX_OPEN_MAX_AGE_SECONDS:-86400}"
+    local now
+    local age
+
+    [[ -n "$updated_at" ]] || return 0
+    [[ "$updated_at" =~ ^[0-9]+$ ]] || return 1
+    [[ "$max_age" =~ ^[0-9]+$ ]] || max_age="86400"
+    (( max_age <= 0 )) && return 0
+
+    now="$(date +%s)"
+    age=$((now - updated_at))
+    (( age <= max_age ))
+}
+
+resolved_cwd() {
+    local pane_id="$1"
+    local preferred_cwd
+    local owner
+    local current_command
+    local updated_at
+    local pane_current_path
+
+    preferred_cwd="$(pane_option "$pane_id" "@preferred_cwd")"
+    if [[ -n "$preferred_cwd" && -d "$preferred_cwd" ]]; then
+        owner="$(pane_option "$pane_id" "@preferred_cwd_owner")"
+        current_command="$(pane_format "$pane_id" "#{pane_current_command}")"
+        updated_at="$(pane_option "$pane_id" "@preferred_cwd_updated_at")"
+
+        if [[ -z "$owner" || -z "$current_command" || "$owner" == "$current_command" ]]; then
+            if is_fresh_preferred_cwd "$updated_at"; then
+                printf '%s\n' "$preferred_cwd"
+                return 0
+            fi
+        fi
+    fi
+
+    pane_current_path="$(pane_format "$pane_id" "#{pane_current_path}")"
+    if [[ -n "$pane_current_path" && -d "$pane_current_path" ]]; then
+        printf '%s\n' "$pane_current_path"
+        return 0
+    fi
+
+    printf '%s\n' "$HOME"
+}
+
+main() {
+    local action="${1:-}"
+    local pane_id="${2:-}"
+    local cwd
+    local session_id
+
+    case "$action" in
+        -h|--help|help)
+            usage
+            return 0
+            ;;
+    esac
+
+    [[ -n "$action" ]] || die "action is required"
+    [[ -n "$pane_id" ]] || die "pane-id is required"
+    require_cmd tmux
+
+    cwd="$(resolved_cwd "$pane_id")"
+
+    case "$action" in
+        popup)
+            tmux display-popup -d "$cwd" -xC -yC -w 85% -h 85% -E
+            ;;
+        popup-lazygit)
+            tmux display-popup -d "$cwd" -xC -yC -w 85% -h 85% -E "lazygit"
+            ;;
+        split-h)
+            tmux split-window -h -t "$pane_id" -c "$cwd"
+            ;;
+        split-v)
+            tmux split-window -v -t "$pane_id" -c "$cwd"
+            ;;
+        split-v-lazygit)
+            tmux split-window -v -t "$pane_id" -c "$cwd" "lazygit"
+            ;;
+        new-window)
+            session_id="$(pane_format "$pane_id" "#{session_id}")"
+            if [[ -n "$session_id" ]]; then
+                tmux new-window -t "$session_id" -c "$cwd"
+            else
+                tmux new-window -c "$cwd"
+            fi
+            ;;
+        *)
+            die "unknown action: $action"
+            ;;
+    esac
+}
+
+main "$@"

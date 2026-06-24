@@ -80,6 +80,13 @@ Some tools require a one-time manual step after `install.sh`:
   - mise tools (`mise outdated`)
   - sheldon plugins (pinned `rev` vs latest tags)
 - Agent skills: see `skills/README.md`
+- Claude Code + tmux:
+  - Claude Code statusline renders as two rows so long directory and branch names do not hide model/context/cost/elapsed details
+  - row 1 shows directory, branch, dirty/ahead/behind, and (when present) the PR number colored by review state; row 2 shows model, the context gauge with token usage (`used/size`, falling back to a percentage), cost, and elapsed time
+  - the statusline uses Nerd Font icons (folder/branch/model/clock/PR); these need the Hack Nerd Font (in `Brewfile`) and the `Hack Nerd Font Mono` fallback configured in `packages/wezterm/.config/wezterm/wezterm.lua` (git dirty/ahead/behind use plain `*`/`⇡`/`⇣` symbols)
+  - the statusline command also records Claude's actual worktree directory as tmux pane option `@preferred_cwd`; this is intentionally tiny, idempotent, and ignored on failure
+  - tmux bindings for shell/lazygit popup, pane splits, and new windows use `@preferred_cwd` when valid and fall back to `pane_current_path`
+  - `prefix + G` opens `lazygit` in a bottom pane from the preferred cwd
 - AI agent worktrees:
   - Requires `tmux`; after `./install.sh`, use `gwt` from `~/.local/bin/gwt`
   - Requires the selected agent CLI on `PATH` (`codex`, `claude`, or `copilot`); `gwt add` and `gwt open` validate it before opening the task window
@@ -131,6 +138,8 @@ Each package contains dotfiles in their expected directory structure. The instal
 - **install.sh** - Main installation script with custom symlinking logic
 - **scripts/** - repository maintenance scripts (install/check/update helpers such as `check-updates.sh`, `lib/ui.sh`)
 - **packages/bin/.local/bin/dotfiles** - small launcher for install/check/help commands
+- **packages/bin/.local/bin/tmux-open** - tmux helper for opening popups, panes, and windows from a pane's preferred cwd
+- **packages/claude/.claude/statusline-command.sh** - Claude Code two-row statusline and tmux preferred cwd sync
 - **packages/bin/.local/bin/gwt** - tmux + git worktree launcher for AI-agent tasks
 - **packages/bin/.local/bin/** - user-facing CLI helpers; prefer this location for agent/task utilities instead of `scripts/`
 - **packages/** - Individual application configurations

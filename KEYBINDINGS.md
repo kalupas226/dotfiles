@@ -57,12 +57,13 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 
 | Key | Action | Source |
 |---|---|---|
-| `prefix + \|` | Split pane vertically (keep cwd) | `packages/tmux/.tmux.conf` |
-| `prefix + -` | Split pane horizontally (keep cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + \|` | Split pane vertically (preferred cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + -` | Split pane horizontally (preferred cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + H/J/K/L` | Resize pane | `packages/tmux/.tmux.conf` |
-| `prefix + t` | New window (keep cwd) | `packages/tmux/.tmux.conf` |
-| `prefix + u` | Open a shell in a centered tmux popup | `packages/tmux/.tmux.conf` |
-| `prefix + g` | Open `lazygit` in centered tmux popup | `packages/tmux/.tmux.conf` |
+| `prefix + t` | New window (preferred cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + u` | Open a shell in a centered tmux popup (preferred cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + g` | Open `lazygit` in centered tmux popup (preferred cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + G` | Open `lazygit` in a bottom pane (preferred cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + n/p` | Next/previous window | `packages/tmux/.tmux.conf` |
 | `prefix + s` | Open session chooser (`choose-tree`) | `packages/tmux/.tmux.conf` |
 | `copy-mode` + `v` | Begin selection | `packages/tmux/.tmux.conf` |
