@@ -98,7 +98,7 @@ test_uses_valid_preferred_cwd_for_popup() {
         TMUX_TEST_PANE_CURRENT_PATH="$fallback_cwd" \
         run_tmux_open "$wrapper_dir" popup-lazygit "%1"
 
-    grep -F "display-popup -d ${preferred_cwd} -xC -yC -w 85% -h 85% -E lazygit" "$tmux_log" >/dev/null ||
+    grep -F "display-popup -t %1 -d ${preferred_cwd} -xC -yC -w 85% -h 85% -E lazygit" "$tmux_log" >/dev/null ||
         fail "expected popup-lazygit to use preferred cwd"
 
     rm -rf "$wrapper_dir" "$tmux_log" "$preferred_cwd" "$fallback_cwd"

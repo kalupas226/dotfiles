@@ -105,10 +105,10 @@ main() {
 
     case "$action" in
         popup)
-            tmux display-popup -d "$cwd" -xC -yC -w 85% -h 85% -E
+            tmux display-popup -t "$pane_id" -d "$cwd" -xC -yC -w 85% -h 85% -E
             ;;
         popup-lazygit)
-            tmux display-popup -d "$cwd" -xC -yC -w 85% -h 85% -E "lazygit"
+            tmux display-popup -t "$pane_id" -d "$cwd" -xC -yC -w 85% -h 85% -E "lazygit"
             ;;
         split-h)
             tmux split-window -h -t "$pane_id" -c "$cwd"
