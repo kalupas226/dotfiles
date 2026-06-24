@@ -87,22 +87,6 @@ Some tools require a one-time manual step after `install.sh`:
   - the statusline command also records Claude's actual worktree directory as tmux pane option `@preferred_cwd`; this is intentionally tiny, idempotent, and ignored on failure
   - tmux bindings for shell/lazygit popup, pane splits, and new windows use `@preferred_cwd` when valid and fall back to `pane_current_path`
   - `prefix + G` opens `lazygit` in a bottom pane from the preferred cwd
-- AI agent worktrees:
-  - Requires `tmux`; after `./install.sh`, use `gwt` from `~/.local/bin/gwt`
-  - Requires the selected agent CLI on `PATH` (`codex`, `claude`, or `copilot`); `gwt add` and `gwt open` validate it before opening the task window
-  - New project sessions start with window `1` named `<repo>@root` for repo-level shell work and as the parent-worktree hub for creating more task worktrees
-  - `task` names are restricted to letters, numbers, `.`, `_`, and `-` (for example `tmux-status`); names like `feat/tmux-status` are rejected
-  - `gwt add <task> --agent <codex|claude|copilot>` creates a new `.worktrees/<task>` plus a tmux window in the project session
-  - `gwt open <task>` reopens an existing task window for a task recorded in `gwt` metadata and works across tmux sessions
-  - `gwt open --agent <codex|claude|copilot> <task>` updates the task's recorded agent and reopens it with that agent
-  - if `gwt open` finds stale branch metadata, it asks whether to update the recorded branch to match the actual worktree branch before opening
-  - `gwt ls` shows `task / agent / status / dirty / worktree / stale`
-  - `stale=yes` means the recorded metadata no longer matches reality (for example the worktree is missing or no longer registered on the recorded branch)
-  - `gwt rm <task>` closes the task window and removes the worktree for a `gwt`-managed task; it refuses dirty worktrees, leaves the parent `<repo>@root` window/session alone, and local branches are left alone
-  - `gwt rm --force <task>` also discards uncommitted changes in that worktree; use it only for recovery
-  - `gwt` treats `.worktrees/.gwt/tasks/*.tsv` as the source of truth for managed tasks; if that metadata is missing, the task no longer appears in `gwt ls` and must be inspected or cleaned up with raw `git worktree` commands
-  - Useful recovery commands for orphaned worktrees: `git worktree list`, `git worktree remove .worktrees/<task>`, and `git branch -d <branch>` when you also want to drop the branch
-  - tmux window names are refreshed automatically as `task [agent:●|◌|·]` for busy, idle, and inactive states
 - If `brew bundle` or `mise install` fails mid-run, fix the cause then rerun `dotfiles install`.
 
 ## Repository Structure
@@ -140,7 +124,6 @@ Each package contains dotfiles in their expected directory structure. The instal
 - **packages/bin/.local/bin/dotfiles** - small launcher for install/check/help commands
 - **packages/bin/.local/bin/tmux-open** - tmux helper for opening popups, panes, and windows from a pane's preferred cwd
 - **packages/claude/.claude/statusline-command.sh** - Claude Code two-row statusline and tmux preferred cwd sync
-- **packages/bin/.local/bin/gwt** - tmux + git worktree launcher for AI-agent tasks
 - **packages/bin/.local/bin/** - user-facing CLI helpers; prefer this location for agent/task utilities instead of `scripts/`
 - **packages/** - Individual application configurations
 - **KEYBINDINGS.md** - cheat sheet for custom macOS/terminal/Neovim keybindings
