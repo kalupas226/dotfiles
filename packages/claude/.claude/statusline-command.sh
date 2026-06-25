@@ -9,28 +9,6 @@
 # icons carry the meaning.
 
 # --- Helpers ------------------------------------------------------------------
-sync_tmux_preferred_cwd() {
-    local preferred_cwd="$1"
-    # Claude Code does not pass the standard TMUX_PANE to the statusLine command,
-    # but it does export CLAUDE_TMUX_PANE with the owning pane id (and it survives
-    # into agent view / child sessions). Prefer the standard var if ever present.
-    local pane="${TMUX_PANE:-${CLAUDE_TMUX_PANE:-}}"
-    local pane_command
-
-    # The statusLine is meant for display, but it is the only Claude callback that
-    # reliably knows its tmux pane, so we (idempotently, briefly, ignoring every
-    # failure) cache the active worktree cwd on the pane for tmux-open to read.
-    if [ -z "$pane" ] || [ -z "$preferred_cwd" ] || [ ! -d "$preferred_cwd" ]; then
-        return 0
-    fi
-    command -v tmux >/dev/null 2>&1 || return 0
-
-    pane_command="$(tmux display-message -p -t "$pane" '#{pane_current_command}' 2>/dev/null || true)"
-    tmux set-option -p -t "$pane" @preferred_cwd "$preferred_cwd" >/dev/null 2>&1 || true
-    tmux set-option -p -t "$pane" @preferred_cwd_owner "$pane_command" >/dev/null 2>&1 || true
-    tmux set-option -p -t "$pane" @preferred_cwd_updated_at "$(date +%s)" >/dev/null 2>&1 || true
-}
-
 text_len() {
     local LC_ALL=C
     printf '%s' "${#1}"
@@ -134,8 +112,11 @@ input=$(cat)
 # (tab is IFS whitespace), which would misalign every field after a missing one.
 us=$(printf '\037')
 IFS="$us" read -r cwd model used_pct cost_usd duration_ms input_tokens ctx_size pr_number pr_state <<EOF
-$(printf '%s' "$input" | jq -r '[
-    .worktree.path // .workspace.current_dir // .cwd // "",
+$(printf '%s' "$input" | jq -r '
+def preferred_cwd:
+    .worktree.path // .workspace.current_dir // .cwd // "";
+[
+    preferred_cwd,
     .model.display_name // "",
     .context_window.used_percentage // "",
     .cost.total_cost_usd // "",
@@ -146,9 +127,6 @@ $(printf '%s' "$input" | jq -r '[
     .pr.review_state // ""
 ] | map(tostring) | join("\u001f")')
 EOF
-
-# Cache the worktree cwd on the tmux pane (see sync_tmux_preferred_cwd above).
-sync_tmux_preferred_cwd "$cwd"
 
 # --- Directory display ---------------------------------------------------------
 dir_display="$cwd"

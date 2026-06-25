@@ -9,8 +9,8 @@ Usage:
 
 Opens tmux UI from a pane-aware working directory.
 
-If the target pane has a valid @preferred_cwd pane option, tmux-open uses it.
-Otherwise it falls back to the pane's current path.
+For Claude agent panes, tmux-open first tries the most recent matching Claude
+cwd state. Otherwise it falls back to the pane's current path.
 EOF
 }
 
@@ -23,13 +23,6 @@ require_cmd() {
     command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
 }
 
-pane_option() {
-    local pane_id="$1"
-    local option="$2"
-
-    tmux show-options -p -v -t "$pane_id" "$option" 2>/dev/null || true
-}
-
 pane_format() {
     local pane_id="$1"
     local format="$2"
@@ -37,45 +30,101 @@ pane_format() {
     tmux display-message -p -t "$pane_id" "$format" 2>/dev/null || true
 }
 
-is_fresh_preferred_cwd() {
-    local updated_at="$1"
-    local max_age="${TMUX_OPEN_MAX_AGE_SECONDS:-86400}"
-    local now
-    local age
+state_dir() {
+    local tmpdir="${TMPDIR:-/tmp}"
 
-    [[ -n "$updated_at" ]] || return 0
-    [[ "$updated_at" =~ ^[0-9]+$ ]] || return 1
-    [[ "$max_age" =~ ^[0-9]+$ ]] || max_age="86400"
-    (( max_age <= 0 )) && return 0
+    printf '%s/claude-cwd-state\n' "${tmpdir%/}"
+}
 
-    now="$(date +%s)"
-    age=$((now - updated_at))
-    (( age <= max_age ))
+file_mtime() {
+    local file="$1"
+
+    stat -f '%m' "$file" 2>/dev/null || stat -c '%Y' "$file" 2>/dev/null || printf '0\n'
+}
+
+path_related() {
+    local left="$1"
+    local right="$2"
+
+    [[ -n "$left" && -n "$right" ]] || return 1
+    [[ "$left" == "$right" || "$left" == "$right"/* || "$right" == "$left"/* ]]
+}
+
+pane_has_claude_agents() {
+    local pane_id="$1"
+    local pane_tty
+    local tty_name
+
+    pane_tty="$(pane_format "$pane_id" "#{pane_tty}")"
+    [[ -n "$pane_tty" ]] || return 1
+
+    tty_name="${pane_tty#/dev/}"
+    ps -o command= -t "$tty_name" 2>/dev/null |
+        grep -E '(^|/)claude([[:space:]].*)?[[:space:]]agents([[:space:]]|$)' >/dev/null 2>&1 ||
+        return 1
+}
+
+latest_claude_cwd() {
+    local pane_current_path="$1"
+    local dir
+    local file
+    local cwd
+    local project_dir
+    local mtime
+    local best_mtime=0
+    local best_cwd=""
+    local us
+
+    command -v jq >/dev/null 2>&1 || return 1
+
+    dir="$(state_dir)"
+    [[ -d "$dir" && -n "$pane_current_path" ]] || return 1
+
+    us=$(printf '\037')
+    for file in "$dir"/session-*.json; do
+        [[ -f "$file" ]] || continue
+
+        IFS="$us" read -r cwd project_dir <<EOF
+$(jq -r '
+[
+    (.effective_cwd // ""),
+    (.project_dir // "")
+] | map(tostring) | join("\u001f")
+' "$file" 2>/dev/null || true)
+EOF
+
+        [[ -n "$cwd" && -d "$cwd" ]] || continue
+        if [[ -n "$project_dir" ]]; then
+            path_related "$pane_current_path" "$project_dir" || continue
+        else
+            path_related "$pane_current_path" "$cwd" || continue
+        fi
+
+        mtime="$(file_mtime "$file")"
+        [[ "$mtime" =~ ^[0-9]+$ ]] || mtime=0
+        if (( mtime >= best_mtime )); then
+            best_mtime="$mtime"
+            best_cwd="$cwd"
+        fi
+    done
+
+    [[ -n "$best_cwd" ]] || return 1
+    printf '%s\n' "$best_cwd"
 }
 
 resolved_cwd() {
     local pane_id="$1"
-    local preferred_cwd
-    local owner
-    local current_command
-    local updated_at
     local pane_current_path
+    local claude_cwd
 
-    preferred_cwd="$(pane_option "$pane_id" "@preferred_cwd")"
-    if [[ -n "$preferred_cwd" && -d "$preferred_cwd" ]]; then
-        owner="$(pane_option "$pane_id" "@preferred_cwd_owner")"
-        current_command="$(pane_format "$pane_id" "#{pane_current_command}")"
-        updated_at="$(pane_option "$pane_id" "@preferred_cwd_updated_at")"
-
-        if [[ -z "$owner" || -z "$current_command" || "$owner" == "$current_command" ]]; then
-            if is_fresh_preferred_cwd "$updated_at"; then
-                printf '%s\n' "$preferred_cwd"
-                return 0
-            fi
+    pane_current_path="$(pane_format "$pane_id" "#{pane_current_path}")"
+    if pane_has_claude_agents "$pane_id"; then
+        if claude_cwd="$(latest_claude_cwd "$pane_current_path")" && [[ -n "$claude_cwd" && -d "$claude_cwd" ]]; then
+            printf '%s\n' "$claude_cwd"
+            return 0
         fi
     fi
 
-    pane_current_path="$(pane_format "$pane_id" "#{pane_current_path}")"
     if [[ -n "$pane_current_path" && -d "$pane_current_path" ]]; then
         printf '%s\n' "$pane_current_path"
         return 0
