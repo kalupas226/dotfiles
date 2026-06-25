@@ -32,23 +32,9 @@ done
 printf '\n' >>"${tmux_log}"
 
 case "\$cmd" in
-    show-options)
-        option="\${!#}"
-        case "\$option" in
-            @preferred_cwd)
-                printf '%s\n' "\${TMUX_TEST_PREFERRED_CWD:-}"
-                ;;
-            @preferred_cwd_owner)
-                printf '%s\n' "\${TMUX_TEST_OWNER:-}"
-                ;;
-            @preferred_cwd_updated_at)
-                printf '%s\n' "\${TMUX_TEST_UPDATED_AT:-}"
-                ;;
-        esac
-        ;;
     display-message)
-        if [[ "\$*" == *"#{pane_current_command}"* ]]; then
-            printf '%s\n' "\${TMUX_TEST_CURRENT_COMMAND:-zsh}"
+        if [[ "\$*" == *"#{pane_tty}"* ]]; then
+            printf '%s\n' "\${TMUX_TEST_PANE_TTY:-/dev/ttys999}"
             exit 0
         fi
         if [[ "\$*" == *"#{pane_current_path}"* ]]; then
@@ -73,6 +59,49 @@ EOF
     chmod +x "$wrapper_path"
 }
 
+write_ps_wrapper() {
+    local wrapper_path="$1"
+
+    cat >"$wrapper_path" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$*" == *"-o command="* && "$*" == *"-t ttys999"* ]]; then
+    printf '%s\n' "${TMUX_TEST_PS_COMMANDS:-zsh}"
+    exit 0
+fi
+
+exit 1
+EOF
+    chmod +x "$wrapper_path"
+}
+
+write_claude_state() {
+    local tmpdir="$1"
+    local session_id="$2"
+    local cwd="$3"
+    local project_dir="$4"
+    local touch_time="$5"
+    local state_dir
+    local state_file
+
+    state_dir="${tmpdir%/}/claude-cwd-state"
+    state_file="${state_dir}/session-${session_id}.json"
+    mkdir -p "$state_dir"
+
+    jq -n \
+        --arg session_id "$session_id" \
+        --arg project_dir "$project_dir" \
+        --arg cwd "$cwd" \
+        '{
+            session_id: $session_id,
+            project_dir: $project_dir,
+            effective_cwd: $cwd
+        }' >"$state_file"
+
+    touch -t "$touch_time" "$state_file"
+}
+
 run_tmux_open() {
     local wrapper_dir="$1"
     shift
@@ -80,141 +109,167 @@ run_tmux_open() {
     PATH="${wrapper_dir}:$PATH" "$TMUX_OPEN" "$@"
 }
 
-test_uses_valid_preferred_cwd_for_popup() {
+setup_wrappers() {
+    local wrapper_dir="$1"
+    local tmux_log="$2"
+
+    write_tmux_wrapper "${wrapper_dir}/tmux" "$tmux_log"
+    write_ps_wrapper "${wrapper_dir}/ps"
+}
+
+test_uses_latest_matching_claude_cwd_for_popup() {
     local wrapper_dir
     local tmux_log
-    local preferred_cwd
+    local tmpdir
+    local project_dir
+    local other_project_dir
+    local old_cwd
+    local expected_cwd
+    local other_cwd
     local fallback_cwd
 
     wrapper_dir="$(mktemp -d /tmp/tmux-open-wrapper.XXXXXX)"
     tmux_log="$(mktemp /tmp/tmux-open-log.XXXXXX)"
-    preferred_cwd="$(mktemp -d /tmp/tmux-open-preferred.XXXXXX)"
-    fallback_cwd="$(mktemp -d /tmp/tmux-open-fallback.XXXXXX)"
-    write_tmux_wrapper "${wrapper_dir}/tmux" "$tmux_log"
+    tmpdir="$(mktemp -d /tmp/tmux-open-state.XXXXXX)"
+    project_dir="$(mktemp -d /tmp/tmux-open-project.XXXXXX)"
+    other_project_dir="$(mktemp -d /tmp/tmux-open-other-project.XXXXXX)"
+    old_cwd="$(mktemp -d /tmp/tmux-open-old-cwd.XXXXXX)"
+    expected_cwd="$(mktemp -d /tmp/tmux-open-expected-cwd.XXXXXX)"
+    other_cwd="$(mktemp -d /tmp/tmux-open-other-cwd.XXXXXX)"
+    fallback_cwd="$project_dir"
+    setup_wrappers "$wrapper_dir" "$tmux_log"
 
-    TMUX_TEST_PREFERRED_CWD="$preferred_cwd" \
-        TMUX_TEST_OWNER="claude" \
-        TMUX_TEST_CURRENT_COMMAND="claude" \
+    write_claude_state "$tmpdir" old "$old_cwd" "$project_dir" 202401010000.00
+    write_claude_state "$tmpdir" expected "$expected_cwd" "$project_dir" 202401010001.00
+    write_claude_state "$tmpdir" other "$other_cwd" "$other_project_dir" 202401010002.00
+
+    TMPDIR="$tmpdir" \
+        TMUX_TEST_PS_COMMANDS="claude agents" \
         TMUX_TEST_PANE_CURRENT_PATH="$fallback_cwd" \
         run_tmux_open "$wrapper_dir" popup-lazygit "%1"
 
-    grep -F "display-popup -t %1 -d ${preferred_cwd} -xC -yC -w 85% -h 85% -E lazygit" "$tmux_log" >/dev/null ||
-        fail "expected popup-lazygit to use preferred cwd"
+    grep -F "display-popup -t %1 -d ${expected_cwd} -xC -yC -w 85% -h 85% -E lazygit" "$tmux_log" >/dev/null ||
+        fail "expected popup-lazygit to use latest matching Claude cwd"
 
-    rm -rf "$wrapper_dir" "$tmux_log" "$preferred_cwd" "$fallback_cwd"
+    rm -rf "$wrapper_dir" "$tmux_log" "$tmpdir" "$project_dir" "$other_project_dir" "$old_cwd" "$expected_cwd" "$other_cwd"
 }
 
-test_falls_back_when_preferred_cwd_is_missing() {
+test_non_claude_pane_uses_pane_current_path() {
     local wrapper_dir
     local tmux_log
-    local missing_cwd
+    local tmpdir
+    local project_dir
+    local claude_cwd
     local fallback_cwd
 
-    wrapper_dir="$(mktemp -d /tmp/tmux-open-missing-wrapper.XXXXXX)"
-    tmux_log="$(mktemp /tmp/tmux-open-missing-log.XXXXXX)"
-    missing_cwd="/tmp/tmux-open-missing-not-created"
-    fallback_cwd="$(mktemp -d /tmp/tmux-open-missing-fallback.XXXXXX)"
-    write_tmux_wrapper "${wrapper_dir}/tmux" "$tmux_log"
+    wrapper_dir="$(mktemp -d /tmp/tmux-open-non-claude-wrapper.XXXXXX)"
+    tmux_log="$(mktemp /tmp/tmux-open-non-claude-log.XXXXXX)"
+    tmpdir="$(mktemp -d /tmp/tmux-open-non-claude-state.XXXXXX)"
+    project_dir="$(mktemp -d /tmp/tmux-open-non-claude-project.XXXXXX)"
+    claude_cwd="$(mktemp -d /tmp/tmux-open-non-claude-cwd.XXXXXX)"
+    fallback_cwd="$project_dir"
+    setup_wrappers "$wrapper_dir" "$tmux_log"
+    write_claude_state "$tmpdir" ignored "$claude_cwd" "$project_dir" 202401010000.00
 
-    TMUX_TEST_PREFERRED_CWD="$missing_cwd" \
-        TMUX_TEST_OWNER="claude" \
-        TMUX_TEST_CURRENT_COMMAND="claude" \
+    TMPDIR="$tmpdir" \
+        TMUX_TEST_PS_COMMANDS="zsh" \
         TMUX_TEST_PANE_CURRENT_PATH="$fallback_cwd" \
         run_tmux_open "$wrapper_dir" split-h "%1"
 
     grep -F "split-window -h -t %1 -c ${fallback_cwd}" "$tmux_log" >/dev/null ||
-        fail "expected split-h to fall back to pane_current_path"
+        fail "expected split-h to ignore Claude cwd outside claude agents panes"
 
-    rm -rf "$wrapper_dir" "$tmux_log" "$fallback_cwd"
+    rm -rf "$wrapper_dir" "$tmux_log" "$tmpdir" "$project_dir" "$claude_cwd"
 }
 
-test_falls_back_when_owner_mismatches() {
+test_claude_pane_falls_back_when_state_is_missing() {
     local wrapper_dir
     local tmux_log
-    local preferred_cwd
+    local tmpdir
     local fallback_cwd
 
-    wrapper_dir="$(mktemp -d /tmp/tmux-open-owner-wrapper.XXXXXX)"
-    tmux_log="$(mktemp /tmp/tmux-open-owner-log.XXXXXX)"
-    preferred_cwd="$(mktemp -d /tmp/tmux-open-owner-preferred.XXXXXX)"
-    fallback_cwd="$(mktemp -d /tmp/tmux-open-owner-fallback.XXXXXX)"
-    write_tmux_wrapper "${wrapper_dir}/tmux" "$tmux_log"
+    wrapper_dir="$(mktemp -d /tmp/tmux-open-missing-wrapper.XXXXXX)"
+    tmux_log="$(mktemp /tmp/tmux-open-missing-log.XXXXXX)"
+    tmpdir="$(mktemp -d /tmp/tmux-open-missing-state.XXXXXX)"
+    fallback_cwd="$(mktemp -d /tmp/tmux-open-missing-fallback.XXXXXX)"
+    setup_wrappers "$wrapper_dir" "$tmux_log"
 
-    TMUX_TEST_PREFERRED_CWD="$preferred_cwd" \
-        TMUX_TEST_OWNER="claude" \
-        TMUX_TEST_CURRENT_COMMAND="zsh" \
-        TMUX_TEST_PANE_CURRENT_PATH="$fallback_cwd" \
-        TMUX_TEST_SESSION_ID="\$9" \
-        run_tmux_open "$wrapper_dir" new-window "%1"
-
-    grep -F "new-window -t \$9 -c ${fallback_cwd}" "$tmux_log" >/dev/null ||
-        fail "expected new-window to fall back on owner mismatch"
-
-    rm -rf "$wrapper_dir" "$tmux_log" "$preferred_cwd" "$fallback_cwd"
-}
-
-test_falls_back_when_preferred_cwd_is_stale() {
-    local wrapper_dir
-    local tmux_log
-    local preferred_cwd
-    local fallback_cwd
-
-    wrapper_dir="$(mktemp -d /tmp/tmux-open-stale-wrapper.XXXXXX)"
-    tmux_log="$(mktemp /tmp/tmux-open-stale-log.XXXXXX)"
-    preferred_cwd="$(mktemp -d /tmp/tmux-open-stale-preferred.XXXXXX)"
-    fallback_cwd="$(mktemp -d /tmp/tmux-open-stale-fallback.XXXXXX)"
-    write_tmux_wrapper "${wrapper_dir}/tmux" "$tmux_log"
-
-    TMUX_TEST_PREFERRED_CWD="$preferred_cwd" \
-        TMUX_TEST_OWNER="claude" \
-        TMUX_TEST_CURRENT_COMMAND="claude" \
-        TMUX_TEST_UPDATED_AT="1" \
-        TMUX_OPEN_MAX_AGE_SECONDS="1" \
+    TMPDIR="$tmpdir" \
+        TMUX_TEST_PS_COMMANDS="claude agents" \
         TMUX_TEST_PANE_CURRENT_PATH="$fallback_cwd" \
         run_tmux_open "$wrapper_dir" split-v "%1"
 
     grep -F "split-window -v -t %1 -c ${fallback_cwd}" "$tmux_log" >/dev/null ||
-        fail "expected split-v to fall back on stale preferred cwd"
+        fail "expected split-v to fall back when Claude state is missing"
 
-    rm -rf "$wrapper_dir" "$tmux_log" "$preferred_cwd" "$fallback_cwd"
+    rm -rf "$wrapper_dir" "$tmux_log" "$tmpdir" "$fallback_cwd"
 }
 
-test_opens_lazygit_in_bottom_pane() {
+test_split_v_lazygit_uses_claude_cwd() {
     local wrapper_dir
     local tmux_log
-    local preferred_cwd
-    local fallback_cwd
+    local tmpdir
+    local project_dir
+    local claude_cwd
 
-    wrapper_dir="$(mktemp -d /tmp/tmux-open-lazygit-pane-wrapper.XXXXXX)"
-    tmux_log="$(mktemp /tmp/tmux-open-lazygit-pane-log.XXXXXX)"
-    preferred_cwd="$(mktemp -d /tmp/tmux-open-lazygit-pane-preferred.XXXXXX)"
-    fallback_cwd="$(mktemp -d /tmp/tmux-open-lazygit-pane-fallback.XXXXXX)"
-    write_tmux_wrapper "${wrapper_dir}/tmux" "$tmux_log"
+    wrapper_dir="$(mktemp -d /tmp/tmux-open-split-v-lazygit-wrapper.XXXXXX)"
+    tmux_log="$(mktemp /tmp/tmux-open-split-v-lazygit-log.XXXXXX)"
+    tmpdir="$(mktemp -d /tmp/tmux-open-split-v-lazygit-state.XXXXXX)"
+    project_dir="$(mktemp -d /tmp/tmux-open-split-v-lazygit-project.XXXXXX)"
+    claude_cwd="$(mktemp -d /tmp/tmux-open-split-v-lazygit-cwd.XXXXXX)"
+    setup_wrappers "$wrapper_dir" "$tmux_log"
+    write_claude_state "$tmpdir" agent "$claude_cwd" "$project_dir" 202401010000.00
 
-    TMUX_TEST_PREFERRED_CWD="$preferred_cwd" \
-        TMUX_TEST_OWNER="claude" \
-        TMUX_TEST_CURRENT_COMMAND="claude" \
-        TMUX_TEST_PANE_CURRENT_PATH="$fallback_cwd" \
+    TMPDIR="$tmpdir" \
+        TMUX_TEST_PS_COMMANDS="claude agents" \
+        TMUX_TEST_PANE_CURRENT_PATH="$project_dir" \
         run_tmux_open "$wrapper_dir" split-v-lazygit "%1"
 
-    grep -F "split-window -v -t %1 -c ${preferred_cwd} lazygit" "$tmux_log" >/dev/null ||
-        fail "expected split-v-lazygit to open lazygit below from preferred cwd"
+    grep -F "split-window -v -t %1 -c ${claude_cwd} lazygit" "$tmux_log" >/dev/null ||
+        fail "expected split-v-lazygit to use Claude cwd and launch lazygit"
 
-    rm -rf "$wrapper_dir" "$tmux_log" "$preferred_cwd" "$fallback_cwd"
+    rm -rf "$wrapper_dir" "$tmux_log" "$tmpdir" "$project_dir" "$claude_cwd"
+}
+
+test_new_window_uses_claude_cwd_and_session_id() {
+    local wrapper_dir
+    local tmux_log
+    local tmpdir
+    local project_dir
+    local claude_cwd
+
+    wrapper_dir="$(mktemp -d /tmp/tmux-open-new-window-wrapper.XXXXXX)"
+    tmux_log="$(mktemp /tmp/tmux-open-new-window-log.XXXXXX)"
+    tmpdir="$(mktemp -d /tmp/tmux-open-new-window-state.XXXXXX)"
+    project_dir="$(mktemp -d /tmp/tmux-open-new-window-project.XXXXXX)"
+    claude_cwd="$(mktemp -d /tmp/tmux-open-new-window-cwd.XXXXXX)"
+    setup_wrappers "$wrapper_dir" "$tmux_log"
+    write_claude_state "$tmpdir" agent "$claude_cwd" "$project_dir" 202401010000.00
+
+    TMPDIR="$tmpdir" \
+        TMUX_TEST_PS_COMMANDS="claude agents" \
+        TMUX_TEST_PANE_CURRENT_PATH="$project_dir" \
+        TMUX_TEST_SESSION_ID="\$9" \
+        run_tmux_open "$wrapper_dir" new-window "%1"
+
+    grep -F "new-window -t \$9 -c ${claude_cwd}" "$tmux_log" >/dev/null ||
+        fail "expected new-window to use Claude cwd and session id"
+
+    rm -rf "$wrapper_dir" "$tmux_log" "$tmpdir" "$project_dir" "$claude_cwd"
 }
 
 main() {
     step "Running tmux-open tests"
-    test_uses_valid_preferred_cwd_for_popup
-    ok "uses valid preferred cwd for lazygit popup"
-    test_falls_back_when_preferred_cwd_is_missing
-    ok "falls back when preferred cwd is missing"
-    test_falls_back_when_owner_mismatches
-    ok "falls back when owner mismatches"
-    test_falls_back_when_preferred_cwd_is_stale
-    ok "falls back when preferred cwd is stale"
-    test_opens_lazygit_in_bottom_pane
-    ok "opens lazygit in a bottom pane"
+    test_uses_latest_matching_claude_cwd_for_popup
+    ok "uses latest matching Claude cwd for lazygit popup"
+    test_non_claude_pane_uses_pane_current_path
+    ok "uses pane_current_path outside claude agents panes"
+    test_claude_pane_falls_back_when_state_is_missing
+    ok "falls back when Claude state is missing"
+    test_split_v_lazygit_uses_claude_cwd
+    ok "uses Claude cwd for split-v lazygit"
+    test_new_window_uses_claude_cwd_and_session_id
+    ok "opens new windows from Claude cwd"
 }
 
 main "$@"

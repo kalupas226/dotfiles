@@ -52,42 +52,6 @@ mock_input() {
         }'
 }
 
-write_tmux_wrapper() {
-    local wrapper_path="$1"
-    local tmux_log="$2"
-
-    cat >"$wrapper_path" <<EOF
-#!/usr/bin/env bash
-set -euo pipefail
-
-cmd="\${1:-}"
-shift || true
-printf '%s' "\$cmd" >>"${tmux_log}"
-for arg in "\$@"; do
-    printf ' %s' "\$arg" >>"${tmux_log}"
-done
-printf '\n' >>"${tmux_log}"
-
-case "\$cmd" in
-    display-message)
-        if [[ "\$*" == *"#{pane_current_command}"* ]]; then
-            printf 'claude\n'
-            exit 0
-        fi
-        exit 1
-        ;;
-    set-option)
-        exit 0
-        ;;
-    *)
-        printf 'unexpected tmux command: %s\n' "\$cmd" >&2
-        exit 1
-        ;;
-esac
-EOF
-    chmod +x "$wrapper_path"
-}
-
 test_statusline_outputs_two_fitted_lines() {
     local repo_root
     local branch
@@ -116,41 +80,12 @@ test_statusline_outputs_two_fitted_lines() {
     rm -rf "$(dirname "$(dirname "$(dirname "$repo_root")")")"
 }
 
-test_statusline_sets_preferred_cwd_in_tmux() {
-    local cwd
-    local worktree_path
-    local wrapper_dir
-    local tmux_log
-    local output
-
-    cwd="$(mktemp -d /tmp/claude-statusline-cwd.XXXXXX)"
-    worktree_path="$(mktemp -d /tmp/claude-statusline-worktree.XXXXXX)"
-    wrapper_dir="$(mktemp -d /tmp/claude-statusline-tmux-wrapper.XXXXXX)"
-    tmux_log="$(mktemp /tmp/claude-statusline-tmux-log.XXXXXX)"
-
-    write_tmux_wrapper "${wrapper_dir}/tmux" "$tmux_log"
-
-    output="$(mock_input "$cwd" "$worktree_path" |
-        TMUX_PANE="%7" PATH="${wrapper_dir}:$PATH" COLUMNS=80 bash "$STATUSLINE")"
-
-    [[ -n "$output" ]] || fail "expected statusline to keep rendering while syncing tmux cwd"
-    grep -F "set-option -p -t %7 @preferred_cwd ${worktree_path}" "$tmux_log" >/dev/null ||
-        fail "expected statusline to save worktree path as preferred cwd"
-    grep -F "set-option -p -t %7 @preferred_cwd_owner claude" "$tmux_log" >/dev/null ||
-        fail "expected statusline to save pane command as preferred cwd owner"
-    grep -F "set-option -p -t %7 @preferred_cwd_updated_at" "$tmux_log" >/dev/null ||
-        fail "expected statusline to save preferred cwd timestamp"
-
-    rm -rf "$cwd" "$worktree_path" "$wrapper_dir" "$tmux_log"
-}
-
 test_statusline_works_outside_tmux() {
     local cwd
     local output
     local visible
 
     cwd="$(mktemp -d /tmp/claude-statusline-outside.XXXXXX)"
-    # Drop both pane hints so the sync truly no-ops (and never touches a real pane).
     output="$(mock_input "$cwd" | env -u TMUX_PANE -u CLAUDE_TMUX_PANE COLUMNS=80 bash "$STATUSLINE")"
     visible="$(printf '%s' "$output" | strip_ansi)"
 
@@ -160,27 +95,48 @@ test_statusline_works_outside_tmux() {
     rm -rf "$cwd"
 }
 
-test_statusline_uses_claude_tmux_pane_when_tmux_pane_absent() {
+test_statusline_prefers_worktree_path() {
     local cwd
+    local worktree_parent
     local worktree_path
+    local visible
+
+    cwd="$(mktemp -d /tmp/claude-statusline-cwd.XXXXXX)"
+    worktree_parent="$(mktemp -d /tmp/claude-statusline-worktree-parent.XXXXXX)"
+    worktree_path="${worktree_parent}/agent-worktree"
+    mkdir -p "$worktree_path"
+
+    visible="$(mock_input "$cwd" "$worktree_path" | COLUMNS=120 bash "$STATUSLINE" | strip_ansi)"
+
+    [[ "$visible" == *"agent-worktree"* ]] ||
+        fail "expected statusline to prefer worktree path, got: $visible"
+
+    rm -rf "$cwd" "$worktree_parent"
+}
+
+test_statusline_does_not_call_tmux() {
+    local cwd
     local wrapper_dir
-    local tmux_log
+    local output
+    local visible
 
-    cwd="$(mktemp -d /tmp/claude-statusline-cpane-cwd.XXXXXX)"
-    worktree_path="$(mktemp -d /tmp/claude-statusline-cpane-wt.XXXXXX)"
-    wrapper_dir="$(mktemp -d /tmp/claude-statusline-cpane-wrapper.XXXXXX)"
-    tmux_log="$(mktemp /tmp/claude-statusline-cpane-log.XXXXXX)"
-    write_tmux_wrapper "${wrapper_dir}/tmux" "$tmux_log"
+    cwd="$(mktemp -d /tmp/claude-statusline-no-tmux.XXXXXX)"
+    wrapper_dir="$(mktemp -d /tmp/claude-statusline-no-tmux-wrapper.XXXXXX)"
+    cat >"${wrapper_dir}/tmux" <<'EOF'
+#!/usr/bin/env bash
+printf 'statusline must not call tmux\n' >&2
+exit 99
+EOF
+    chmod +x "${wrapper_dir}/tmux"
 
-    # Claude Code does not pass TMUX_PANE but exports CLAUDE_TMUX_PANE; the sync
-    # must fall back to it (agent view / child sessions).
-    mock_input "$cwd" "$worktree_path" |
-        env -u TMUX_PANE CLAUDE_TMUX_PANE="%9" PATH="${wrapper_dir}:$PATH" COLUMNS=80 bash "$STATUSLINE" >/dev/null
+    output="$(mock_input "$cwd" |
+        TMUX_PANE="%7" CLAUDE_TMUX_PANE="%9" PATH="${wrapper_dir}:$PATH" COLUMNS=80 bash "$STATUSLINE")"
+    visible="$(printf '%s' "$output" | strip_ansi)"
 
-    grep -F "set-option -p -t %9 @preferred_cwd ${worktree_path}" "$tmux_log" >/dev/null ||
-        fail "expected statusline to use CLAUDE_TMUX_PANE when TMUX_PANE is absent"
+    [[ "$(printf '%s\n' "$visible" | visible_line_count)" == "2" ]] ||
+        fail "expected statusline to render while tmux is unavailable"
 
-    rm -rf "$cwd" "$worktree_path" "$wrapper_dir" "$tmux_log"
+    rm -rf "$cwd" "$wrapper_dir"
 }
 
 test_statusline_shows_context_tokens() {
@@ -262,12 +218,12 @@ main() {
     step "Running Claude statusline tests"
     test_statusline_outputs_two_fitted_lines
     ok "statusline renders two fitted rows"
-    test_statusline_sets_preferred_cwd_in_tmux
-    ok "statusline records preferred cwd in tmux"
     test_statusline_works_outside_tmux
     ok "statusline works outside tmux"
-    test_statusline_uses_claude_tmux_pane_when_tmux_pane_absent
-    ok "statusline uses CLAUDE_TMUX_PANE when TMUX_PANE is absent"
+    test_statusline_prefers_worktree_path
+    ok "statusline prefers worktree path"
+    test_statusline_does_not_call_tmux
+    ok "statusline does not call tmux"
     test_statusline_shows_context_tokens
     ok "statusline shows context tokens when available"
     test_statusline_shows_tokens_without_percentage
