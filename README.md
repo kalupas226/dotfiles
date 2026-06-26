@@ -85,7 +85,10 @@ Some tools require a one-time manual step after `install.sh`:
   - row 1 shows directory, branch, dirty/ahead/behind, and (when present) the PR number colored by review state; row 2 shows model, the context gauge with token usage (`used/size`, falling back to a percentage), cost, and elapsed time
   - the statusline uses Nerd Font icons (folder/branch/model/clock/PR); these need the Hack Nerd Font (in `Brewfile`) and the `Hack Nerd Font Mono` fallback configured in `packages/wezterm/.config/wezterm/wezterm.lua` (git dirty/ahead/behind use plain `*`/`⇡`/`⇣` symbols)
   - Claude hooks record the latest session cwd under `$TMPDIR/claude-cwd-state`; tmux bindings use the latest matching Claude cwd for `claude agents` panes
-  - tmux bindings for shell/lazygit popup, pane splits, and new windows otherwise fall back to `pane_current_path`
+  - interactive zsh auto-starts a `home` tmux session with a `main` window, except in Claude/Codex/VS Code terminals
+  - tmux bindings for shell/lazygit popup and pane splits otherwise fall back to `pane_current_path`
+  - `prefix + t` and `prefix + T` prompt for stable window/session names
+  - `prefix + P` opens a `ghq` + `fzf` project picker that switches to an existing project session or creates one with a `main` window
   - `prefix + G` opens `lazygit` in a bottom pane from the Claude-aware cwd
 - If `brew bundle` or `mise install` fails mid-run, fix the cause then rerun `dotfiles install`.
 
@@ -123,6 +126,7 @@ Each package contains dotfiles in their expected directory structure. The instal
 - **scripts/** - repository maintenance scripts (install/check/update helpers such as `check-updates.sh`, `lib/ui.sh`)
 - **packages/bin/.local/bin/dotfiles** - small launcher for install/check/help commands
 - **packages/bin/.local/bin/tmux-open** - tmux helper for opening popups, panes, and windows from a Claude-aware cwd
+- **packages/bin/.local/bin/tmux-project** - tmux helper for opening project sessions from a `ghq` + `fzf` picker
 - **packages/claude/.claude/statusline-command.sh** - Claude Code two-row statusline
 - **packages/claude/.claude/hooks/record-cwd-state.sh** - Claude Code hook that records session cwd state for `tmux-open`
 - **packages/bin/.local/bin/** - user-facing CLI helpers; prefer this location for agent/task utilities instead of `scripts/`

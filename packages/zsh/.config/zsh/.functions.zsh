@@ -77,15 +77,3 @@ function zoxide_interactive() {
 }
 zle -N zoxide_interactive
 bindkey "^z" zoxide_interactive
-
-# Navigate to ghq repository (Ctrl+@)
-function cdrepo() {
-  local selected_dir=$(ghq list -p | fzf -q "$LBUFFER" --preview='eza -l --icons --color=always {}')
-  if [ -n "$selected_dir" ]; then
-    BUFFER="cd ${selected_dir}"
-    zle accept-line
-  fi
-  zle clear-screen
-}
-zle -N cdrepo
-bindkey '^@' cdrepo

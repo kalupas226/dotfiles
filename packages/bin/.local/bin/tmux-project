@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage:
+  tmux-project
+
+Select a ghq repository with fzf, then switch to a tmux session for it.
+If the session does not exist, tmux-project creates it with a main window from
+the selected repository root.
+EOF
+}
+
+die() {
+    printf 'tmux-project: %s\n' "$*" >&2
+    exit 1
+}
+
+require_cmd() {
+    command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+select_project_dir() {
+    local preview
+    local selected_dir
+
+    if command -v eza >/dev/null 2>&1; then
+        preview='eza -l --icons --color=always {}'
+    else
+        preview='ls -la {}'
+    fi
+
+    selected_dir="$(ghq list -p | fzf --prompt='project> ' --preview="$preview")" || return 1
+    [[ -n "$selected_dir" ]] || return 1
+    [[ -d "$selected_dir" ]] || die "selected path is not a directory: $selected_dir"
+
+    printf '%s\n' "$selected_dir"
+}
+
+session_name_for_path() {
+    local project_dir="$1"
+    local name
+
+    name="$(basename -- "$project_dir")"
+    name="$(printf '%s' "$name" | tr -cs '[:alnum:]_.-' '_' | sed 's/^_*//; s/_*$//')"
+    [[ -n "$name" ]] || die "could not derive session name from: $project_dir"
+
+    printf '%s\n' "$name"
+}
+
+session_id_for_name() {
+    local session_name="$1"
+
+    { tmux list-sessions -F '#{session_name}	#{session_id}' 2>/dev/null || true; } |
+        awk -F '\t' -v name="$session_name" '$1 == name { print $2; exit }'
+}
+
+open_session() {
+    local session_id="$1"
+
+    if [[ -n "${TMUX:-}" ]]; then
+        tmux switch-client -t "$session_id"
+    else
+        tmux attach-session -t "$session_id"
+    fi
+}
+
+main() {
+    local project_dir
+    local session_name
+    local session_id
+
+    case "${1:-}" in
+        -h|--help|help)
+            usage
+            return 0
+            ;;
+    esac
+
+    require_cmd ghq
+    require_cmd fzf
+    require_cmd tmux
+
+    project_dir="$(select_project_dir)" || return 0
+    session_name="$(session_name_for_path "$project_dir")"
+    session_id="$(session_id_for_name "$session_name")"
+
+    if [[ -z "$session_id" ]]; then
+        session_id="$(tmux new-session -d -P -F '#{session_id}' -s "$session_name" -n main -c "$project_dir")"
+        [[ -n "$session_id" ]] || session_id="$session_name"
+    fi
+
+    open_session "$session_id"
+}
+
+main "$@"
