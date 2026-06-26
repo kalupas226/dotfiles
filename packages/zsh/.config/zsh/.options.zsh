@@ -1,6 +1,7 @@
 # Shell basics
 bindkey -v
-setopt IGNOREEOF correct no_flow_control
+setopt correct no_flow_control
+bindkey -M viins "^D" delete-char-or-list
 autoload -Uz colors && colors
 
 # Completion

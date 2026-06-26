@@ -46,6 +46,7 @@ for arg in "\$@"; do
     printf ' %s' "\$arg" >>"${fzf_log}"
 done
 printf '\n' >>"${fzf_log}"
+cat >/dev/null
 
 exit_code="\${TMUX_PROJECT_TEST_FZF_EXIT:-0}"
 if [[ "\$exit_code" != "0" ]]; then
@@ -187,7 +188,8 @@ test_creates_and_attaches_outside_tmux() {
     mkdir -p "$project_dir"
     setup_wrappers "$wrapper_dir" "$tmux_log" "$fzf_log"
 
-    TMUX_PROJECT_TEST_GHQ_LIST="${project_dir}\n" \
+    TMUX= \
+        TMUX_PROJECT_TEST_GHQ_LIST="${project_dir}\n" \
         TMUX_PROJECT_TEST_FZF_SELECTION="$project_dir" \
         TMUX_PROJECT_TEST_LIST_FAIL=1 \
         TMUX_PROJECT_TEST_NEW_SESSION_ID="\$9" \
