@@ -49,7 +49,6 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | `Ctrl + p` | Prefix history search (previous) | `packages/zsh/.zshrc` |
 | `Ctrl + n` | Prefix history search (next) | `packages/zsh/.zshrc` |
 | `Ctrl + z` | `zoxide` interactive directory jump | `packages/zsh/.zshrc` |
-| `Ctrl + @` | `ghq` + `fzf` repo picker (`cdrepo`) | `packages/zsh/.zshrc` |
 
 ### tmux
 
@@ -60,12 +59,19 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | `prefix + \|` | Split pane vertically (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + -` | Split pane horizontally (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + H/J/K/L` | Resize pane | `packages/tmux/.tmux.conf` |
-| `prefix + t` | New window (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + t` | New window (prompt for name) | `packages/tmux/.tmux.conf` |
+| `prefix + T` | New session (prompt for name) | `packages/tmux/.tmux.conf` |
+| `prefix + r` | Rename window | `packages/tmux/.tmux.conf` |
+| `prefix + R` | Rename session | `packages/tmux/.tmux.conf` |
+| `prefix + e` | Edit pane label | `packages/tmux/.tmux.conf` |
+| `prefix + E` | Clear pane label | `packages/tmux/.tmux.conf` |
 | `prefix + u` | Open a shell in a centered tmux popup (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + g` | Open `lazygit` in centered tmux popup (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + G` | Open `lazygit` in a bottom pane (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + P` | Open project session picker (`ghq` + `fzf`) | `packages/tmux/.tmux.conf` |
 | `prefix + n/p` | Next/previous window | `packages/tmux/.tmux.conf` |
 | `prefix + s` | Open session chooser (`choose-tree`) | `packages/tmux/.tmux.conf` |
+| `prefix + {/}` | Swap pane up/down (tmux default) | tmux default |
 | `copy-mode` + `v` | Begin selection | `packages/tmux/.tmux.conf` |
 | `copy-mode` + `y` | Copy selection to macOS clipboard | `packages/tmux/.tmux.conf` |
 

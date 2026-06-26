@@ -1,6 +1,6 @@
 # Auto-start tmux (skip in AI agent / VS Code terminals)
 if [ -z "$TMUX" ] && [ -z "$CLAUDE_CODE" ] && [ -z "$CODEX_SHELL" ] && [ "$TERM_PROGRAM" != "vscode" ] && command -v tmux >/dev/null 2>&1; then
-  tmux attach-session -t main || tmux new-session -s main
+  tmux attach-session -t home || tmux new-session -s home -n main
 fi
 
 # Tool initialization
