@@ -1,19 +1,19 @@
 # dotfiles
 
-My personal macOS dotfiles organized by packages with automated installation.
+Personal macOS dotfiles organized as installable packages. Each directory under `packages/` mirrors the path it should occupy under `$HOME`, and `install.sh` links those packages with GNU Stow.
 
 ## Installation
 
-### Prerequisites (macOS)
+### Prerequisites
 
 ```bash
 sudo softwareupdate -i -a
 xcode-select --install
 ```
 
-### Quick Install
+### Quick install
 
-Default location is `~/.dotfiles`. Clone and run:
+The default checkout location is `~/.dotfiles`:
 
 ```bash
 git clone https://github.com/kalupas226/dotfiles.git ~/.dotfiles
@@ -21,33 +21,32 @@ cd ~/.dotfiles
 ./install.sh
 ```
 
-Skip prompts before running official remote installer scripts:
+`install.sh` prompts before running official remote installer scripts. To skip those prompts:
 
 ```bash
 ./install.sh --skip-confirmation
 ```
 
-### What gets installed
+Restart your terminal, or run `exec zsh`, after installation.
 
-- **Homebrew** - Package manager for macOS
-- **mise** - Development environment manager
-- **CLI tools** - bat, eza, fzf, ripgrep, starship, stow, neovim, etc.
-- **GUI applications** - ChatGPT, CleanShot, Wezterm, VSCode, Raycast, etc.
-- **Fonts** - Hack Nerd Font
-- **Node.js** - Pinned via mise
-- **Dotfiles** - Linked to your home directory with GNU Stow
+## What `install.sh` Does
 
-Restart your terminal or run `exec zsh` to load the new configuration.
+- Installs Homebrew if missing
+- Runs `brew bundle -v --file=Brewfile`
+- Links package dotfiles into `$HOME` with `stow --no-folding`
+- Installs TPM if missing
+- Activates mise and runs `mise install`
+- Installs Claude Code if missing
 
-After that, use the `dotfiles` helper from `~/.local/bin` for routine maintenance:
+After the first install, use the helper in `~/.local/bin` for routine maintenance:
 
 ```bash
 dotfiles check
 ```
 
-### Post-install manual steps
+## Post-Install Steps
 
-Some tools require a one-time manual step after `install.sh`:
+Some tools need one-time setup after `install.sh`:
 
 - **tmux plugins (TPM)**: open tmux and run `prefix + I`
   - TPM plugins are not lockfile-pinned
@@ -57,86 +56,83 @@ Some tools require a one-time manual step after `install.sh`:
   - Check updates with `:Lazy check`
   - Update intentionally with targeted `:Lazy update <plugin>`
   - Review the lockfile diff before committing
-- **Homebrew apps/tools**: some packages need first-run setup, permissions (e.g. macOS Security & Privacy), or in-app configuration—check each tool as needed
+- **Homebrew apps/tools**: complete any first-run permissions or in-app setup
 - **AeroSpace**:
-  - Grant **Accessibility** permission in `System Settings → Privacy & Security → Accessibility`
-  - Run `defaults write com.apple.spaces spans-displays -bool true && killall SystemUIServer` (required for multi-monitor support)
-  - Reload config: `alt-shift-; → esc`
-- **Claude Code plugins**: reinstall plugins from the marketplace (`/plugins` in Claude Code)
+  - Grant Accessibility permission in `System Settings` -> `Privacy & Security` -> `Accessibility`
+  - Run `defaults write com.apple.spaces spans-displays -bool true && killall SystemUIServer` for multi-monitor support
+  - Reload config with `alt-shift-;` then `esc`
+- **Claude Code plugins**: reinstall plugins from the marketplace with `/plugins`
 - **Claude Code settings**:
   - Add any machine-specific source files to `~/.claude/_settings-source/*.json`
   - Generate the user settings with `dotfiles claude-settings`
-- **pfw (Point-Free Way CLI)**: follow the setup instructions at https://github.com/pointfreeco/pfw
-- **Logi Tune**: install manually (not managed by Homebrew in this repo). Reference: https://www.logitech.com/assets/66219/5/brio-500.pdf
-- **macOS settings**: set these in System Settings (paths can vary by macOS version)
-  - Mission Control: `Desktop & Dock` → disable "Automatically rearrange Spaces based on most recent use"
-  - Trackpad: `Trackpad` → enable "Tap to click"
-  - Trackpad: `Accessibility` → `Pointer Control` → `Trackpad Options...` → enable dragging and choose "Three Finger Drag"
+- **pfw (Point-Free Way CLI)**: follow https://github.com/pointfreeco/pfw
+- **Logi Tune**: install manually; it is not managed by Homebrew here
+- **macOS settings**:
+  - Mission Control: `Desktop & Dock` -> disable "Automatically rearrange Spaces based on most recent use"
+  - Trackpad: `Trackpad` -> enable "Tap to click"
+  - Trackpad: `Accessibility` -> `Pointer Control` -> `Trackpad Options...` -> enable dragging and choose "Three Finger Drag"
 
 ## Maintenance
 
-- Node: pinned via mise in `packages/mise/.config/mise/config.toml`
-- npm CLIs: prefer project-local `devDependencies`, `npm dlx`/`npx`, or Homebrew casks/formulae over global npm installs
-- Git: default identity uses GitHub noreply; override per machine with `~/.gitconfig.local` if needed
-- Updates check (one-shot, no writes by default): `dotfiles check`
-  - Homebrew (`brew outdated`; pass `--refresh` to run `brew update --quiet` first)
-  - mise tools (`mise outdated`)
-  - sheldon plugins (pinned `rev` vs latest tags)
-- Focused shell regression tests: `bash tests/claude-statusline.sh`, `bash tests/claude-cwd-state-hook.sh`, `bash tests/generate-claude-settings.sh`, `bash tests/migrate-legacy-links-to-stow.sh`, `bash tests/tmux-open.sh`, `bash tests/tmux-project.sh`
-- Agent skills: see `skills/README.md`
-- Claude Code + tmux:
-  - Claude Code statusline renders as two rows so long directory and branch names do not hide model/context/cost/elapsed details
-  - row 1 shows directory, branch, dirty/ahead/behind, and (when present) the PR number colored by review state; row 2 shows model, the context gauge with token usage (`used/size`, falling back to a percentage), cost, and elapsed time
-  - the statusline uses Nerd Font icons (folder/branch/model/clock/PR); these need the Hack Nerd Font (in `Brewfile`) and the `Hack Nerd Font Mono` fallback configured in `packages/wezterm/.config/wezterm/wezterm.lua` (git dirty/ahead/behind use plain `*`/`⇡`/`⇣` symbols)
-  - `~/.claude/settings.json` is generated manually with `dotfiles claude-settings` from JSON files in `~/.claude/_settings-source/`
-  - `shared.json` is repo-managed; add machine-specific source files with any other `*.json` name in the same directory
-  - Claude hooks record the latest session cwd under `$TMPDIR/claude-cwd-state`; tmux bindings use the latest matching Claude cwd for `claude agents` panes
-  - interactive zsh auto-starts a `home` tmux session with a `main` window, except in Claude/Codex/VS Code terminals
-  - tmux bindings for shell/lazygit popup and pane splits otherwise fall back to `pane_current_path`
-  - `prefix + t` and `prefix + T` prompt for stable window/session names
-  - `prefix + P` opens a `ghq` + `fzf` project picker that switches to an existing project session or creates one with a `main` window
-  - `prefix + G` opens `lazygit` in a bottom pane from the Claude-aware cwd
-- If `brew bundle` or `mise install` fails mid-run, fix the cause then rerun `dotfiles install`.
-- If Stow reports conflicts from legacy symlinks created by older versions of `install.sh`, run `scripts/migrate-legacy-links-to-stow.sh --dry-run`, then `scripts/migrate-legacy-links-to-stow.sh`, then rerun `dotfiles install`.
+- Check managed updates: `dotfiles check`
+- Refresh update metadata before checking: `dotfiles check --refresh`
+- Check a single source: `dotfiles check brew`, `dotfiles check mise`, or `dotfiles check sheldon`
+- Install or relink everything: `dotfiles install`
+- Generate Claude Code settings: `dotfiles claude-settings`
+- Node.js is pinned in `packages/mise/.config/mise/config.toml`
+- Homebrew packages are defined in `Brewfile`
+- Neovim plugins are locked in `packages/nvim/.config/nvim/lazy-lock.json`
+- Git identity defaults to GitHub noreply; override per machine with `~/.gitconfig.local`
+- Prefer project-local `devDependencies`, `npm dlx`/`npx`, or Homebrew over global npm installs
+
+If `brew bundle` or `mise install` fails mid-run, fix the cause and rerun `dotfiles install`.
+
+If Stow reports conflicts from legacy symlinks created by older versions of `install.sh`, run:
+
+```bash
+scripts/migrate-legacy-links-to-stow.sh --dry-run
+scripts/migrate-legacy-links-to-stow.sh
+./install.sh
+```
+
+## Claude Code and tmux
+
+- `~/.claude/settings.json` is generated manually with `dotfiles claude-settings`
+- `packages/claude/.claude/_settings-source/shared.json` is repo-managed
+- Add machine-specific Claude settings as any other `*.json` file in `~/.claude/_settings-source/`
+- Claude Code uses `packages/claude/.claude/statusline-command.sh` for a compact two-row statusline
+- `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories under `$TMPDIR/claude-cwd-state`
+- `tmux-open` uses that state to open shells, panes, and lazygit from the relevant Claude-aware directory
+- Interactive zsh auto-starts a `home` tmux session with a `main` window, except in Claude, Codex, and VS Code terminals
 
 ## Repository Structure
 
-This repository uses a package-based organization, with shared agent skills at the repository root:
-
-```
+```text
 .
+├── Brewfile
+├── install.sh
 ├── packages/
-│   ├── aerospace/  # AeroSpace window manager configuration
-│   ├── bin/        # User-facing CLI helpers installed into ~/.local/bin
-│   ├── claude/     # Claude Code settings and configurations
+│   ├── aerospace/  # AeroSpace configuration
+│   ├── bin/        # User-facing helpers installed into ~/.local/bin
+│   ├── claude/     # Claude Code settings source, hooks, and statusline
 │   ├── git/        # Git configuration
 │   ├── karabiner/  # Karabiner-Elements configuration
 │   ├── lazygit/    # Lazygit configuration
-│   ├── mise/       # Development environment manager configuration
-│   ├── npm/        # npm CLI defaults
+│   ├── mise/       # mise tool pins
+│   ├── npm/        # npm defaults
 │   ├── nvim/       # Neovim configuration
-│   ├── sheldon/    # Shell plugin manager configuration
-│   ├── starship/   # Starship prompt configuration
-│   ├── tmux/       # Terminal multiplexer configuration
-│   ├── wezterm/    # Terminal emulator configuration
-│   └── zsh/        # Zsh shell configuration
-└── skills/         # Shared Agent Skills; see skills/README.md
+│   ├── sheldon/    # zsh plugin pins
+│   ├── starship/   # Starship prompt
+│   ├── tmux/       # tmux configuration
+│   ├── wezterm/    # WezTerm configuration
+│   └── zsh/        # zsh startup files and helpers
+├── scripts/        # Maintenance and update-check scripts
+├── skills/         # Shared Agent Skills
+└── tests/          # Shell regression tests
 ```
 
-Each package contains dotfiles in their expected directory structure. The installation script links packages into your home directory with GNU Stow.
+Useful references:
 
-## Configuration Files
-
-- **packages/mise/.config/mise/config.toml** - mise tool pins
-- **Brewfile** - Homebrew package definitions
-- **install.sh** - Main installation script using GNU Stow for dotfile links
-- **scripts/** - repository maintenance scripts (install/check/update helpers such as `check-updates.sh`, `generate-claude-settings.sh`, `migrate-legacy-links-to-stow.sh`, `lib/ui.sh`)
-- **packages/bin/.local/bin/dotfiles** - small launcher for install/check/claude-settings/help commands
-- **packages/bin/.local/bin/tmux-open** - tmux helper for opening popups, panes, and windows from a Claude-aware cwd
-- **packages/bin/.local/bin/tmux-project** - tmux helper for opening project sessions from a `ghq` + `fzf` picker
-- **packages/claude/.claude/statusline-command.sh** - Claude Code two-row statusline
-- **packages/claude/.claude/hooks/record-cwd-state.sh** - Claude Code hook that records session cwd state for `tmux-open`
-- **packages/claude/.claude/_settings-source/shared.json** - shared source for generated Claude Code user settings
-- **packages/bin/.local/bin/** - user-facing CLI helpers; prefer this location for agent/task utilities instead of `scripts/`
-- **packages/** - Individual application configurations
-- **KEYBINDINGS.md** - cheat sheet for custom macOS/terminal/Neovim keybindings
+- `KEYBINDINGS.md` - custom macOS, terminal, tmux, zsh, and Neovim shortcuts
+- `skills/README.md` - shared Agent Skills in this repo
+- `AGENTS.md` - guidance for AI coding agents working in this repository

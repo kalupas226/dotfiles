@@ -16,14 +16,16 @@ Examples:
 The repo contains both user configuration and maintenance tooling:
 - `install.sh` installs and links everything
 - `scripts/` contains maintenance and update-check scripts
-- `packages/bin/.local/bin/` contains user-facing CLI helpers that are installed into `$HOME`
+- `packages/bin/.local/bin/` contains user-facing CLI helpers installed into `$HOME`
 - `tests/` contains shell regression tests for helper scripts
+- `skills/` contains shared Agent Skills
 
 ## Commands
 
 - Install everything: `./install.sh`
 - Install everything via installed helper: `dotfiles install`
 - Check all updates via installed helper: `dotfiles check`
+- Refresh update metadata before checking: `dotfiles check --refresh`
 - Generate Claude Code user settings via installed helper: `dotfiles claude-settings`
 - Check all updates directly: `./scripts/check-updates.sh`
 - Run one update check: `dotfiles check brew`, `dotfiles check mise`, or `dotfiles check sheldon`
@@ -51,14 +53,13 @@ For dotfile-only changes, also sanity-check the target symlink under `$HOME` aft
 Top-level files:
 - `Brewfile` - source of truth for Homebrew formulae/casks
 - `install.sh` - main installer; links dotfiles with GNU Stow, installs TPM/Homebrew packages/mise tools/Claude Code
-- `README.md` - most complete human-facing setup and maintenance guide
+- `README.md` - human-facing setup and maintenance guide
 - `KEYBINDINGS.md` - reference for configured shortcuts across macOS, AeroSpace, WezTerm, zsh, tmux, and Neovim
-- `CLAUDE.md` - currently mirrors agent guidance; check whether changes should stay aligned with `AGENTS.md`
 
 Packages:
 - `packages/aerospace` - AeroSpace config
-- `packages/bin` - installed helper CLIs such as `dotfiles` and `tmux-open`
-- `packages/claude` - Claude Code settings
+- `packages/bin` - installed helper CLIs such as `dotfiles`, `tmux-open`, and `tmux-project`
+- `packages/claude` - Claude Code settings source, hooks, and statusline
 - `packages/git` - `.gitconfig` and global ignore file
 - `packages/karabiner` - Karabiner-Elements config
 - `packages/lazygit` - Lazygit config
@@ -78,6 +79,7 @@ Maintenance code:
 - `scripts/generate-claude-settings.sh` - manually merges Claude settings source JSON files from `~/.claude/_settings-source` into `~/.claude/settings.json`
 - `scripts/migrate-legacy-links-to-stow.sh` - one-time helper for removing old repo-pointing symlinks before Stow takes over
 - `tests/` - regression tests for helper scripts
+- `skills/` - shared Agent Skills; see `skills/README.md`
 
 ## Important Behaviors
 
@@ -108,9 +110,16 @@ If Stow conflicts with symlinks created by older versions of `install.sh`, use `
 
 Supported commands:
 - `dotfiles install`
-- `dotfiles check [brew|mise|sheldon...]`
+- `dotfiles check [--refresh] [brew|mise|sheldon...]`
 - `dotfiles claude-settings`
 - `dotfiles help`
+
+### Claude Code and tmux
+
+- Claude Code uses `packages/claude/.claude/statusline-command.sh` for the statusline
+- `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories for `tmux-open`
+- `packages/bin/.local/bin/tmux-open` opens panes, popups, and lazygit from a Claude-aware cwd when possible
+- `packages/bin/.local/bin/tmux-project` opens project sessions from a `ghq` + `fzf` picker
 
 ## Shell Conventions
 
