@@ -4,16 +4,17 @@ This file provides guidance to AI coding agents working in this repository.
 
 ## Overview
 
-This is a personal macOS dotfiles repo built around a package-based layout. Each directory under `packages/` mirrors a path under `$HOME`, and `install.sh` symlinks every dotfile from those packages into place.
+This is a personal macOS dotfiles repo built around a package-based layout. Each directory under `packages/` mirrors a path under `$HOME`, and `install.sh` links those packages into place with GNU Stow.
 
 Examples:
 - `packages/zsh/.zshrc` -> `~/.zshrc`
 - `packages/nvim/.config/nvim/init.lua` -> `~/.config/nvim/init.lua`
 - `packages/bin/.local/bin/dotfiles` -> `~/.local/bin/dotfiles`
 - `packages/bin/.local/bin/tmux-open` -> `~/.local/bin/tmux-open`
+- `packages/claude/.claude/_settings-source/shared.json` -> `~/.claude/_settings-source/shared.json`
 
 The repo contains both user configuration and maintenance tooling:
-- `install.sh` installs/link everything
+- `install.sh` installs and links everything
 - `scripts/` contains maintenance and update-check scripts
 - `packages/bin/.local/bin/` contains user-facing CLI helpers that are installed into `$HOME`
 - `tests/` contains shell regression tests for helper scripts
@@ -23,6 +24,7 @@ The repo contains both user configuration and maintenance tooling:
 - Install everything: `./install.sh`
 - Install everything via installed helper: `dotfiles install`
 - Check all updates via installed helper: `dotfiles check`
+- Generate Claude Code user settings via installed helper: `dotfiles claude-settings`
 - Check all updates directly: `./scripts/check-updates.sh`
 - Run one update check: `dotfiles check brew`, `dotfiles check mise`, or `dotfiles check sheldon`
 - List available update checks: `./scripts/check-updates.sh --list`
@@ -34,8 +36,12 @@ There is no single unified automated test suite for the whole repo, but there ar
 Use the narrowest validation that matches your change:
 - `bash tests/claude-statusline.sh`
 - `bash tests/claude-cwd-state-hook.sh`
+- `bash tests/generate-claude-settings.sh`
+- `bash tests/migrate-legacy-links-to-stow.sh`
 - `bash tests/tmux-open.sh`
+- `bash tests/tmux-project.sh`
 - `./scripts/check-updates.sh --list` for CLI/script sanity
+- `./scripts/migrate-legacy-links-to-stow.sh --dry-run` when changing Stow migration logic
 - `./install.sh` when you change installation flow, symlinking behavior, package lists, or anything cross-cutting
 
 For dotfile-only changes, also sanity-check the target symlink under `$HOME` after edits.
@@ -44,7 +50,7 @@ For dotfile-only changes, also sanity-check the target symlink under `$HOME` aft
 
 Top-level files:
 - `Brewfile` - source of truth for Homebrew formulae/casks
-- `install.sh` - main installer; links dotfiles, installs TPM/Homebrew packages/mise tools/Claude Code
+- `install.sh` - main installer; links dotfiles with GNU Stow, installs TPM/Homebrew packages/mise tools/Claude Code
 - `README.md` - most complete human-facing setup and maintenance guide
 - `KEYBINDINGS.md` - reference for configured shortcuts across macOS, AeroSpace, WezTerm, zsh, tmux, and Neovim
 - `CLAUDE.md` - currently mirrors agent guidance; check whether changes should stay aligned with `AGENTS.md`
@@ -69,6 +75,8 @@ Maintenance code:
 - `scripts/lib/ui.sh` - shared shell UI helpers (`step`, `note`, `ok`, `warn`, `skip`, `section_line`)
 - `scripts/check-updates.sh` - dispatcher for update checks
 - `scripts/checks/` - individual checks for brew/mise/sheldon
+- `scripts/generate-claude-settings.sh` - manually merges Claude settings source JSON files from `~/.claude/_settings-source` into `~/.claude/settings.json`
+- `scripts/migrate-legacy-links-to-stow.sh` - one-time helper for removing old repo-pointing symlinks before Stow takes over
 - `tests/` - regression tests for helper scripts
 
 ## Important Behaviors
@@ -76,14 +84,18 @@ Maintenance code:
 ### install.sh
 
 `install.sh` currently does more than symlink files. It:
-- links all dotfiles found under `packages/*`
-- installs TPM if missing
 - installs Homebrew if missing
 - runs `brew bundle -v --file=Brewfile`
+- links package dotfiles with `stow --no-folding`
+- installs TPM if missing
 - activates mise and runs `mise install`
 - installs Claude Code if missing
 
-When editing `install.sh`, preserve the current ordering unless you have a concrete reason to change it.
+When editing `install.sh`, preserve this ordering unless you have a concrete reason to change it. Homebrew packages run before Stow so `stow` is available for linking.
+
+Claude Code user settings are generated explicitly, not from `install.sh`. After linking dotfiles and adding any machine-specific JSON files under `~/.claude/_settings-source/`, run `dotfiles claude-settings`.
+
+If Stow conflicts with symlinks created by older versions of `install.sh`, use `./scripts/migrate-legacy-links-to-stow.sh --dry-run` and then `./scripts/migrate-legacy-links-to-stow.sh` explicitly. Do not hide that migration inside the normal installer.
 
 ### mise
 
@@ -97,6 +109,7 @@ When editing `install.sh`, preserve the current ordering unless you have a concr
 Supported commands:
 - `dotfiles install`
 - `dotfiles check [brew|mise|sheldon...]`
+- `dotfiles claude-settings`
 - `dotfiles help`
 
 ## Shell Conventions

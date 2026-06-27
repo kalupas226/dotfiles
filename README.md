@@ -31,11 +31,11 @@ Skip prompts before running official remote installer scripts:
 
 - **Homebrew** - Package manager for macOS
 - **mise** - Development environment manager
-- **CLI tools** - bat, eza, fzf, ripgrep, starship, neovim, etc.
+- **CLI tools** - bat, eza, fzf, ripgrep, starship, stow, neovim, etc.
 - **GUI applications** - ChatGPT, CleanShot, Wezterm, VSCode, Raycast, etc.
 - **Fonts** - Hack Nerd Font
 - **Node.js** - Pinned via mise
-- **Dotfiles** - Automatically symlinked to your home directory
+- **Dotfiles** - Linked to your home directory with GNU Stow
 
 Restart your terminal or run `exec zsh` to load the new configuration.
 
@@ -63,6 +63,9 @@ Some tools require a one-time manual step after `install.sh`:
   - Run `defaults write com.apple.spaces spans-displays -bool true && killall SystemUIServer` (required for multi-monitor support)
   - Reload config: `alt-shift-; → esc`
 - **Claude Code plugins**: reinstall plugins from the marketplace (`/plugins` in Claude Code)
+- **Claude Code settings**:
+  - Add any machine-specific source files to `~/.claude/_settings-source/*.json`
+  - Generate the user settings with `dotfiles claude-settings`
 - **pfw (Point-Free Way CLI)**: follow the setup instructions at https://github.com/pointfreeco/pfw
 - **Logi Tune**: install manually (not managed by Homebrew in this repo). Reference: https://www.logitech.com/assets/66219/5/brio-500.pdf
 - **macOS settings**: set these in System Settings (paths can vary by macOS version)
@@ -75,15 +78,18 @@ Some tools require a one-time manual step after `install.sh`:
 - Node: pinned via mise in `packages/mise/.config/mise/config.toml`
 - npm CLIs: prefer project-local `devDependencies`, `npm dlx`/`npx`, or Homebrew casks/formulae over global npm installs
 - Git: default identity uses GitHub noreply; override per machine with `~/.gitconfig.local` if needed
-- Updates check (one-shot, no writes): `dotfiles check`
-  - Homebrew (`brew update --quiet` + `brew outdated`)
+- Updates check (one-shot, no writes by default): `dotfiles check`
+  - Homebrew (`brew outdated`; pass `--refresh` to run `brew update --quiet` first)
   - mise tools (`mise outdated`)
   - sheldon plugins (pinned `rev` vs latest tags)
+- Focused shell regression tests: `bash tests/claude-statusline.sh`, `bash tests/claude-cwd-state-hook.sh`, `bash tests/generate-claude-settings.sh`, `bash tests/migrate-legacy-links-to-stow.sh`, `bash tests/tmux-open.sh`, `bash tests/tmux-project.sh`
 - Agent skills: see `skills/README.md`
 - Claude Code + tmux:
   - Claude Code statusline renders as two rows so long directory and branch names do not hide model/context/cost/elapsed details
   - row 1 shows directory, branch, dirty/ahead/behind, and (when present) the PR number colored by review state; row 2 shows model, the context gauge with token usage (`used/size`, falling back to a percentage), cost, and elapsed time
   - the statusline uses Nerd Font icons (folder/branch/model/clock/PR); these need the Hack Nerd Font (in `Brewfile`) and the `Hack Nerd Font Mono` fallback configured in `packages/wezterm/.config/wezterm/wezterm.lua` (git dirty/ahead/behind use plain `*`/`⇡`/`⇣` symbols)
+  - `~/.claude/settings.json` is generated manually with `dotfiles claude-settings` from JSON files in `~/.claude/_settings-source/`
+  - `shared.json` is repo-managed; add machine-specific source files with any other `*.json` name in the same directory
   - Claude hooks record the latest session cwd under `$TMPDIR/claude-cwd-state`; tmux bindings use the latest matching Claude cwd for `claude agents` panes
   - interactive zsh auto-starts a `home` tmux session with a `main` window, except in Claude/Codex/VS Code terminals
   - tmux bindings for shell/lazygit popup and pane splits otherwise fall back to `pane_current_path`
@@ -91,6 +97,7 @@ Some tools require a one-time manual step after `install.sh`:
   - `prefix + P` opens a `ghq` + `fzf` project picker that switches to an existing project session or creates one with a `main` window
   - `prefix + G` opens `lazygit` in a bottom pane from the Claude-aware cwd
 - If `brew bundle` or `mise install` fails mid-run, fix the cause then rerun `dotfiles install`.
+- If Stow reports conflicts from legacy symlinks created by older versions of `install.sh`, run `scripts/migrate-legacy-links-to-stow.sh --dry-run`, then `scripts/migrate-legacy-links-to-stow.sh`, then rerun `dotfiles install`.
 
 ## Repository Structure
 
@@ -116,19 +123,20 @@ This repository uses a package-based organization, with shared agent skills at t
 └── skills/         # Shared Agent Skills; see skills/README.md
 ```
 
-Each package contains dotfiles in their expected directory structure. The installation script automatically creates symlinks from package files to their target locations in your home directory.
+Each package contains dotfiles in their expected directory structure. The installation script links packages into your home directory with GNU Stow.
 
 ## Configuration Files
 
 - **packages/mise/.config/mise/config.toml** - mise tool pins
 - **Brewfile** - Homebrew package definitions
-- **install.sh** - Main installation script with custom symlinking logic
-- **scripts/** - repository maintenance scripts (install/check/update helpers such as `check-updates.sh`, `lib/ui.sh`)
-- **packages/bin/.local/bin/dotfiles** - small launcher for install/check/help commands
+- **install.sh** - Main installation script using GNU Stow for dotfile links
+- **scripts/** - repository maintenance scripts (install/check/update helpers such as `check-updates.sh`, `generate-claude-settings.sh`, `migrate-legacy-links-to-stow.sh`, `lib/ui.sh`)
+- **packages/bin/.local/bin/dotfiles** - small launcher for install/check/claude-settings/help commands
 - **packages/bin/.local/bin/tmux-open** - tmux helper for opening popups, panes, and windows from a Claude-aware cwd
 - **packages/bin/.local/bin/tmux-project** - tmux helper for opening project sessions from a `ghq` + `fzf` picker
 - **packages/claude/.claude/statusline-command.sh** - Claude Code two-row statusline
 - **packages/claude/.claude/hooks/record-cwd-state.sh** - Claude Code hook that records session cwd state for `tmux-open`
+- **packages/claude/.claude/_settings-source/shared.json** - shared source for generated Claude Code user settings
 - **packages/bin/.local/bin/** - user-facing CLI helpers; prefer this location for agent/task utilities instead of `scripts/`
 - **packages/** - Individual application configurations
 - **KEYBINDINGS.md** - cheat sheet for custom macOS/terminal/Neovim keybindings

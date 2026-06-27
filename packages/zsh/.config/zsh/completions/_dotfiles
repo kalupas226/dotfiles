@@ -3,11 +3,12 @@
 _dotfiles() {
   local subcommand="${words[2]:-}"
   local previous_word="${words[CURRENT-1]:-}"
-  local -a commands checks check_options install_options
+  local -a commands checks check_options claude_settings_options install_options
 
   commands=(
     install:"Link dotfiles and install managed tools"
     check:"Check Homebrew, mise, and sheldon updates"
+    claude-settings:"Generate Claude Code user settings"
     help:"Show help"
   )
   checks=(
@@ -16,11 +17,15 @@ _dotfiles() {
     sheldon:"sheldon plugin pinned revs"
   )
   check_options=(
+    --refresh:"Refresh update metadata before supported checks"
     --list:"Show available checks"
     --help:"Show check help"
   )
   install_options=(
     --skip-confirmation:"Do not prompt before running official remote installer scripts"
+  )
+  claude_settings_options=(
+    --help:"Show Claude settings help"
   )
 
   if (( CURRENT == 2 )); then
@@ -41,6 +46,11 @@ _dotfiles() {
         return
       fi
       _describe -t checks "update check" checks
+      ;;
+    claude-settings)
+      if [[ "$PREFIX" == -* ]]; then
+        _describe -t options "Claude settings option" claude_settings_options
+      fi
       ;;
     help|--help|-h)
       ;;

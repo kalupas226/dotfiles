@@ -188,7 +188,7 @@ test_creates_and_attaches_outside_tmux() {
     mkdir -p "$project_dir"
     setup_wrappers "$wrapper_dir" "$tmux_log" "$fzf_log"
 
-    TMUX= \
+    TMUX='' \
         TMUX_PROJECT_TEST_GHQ_LIST="${project_dir}\n" \
         TMUX_PROJECT_TEST_FZF_SELECTION="$project_dir" \
         TMUX_PROJECT_TEST_LIST_FAIL=1 \
