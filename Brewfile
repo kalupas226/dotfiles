@@ -12,6 +12,7 @@ brew "ripgrep"
 brew "shellcheck"
 brew "sheldon"
 brew "starship"
+brew "stow"
 brew "tmux"
 brew "zoxide"
 

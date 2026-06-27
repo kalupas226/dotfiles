@@ -65,32 +65,33 @@ confirm_remote_installer() {
 }
 
 link_dotfiles() {
-    step "Linking dotfiles"
-    
-    local first_package=1
-    for package_dir in "${DOTFILES_DIR}"/packages/*/; do
-        if [ $first_package -eq 0 ]; then
-            section_line
-        fi
-        first_package=0
-        package_name=$(basename "${package_dir}")
-        note "Package: ${package_name}"
-        
-        # Find all files starting with . or inside directories starting with .
-        find "${package_dir}" \( -name ".*" -o -path "*/.*" \) -type f | while read -r source_file; do
-            # Calculate relative path from package directory
-            relative_path="${source_file#${package_dir}}"
-            target_file="${HOME}/${relative_path}"
-            target_dir=$(dirname "${target_file}")
-            
-            # Create target directory if it doesn't exist
-            mkdir -p "${target_dir}"
-            
-            # Create symlink
-            ln -sf "${source_file}" "${target_file}"
-            ok "Linked ${relative_path}"
-        done
+    step "Linking dotfiles with GNU Stow"
+
+    local -a packages
+    local package_dir
+
+    if ! command -v stow &> /dev/null; then
+        warn "stow not found; install Homebrew packages then rerun"
+        return 1
+    fi
+
+    packages=()
+    for package_dir in "${DOTFILES_DIR}"/packages/*(/N); do
+        packages+=("${package_dir:t}")
     done
+
+    if [ ${#packages[@]} -eq 0 ]; then
+        warn "No packages found"
+        return 1
+    fi
+
+    note "Packages: ${packages[*]}"
+    if stow --no-folding --dir="${DOTFILES_DIR}/packages" --target="${HOME}" "${packages[@]}"; then
+        ok "Linked dotfiles"
+    else
+        warn "stow failed; resolve conflicts and rerun"
+        return 1
+    fi
 }
 
 install_tpm() {
@@ -170,6 +171,30 @@ install_claude_code() {
     ok "Installed Claude Code"
 }
 
+print_manual_setup_reminders() {
+    echo ""
+    section_line
+    echo "${BOLD}Manual setup reminders${RESET}"
+    echo ""
+    echo "tmux plugins:"
+    echo "  - Open tmux and run prefix + I"
+    echo ""
+    echo "Neovim plugins:"
+    echo "  - Open Neovim and run :Lazy sync"
+    echo ""
+    echo "Claude Code settings:"
+    echo "  - Add machine-specific JSON files if needed:"
+    echo "    ~/.claude/_settings-source/*.json"
+    echo "  - Generate settings after that:"
+    echo "    dotfiles claude-settings"
+    echo "Claude Code plugins:"
+    echo "  - Reinstall plugins from /plugins"
+    echo ""
+    echo "Other manual setup:"
+    echo "  - See this repository's README.md for macOS settings, app permissions, and tool-specific setup"
+    section_line
+}
+
 main() {
     local border="${CYAN}${LINE_EQUAL}${RESET}"
 
@@ -178,17 +203,18 @@ main() {
     echo "${BOLD}${CYAN}🌟 Starting dotfiles installation${RESET}"
     printf "%s\n\n" "$border"
 
-    link_dotfiles
-    install_tpm
     install_brew
     eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null
     install_brew_packages
+    link_dotfiles
+    install_tpm
     install_mise_tools
     install_claude_code
     
     echo ""
     echo "${GREEN}🎉 Installation complete!${RESET}"
     echo "Please restart your terminal or run 'exec zsh' to apply the new setup."
+    print_manual_setup_reminders
 }
 
 main "$@"
