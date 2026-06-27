@@ -92,7 +92,7 @@ If Stow reports conflicts from legacy symlinks created by older versions of `ins
 ```bash
 scripts/migrate-legacy-links-to-stow.sh --dry-run
 scripts/migrate-legacy-links-to-stow.sh
-dotfiles install
+./install.sh
 ```
 
 ## Claude Code and tmux
@@ -102,7 +102,7 @@ dotfiles install
 - Add machine-specific Claude settings as any other `*.json` file in `~/.claude/_settings-source/`
 - Claude Code uses `packages/claude/.claude/statusline-command.sh` for a compact two-row statusline
 - `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories under `$TMPDIR/claude-cwd-state`
-- tmux helpers use that state to open shells, panes, and lazygit from the relevant Claude-aware directory
+- `tmux-open` uses that state to open shells, panes, and lazygit from the relevant Claude-aware directory
 - Interactive zsh auto-starts a `home` tmux session with a `main` window, except in Claude, Codex, and VS Code terminals
 
 ## Repository Structure
