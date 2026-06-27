@@ -35,6 +35,7 @@ Use the narrowest validation that matches your change:
 - `bash tests/claude-statusline.sh`
 - `bash tests/claude-cwd-state-hook.sh`
 - `bash tests/tmux-open.sh`
+- `bash tests/tmux-project.sh`
 - `./scripts/check-updates.sh --list` for CLI/script sanity
 - `./install.sh` when you change installation flow, symlinking behavior, package lists, or anything cross-cutting
 

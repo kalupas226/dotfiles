@@ -16,6 +16,7 @@ _dotfiles() {
     sheldon:"sheldon plugin pinned revs"
   )
   check_options=(
+    --refresh:"Refresh update metadata before supported checks"
     --list:"Show available checks"
     --help:"Show check help"
   )

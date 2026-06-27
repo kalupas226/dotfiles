@@ -75,10 +75,11 @@ Some tools require a one-time manual step after `install.sh`:
 - Node: pinned via mise in `packages/mise/.config/mise/config.toml`
 - npm CLIs: prefer project-local `devDependencies`, `npm dlx`/`npx`, or Homebrew casks/formulae over global npm installs
 - Git: default identity uses GitHub noreply; override per machine with `~/.gitconfig.local` if needed
-- Updates check (one-shot, no writes): `dotfiles check`
-  - Homebrew (`brew update --quiet` + `brew outdated`)
+- Updates check (one-shot, no writes by default): `dotfiles check`
+  - Homebrew (`brew outdated`; pass `--refresh` to run `brew update --quiet` first)
   - mise tools (`mise outdated`)
   - sheldon plugins (pinned `rev` vs latest tags)
+- Focused shell regression tests: `bash tests/claude-statusline.sh`, `bash tests/claude-cwd-state-hook.sh`, `bash tests/tmux-open.sh`, `bash tests/tmux-project.sh`
 - Agent skills: see `skills/README.md`
 - Claude Code + tmux:
   - Claude Code statusline renders as two rows so long directory and branch names do not hide model/context/cost/elapsed details

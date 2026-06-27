@@ -6,7 +6,7 @@ usage() {
   cat <<'EOF'
 Usage:
   dotfiles install [--skip-confirmation]
-  dotfiles check [brew|mise|sheldon...]
+  dotfiles check [--refresh] [brew|mise|sheldon...]
   dotfiles help
 
 Commands:
@@ -17,6 +17,7 @@ Commands:
 Examples:
   dotfiles install
   dotfiles check
+  dotfiles check --refresh
   dotfiles check brew
 EOF
 }

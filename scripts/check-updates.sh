@@ -8,12 +8,14 @@ UI_HELPERS="$DOTFILES_DIR/scripts/lib/ui.sh"
 . "$UI_HELPERS"
 
 STEP_ICON="🔍"
+REFRESH=0
 CHECKS=(brew mise sheldon)
 CHECK_DESCRIPTIONS=(
   "Homebrew outdated"
   "mise outdated"
   "sheldon plugin pinned revs"
 )
+REQUESTED_CHECKS=()
 
 banner() {
   local border="${CYAN}${LINE_EQUAL}${RESET}"
@@ -24,7 +26,7 @@ banner() {
 
 usage() {
   cat <<'EOF'
-Usage: check-updates.sh [check...]
+Usage: check-updates.sh [--refresh] [check...]
 Checks:
 EOF
   local i
@@ -33,10 +35,47 @@ EOF
   done
   cat <<'EOF'
 Options:
-  --list    Show available checks
-  --help    Show this message
+  --refresh    Refresh update metadata before supported checks
+  --list       Show available checks
+  --help       Show this message
 If no checks are provided, all run in order.
 EOF
+}
+
+list_checks() {
+  printf "%s\n" "${CHECKS[@]}"
+}
+
+parse_args() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --help|-h)
+        usage
+        exit 0
+        ;;
+      --list)
+        list_checks
+        exit 0
+        ;;
+      --refresh)
+        REFRESH=1
+        shift
+        ;;
+      --)
+        shift
+        REQUESTED_CHECKS+=("$@")
+        break
+        ;;
+      -*)
+        warn "Unknown option '$1'"
+        return 1
+        ;;
+      *)
+        REQUESTED_CHECKS+=("$1")
+        shift
+        ;;
+    esac
+  done
 }
 
 resolve_script() {
@@ -63,7 +102,7 @@ run_checks() {
       failed=1
       continue
     fi
-    if ! "$script_path"; then
+    if ! DOTFILES_CHECK_REFRESH="$REFRESH" "$script_path"; then
       warn "Check '$check' failed"
       failed=1
     fi
@@ -82,13 +121,10 @@ next_steps() {
 main() {
   local result
 
-  case "${1:-}" in
-    --help|-h) usage; exit 0 ;;
-    --list) printf "%s\n" "${CHECKS[@]}"; exit 0 ;;
-  esac
+  parse_args "$@" || return 1
 
   banner
-  if run_checks "$@"; then
+  if run_checks "${REQUESTED_CHECKS[@]}"; then
     result=0
   else
     result=$?
