@@ -7,18 +7,21 @@ usage() {
 Usage:
   dotfiles install [--skip-confirmation]
   dotfiles check [--refresh] [brew|mise|sheldon...]
+  dotfiles claude-settings
   dotfiles help
 
 Commands:
-  install   Link dotfiles and install managed tools
-  check     Check Homebrew, mise, and sheldon updates
-  help      Show this message
+  install          Link dotfiles and install managed tools
+  check            Check Homebrew, mise, and sheldon updates
+  claude-settings  Generate Claude Code user settings
+  help             Show this message
 
 Examples:
   dotfiles install
   dotfiles check
   dotfiles check --refresh
   dotfiles check brew
+  dotfiles claude-settings
 EOF
 }
 
@@ -69,6 +72,11 @@ main() {
       shift
       root="$(dotfiles_dir)"
       exec "$root/scripts/check-updates.sh" "$@"
+      ;;
+    claude-settings)
+      shift
+      root="$(dotfiles_dir)"
+      exec "$root/scripts/generate-claude-settings.sh" "$@"
       ;;
     help|--help|-h)
       usage
