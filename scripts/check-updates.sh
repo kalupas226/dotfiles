@@ -124,7 +124,7 @@ main() {
   parse_args "$@" || return 1
 
   banner
-  if run_checks "${REQUESTED_CHECKS[@]}"; then
+  if run_checks ${REQUESTED_CHECKS[@]+"${REQUESTED_CHECKS[@]}"}; then
     result=0
   else
     result=$?
