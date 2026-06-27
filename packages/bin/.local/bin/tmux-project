@@ -22,17 +22,52 @@ require_cmd() {
     command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
 }
 
+project_label_for_path() {
+    local project_dir="$1"
+    local organization
+    local repository
+
+    organization="$(basename -- "$(dirname -- "$project_dir")")"
+    repository="$(basename -- "$project_dir")"
+
+    if [[ -n "$organization" && "$organization" != "." && "$organization" != "/" ]]; then
+        printf '%s/%s\n' "$organization" "$repository"
+    else
+        printf '%s\n' "$repository"
+    fi
+}
+
+project_records() {
+    local project_dir
+    local label
+
+    while IFS= read -r project_dir; do
+        [[ -n "$project_dir" ]] || continue
+        label="$(project_label_for_path "$project_dir")"
+        printf '%s\t%s\n' "$label" "$project_dir"
+    done
+}
+
 select_project_dir() {
     local preview
+    local selected_record
     local selected_dir
 
-    if command -v eza >/dev/null 2>&1; then
-        preview='eza -l --icons --color=always {}'
-    else
-        preview='ls -la {}'
-    fi
+    preview="printf '%s\n' {} | awk -F \"\t\" '{ print \"Path:\"; print \$2 }'"
+    selected_record="$(
+        ghq list -p |
+            project_records |
+            fzf \
+                --prompt='project> ' \
+                --delimiter=$'\t' \
+                --with-nth=1 \
+                --preview="$preview" \
+                --preview-window=down:3:wrap
+    )" || return 1
+    [[ -n "$selected_record" ]] || return 1
 
-    selected_dir="$(ghq list -p | fzf --prompt='project> ' --preview="$preview")" || return 1
+    selected_dir="${selected_record#*$'\t'}"
+    [[ "$selected_dir" != "$selected_record" ]] || die "selected record is missing path: $selected_record"
     [[ -n "$selected_dir" ]] || return 1
     [[ -d "$selected_dir" ]] || die "selected path is not a directory: $selected_dir"
 
@@ -43,7 +78,7 @@ session_name_for_path() {
     local project_dir="$1"
     local name
 
-    name="$(basename -- "$project_dir")"
+    name="$(project_label_for_path "$project_dir")"
     name="$(printf '%s' "$name" | tr -cs '[:alnum:]_.-' '_' | sed 's/^_*//; s/_*$//')"
     [[ -n "$name" ]] || die "could not derive session name from: $project_dir"
 
