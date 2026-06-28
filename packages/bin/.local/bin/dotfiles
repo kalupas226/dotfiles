@@ -6,21 +6,24 @@ usage() {
   cat <<'EOF'
 Usage:
   dotfiles install [--skip-confirmation]
-  dotfiles check [--refresh] [brew|mise|sheldon...]
+  dotfiles outdated [--refresh] [brew|mise|sheldon...]
+  dotfiles doctor
   dotfiles claude-settings
   dotfiles help
 
 Commands:
   install          Link dotfiles and install managed tools
-  check            Check Homebrew, mise, and sheldon updates
+  outdated         Check Homebrew, mise, and sheldon updates
+  doctor           Diagnose local dotfiles symlink health
   claude-settings  Generate Claude Code user settings
   help             Show this message
 
 Examples:
   dotfiles install
-  dotfiles check
-  dotfiles check --refresh
-  dotfiles check brew
+  dotfiles outdated
+  dotfiles outdated --refresh
+  dotfiles outdated brew
+  dotfiles doctor
   dotfiles claude-settings
 EOF
 }
@@ -68,10 +71,15 @@ main() {
       root="$(dotfiles_dir)"
       exec "$root/install.sh" "$@"
       ;;
-    check)
+    outdated)
       shift
       root="$(dotfiles_dir)"
-      exec "$root/scripts/check-updates.sh" "$@"
+      exec "$root/scripts/outdated.sh" "$@"
+      ;;
+    doctor)
+      shift
+      root="$(dotfiles_dir)"
+      exec "$root/scripts/doctor.sh" "$@"
       ;;
     claude-settings)
       shift

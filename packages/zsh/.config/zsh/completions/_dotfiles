@@ -3,23 +3,27 @@
 _dotfiles() {
   local subcommand="${words[2]:-}"
   local previous_word="${words[CURRENT-1]:-}"
-  local -a commands checks check_options claude_settings_options install_options
+  local -a commands sources doctor_options outdated_options claude_settings_options install_options
 
   commands=(
     install:"Link dotfiles and install managed tools"
-    check:"Check Homebrew, mise, and sheldon updates"
+    outdated:"Check Homebrew, mise, and sheldon updates"
+    doctor:"Diagnose local dotfiles symlink health"
     claude-settings:"Generate Claude Code user settings"
     help:"Show help"
   )
-  checks=(
+  sources=(
     brew:"Homebrew outdated"
     mise:"mise outdated"
     sheldon:"sheldon plugin pinned revs"
   )
-  check_options=(
-    --refresh:"Refresh update metadata before supported checks"
-    --list:"Show available checks"
-    --help:"Show check help"
+  outdated_options=(
+    --refresh:"Refresh update metadata before supported sources"
+    --list:"Show available sources"
+    --help:"Show outdated help"
+  )
+  doctor_options=(
+    --help:"Show doctor help"
   )
   install_options=(
     --skip-confirmation:"Do not prompt before running official remote installer scripts"
@@ -40,12 +44,17 @@ _dotfiles() {
       fi
       _describe -t options "install option" install_options
       ;;
-    check)
+    outdated)
       if [[ "$PREFIX" == -* ]]; then
-        _describe -t options "check option" check_options
+        _describe -t options "outdated option" outdated_options
         return
       fi
-      _describe -t checks "update check" checks
+      _describe -t sources "outdated source" sources
+      ;;
+    doctor)
+      if [[ "$PREFIX" == -* ]]; then
+        _describe -t options "doctor option" doctor_options
+      fi
       ;;
     claude-settings)
       if [[ "$PREFIX" == -* ]]; then

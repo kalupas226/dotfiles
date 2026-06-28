@@ -8,7 +8,7 @@ REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd -P)"
 # shellcheck source=/dev/null
 source "${REPO_ROOT}/scripts/lib/ui.sh"
 
-TMUX_RUN_IN_PANE="${REPO_ROOT}/packages/bin/.local/bin/tmux-run-in-pane"
+TMUX_RUN_IN_PANE="${REPO_ROOT}/packages/tmux/.local/libexec/tmux/run-in-pane"
 
 fail() {
     warn "$*"
@@ -235,7 +235,7 @@ test_below_reports_busy_target_pane() {
         TMUX_TEST_PANE_CURRENT_COMMAND="lazygit" \
         run_tmux_run_in_pane "$wrapper_dir" --select below "%1" lazygit
 
-    grep -F "display-message -t %1 tmux-run-in-pane: target pane is busy: lazygit" "$tmux_log" >/dev/null ||
+    grep -F "display-message -t %1 tmux/run-in-pane: target pane is busy: lazygit" "$tmux_log" >/dev/null ||
         fail "expected tmux-run-in-pane to display a busy-pane message"
 
     if grep -F "send-keys" "$tmux_log" >/dev/null; then
@@ -269,7 +269,7 @@ test_below_reports_pane_mode_as_busy() {
         TMUX_TEST_PANE_CURRENT_COMMAND="zsh" \
         run_tmux_run_in_pane "$wrapper_dir" below "%1" lazygit
 
-    grep -F "display-message -t %1 tmux-run-in-pane: target pane is busy: pane mode" "$tmux_log" >/dev/null ||
+    grep -F "display-message -t %1 tmux/run-in-pane: target pane is busy: pane mode" "$tmux_log" >/dev/null ||
         fail "expected tmux-run-in-pane to display a pane-mode message"
 
     rm -rf "$wrapper_dir" "$tmux_log" "$tmpdir" "$fallback_cwd"
@@ -293,7 +293,7 @@ test_below_reports_missing_target_as_noop() {
         TMUX_TEST_LIST_PANES=$'%1\t0\t0\t100\t20' \
         run_tmux_run_in_pane "$wrapper_dir" --select below "%1" lazygit
 
-    grep -F "display-message -t %1 tmux-run-in-pane: no target pane: below" "$tmux_log" >/dev/null ||
+    grep -F "display-message -t %1 tmux/run-in-pane: no target pane: below" "$tmux_log" >/dev/null ||
         fail "expected tmux-run-in-pane to display a missing-target message"
 
     if grep -F "send-keys" "$tmux_log" >/dev/null; then

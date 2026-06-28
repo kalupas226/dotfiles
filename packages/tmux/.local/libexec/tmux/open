@@ -5,22 +5,22 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 
 # shellcheck source=/dev/null
-source "${SCRIPT_DIR}/../lib/tmux/pane-cwd.sh"
+source "${SCRIPT_DIR}/lib/pane-cwd.sh"
 
 usage() {
     cat <<'EOF'
 Usage:
-  tmux-open <popup|popup-lazygit|split-h|split-v|split-v-lazygit|new-window> <pane-id>
+  ~/.local/libexec/tmux/open <popup|popup-lazygit|split-h|split-v|split-v-lazygit|new-window> <pane-id>
 
 Opens tmux UI from a pane-aware working directory.
 
-For Claude agent panes, tmux-open first tries the most recent matching Claude
+For Claude agent panes, this helper first tries the most recent matching Claude
 cwd state. Otherwise it falls back to the pane's current path.
 EOF
 }
 
 die() {
-    printf 'tmux-open: %s\n' "$*" >&2
+    printf 'tmux/open: %s\n' "$*" >&2
     exit 1
 }
 

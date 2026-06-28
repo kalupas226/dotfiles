@@ -5,16 +5,16 @@ set -euo pipefail
 usage() {
     cat <<'EOF'
 Usage:
-  tmux-project
+  ~/.local/libexec/tmux/project
 
 Select a ghq repository with fzf, then switch to a tmux session for it.
-If the session does not exist, tmux-project creates it with a main window from
+If the session does not exist, this helper creates it with a main window from
 the selected repository root.
 EOF
 }
 
 die() {
-    printf 'tmux-project: %s\n' "$*" >&2
+    printf 'tmux/project: %s\n' "$*" >&2
     exit 1
 }
 

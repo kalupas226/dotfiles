@@ -10,13 +10,14 @@ Examples:
 - `packages/zsh/.zshrc` -> `~/.zshrc`
 - `packages/nvim/.config/nvim/init.lua` -> `~/.config/nvim/init.lua`
 - `packages/bin/.local/bin/dotfiles` -> `~/.local/bin/dotfiles`
-- `packages/bin/.local/bin/tmux-open` -> `~/.local/bin/tmux-open`
+- `packages/tmux/.local/libexec/tmux/open` -> `~/.local/libexec/tmux/open`
 - `packages/claude/.claude/_settings-source/shared.json` -> `~/.claude/_settings-source/shared.json`
 
 The repo contains both user configuration and maintenance tooling:
 - `install.sh` installs and links everything
-- `scripts/` contains maintenance and update-check scripts
+- `scripts/` contains maintenance, diagnostics, and update-check scripts
 - `packages/bin/.local/bin/` contains user-facing CLI helpers installed into `$HOME`
+- tool-specific executable helpers live with their owning package, usually under `.local/libexec/<tool>/`
 - `tests/` contains shell regression tests for helper scripts
 - `skills/` contains shared Agent Skills
 
@@ -24,12 +25,13 @@ The repo contains both user configuration and maintenance tooling:
 
 - Install everything: `./install.sh`
 - Install everything via installed helper: `dotfiles install`
-- Check all updates via installed helper: `dotfiles check`
-- Refresh update metadata before checking: `dotfiles check --refresh`
+- Check all managed updates via installed helper: `dotfiles outdated`
+- Refresh update metadata before checking: `dotfiles outdated --refresh`
+- Diagnose local dotfiles symlink health: `dotfiles doctor`
 - Generate Claude Code user settings via installed helper: `dotfiles claude-settings`
-- Check all updates directly: `./scripts/check-updates.sh`
-- Run one update check: `dotfiles check brew`, `dotfiles check mise`, or `dotfiles check sheldon`
-- List available update checks: `./scripts/check-updates.sh --list`
+- Check all managed updates directly: `./scripts/outdated.sh`
+- Run one outdated source: `dotfiles outdated brew`, `dotfiles outdated mise`, or `dotfiles outdated sheldon`
+- List available outdated sources: `./scripts/outdated.sh --list`
 
 ## Validation
 
@@ -43,7 +45,8 @@ Use the narrowest validation that matches your change:
 - `bash tests/tmux-open.sh`
 - `bash tests/tmux-run-in-pane.sh`
 - `bash tests/tmux-project.sh`
-- `./scripts/check-updates.sh --list` for CLI/script sanity
+- `bash tests/doctor.sh`
+- `./scripts/outdated.sh --list` for CLI/script sanity
 - `./scripts/migrate-legacy-links-to-stow.sh --dry-run` when changing Stow migration logic
 - `./install.sh` when you change installation flow, symlinking behavior, package lists, or anything cross-cutting
 
@@ -59,7 +62,7 @@ Top-level files:
 
 Packages:
 - `packages/aerospace` - AeroSpace config
-- `packages/bin` - installed helper CLIs such as `dotfiles`, `tmux-open`, and `tmux-project`
+- `packages/bin` - installed user-facing helper CLIs such as `dotfiles`
 - `packages/claude` - Claude Code settings source, hooks, and statusline
 - `packages/git` - `.gitconfig` and global ignore file
 - `packages/karabiner` - Karabiner-Elements config
@@ -69,14 +72,15 @@ Packages:
 - `packages/nvim` - Neovim config
 - `packages/sheldon` - shell plugin manager config
 - `packages/starship` - prompt config
-- `packages/tmux` - tmux config
+- `packages/tmux` - tmux config and tmux-only libexec helpers
 - `packages/wezterm` - WezTerm config
 - `packages/zsh` - zsh startup files, aliases, functions, completions
 
 Maintenance code:
 - `scripts/lib/ui.sh` - shared shell UI helpers (`step`, `note`, `ok`, `warn`, `skip`, `section_line`)
-- `scripts/check-updates.sh` - dispatcher for update checks
-- `scripts/checks/` - individual checks for brew/mise/sheldon
+- `scripts/outdated.sh` - dispatcher for managed update checks
+- `scripts/outdated/` - individual outdated checks for brew/mise/sheldon
+- `scripts/doctor.sh` - read-only local dotfiles health diagnostics
 - `scripts/generate-claude-settings.sh` - manually merges Claude settings source JSON files from `~/.claude/_settings-source` into `~/.claude/settings.json`
 - `scripts/migrate-legacy-links-to-stow.sh` - one-time helper for removing old repo-pointing symlinks before Stow takes over
 - `tests/` - regression tests for helper scripts
@@ -111,17 +115,18 @@ If Stow conflicts with symlinks created by older versions of `install.sh`, use `
 
 Supported commands:
 - `dotfiles install`
-- `dotfiles check [--refresh] [brew|mise|sheldon...]`
+- `dotfiles outdated [--refresh] [brew|mise|sheldon...]`
+- `dotfiles doctor`
 - `dotfiles claude-settings`
 - `dotfiles help`
 
 ### Claude Code and tmux
 
 - Claude Code uses `packages/claude/.claude/statusline-command.sh` for the statusline
-- `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories for `tmux-open`
-- `packages/bin/.local/bin/tmux-open` opens panes, popups, and lazygit from a Claude-aware cwd when possible
-- `packages/bin/.local/bin/tmux-run-in-pane` sends commands into an existing pane from a Claude-aware cwd
-- `packages/bin/.local/bin/tmux-project` opens project sessions from a `ghq` + `fzf` picker
+- `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories for the tmux helpers
+- `packages/tmux/.local/libexec/tmux/open` opens panes, popups, and lazygit from a Claude-aware cwd when possible
+- `packages/tmux/.local/libexec/tmux/run-in-pane` sends commands into an existing pane from a Claude-aware cwd
+- `packages/tmux/.local/libexec/tmux/project` opens project sessions from a `ghq` + `fzf` picker
 
 ## Shell Conventions
 
@@ -133,7 +138,8 @@ Supported commands:
 
 Repository-specific placement rules:
 - put user-facing or agent-facing CLIs in `packages/bin/.local/bin/`
-- keep `scripts/` for repo maintenance/install/check logic
+- put tool-specific executable helpers in the owning package under `.local/libexec/<tool>/`
+- keep `scripts/` for repo maintenance, install, outdated, and doctor logic
 - keep package names lowercase and aligned to the tool/app name
 - keep script filenames in kebab-case
 
