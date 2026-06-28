@@ -1,0 +1,217 @@
+<!-- Optional snippet for html-briefing artifacts with code blocks.
+     Paste the style block into <head> and the script block before </body>.
+     Use <pre><code class="language-sh">...</code></pre> style blocks.
+     The script escapes code text before inserting highlight markup. -->
+<style>
+  code {
+    font-family: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.875em;
+  }
+  pre {
+    position: relative;
+    background: #111827;
+    color: #f3f4f6;
+    border: 1px solid #243044;
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+  }
+  pre code {
+    display: block;
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: 0.85rem;
+    white-space: pre;
+  }
+  .copy-code {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    border: 1px solid #243044;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #f3f4f6;
+    font: inherit;
+    font-size: 0.75rem;
+    line-height: 1;
+    padding: 0.35rem 0.45rem;
+    cursor: pointer;
+  }
+  .copy-code:hover { background: rgba(255, 255, 255, 0.14); }
+  .tok-comment { color: #9ca3af; }
+  .tok-keyword { color: #93c5fd; }
+  .tok-string { color: #86efac; }
+  .tok-number { color: #fcd34d; }
+  .tok-property { color: #67e8f9; }
+  .tok-tag { color: #f0abfc; }
+  .tok-attr { color: #c4b5fd; }
+  .tok-variable { color: #f9a8d4; }
+  .tok-add { color: #86efac; }
+  .tok-del { color: #fca5a5; }
+  .tok-meta { color: #c4b5fd; }
+</style>
+<script>
+(() => {
+  const aliases = {
+    bash: "sh",
+    shell: "sh",
+    zsh: "sh",
+    javascript: "js",
+    typescript: "ts",
+    jsonc: "json",
+    postgres: "sql",
+    postgresql: "sql",
+    pgsql: "sql",
+    py: "python",
+    xml: "html"
+  };
+
+  const escapeHtml = (value) => value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+
+  const rule = (className, pattern) => ({ className, pattern });
+  const commonStrings = rule("tok-string", /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/gy);
+  const commonNumbers = rule("tok-number", /\b(?:0x[\da-fA-F]+|\d+(?:\.\d+)?)(?:[eE][+-]?\d+)?\b/gy);
+  const slashComment = rule("tok-comment", /\/\/[^\n]*|\/\*[\s\S]*?\*\//gy);
+  const hashComment = rule("tok-comment", /#[^\n]*/gy);
+
+  const jsKeywords = rule("tok-keyword", /\b(?:async|await|break|case|catch|class|const|continue|default|else|export|extends|false|finally|for|from|function|if|import|in|instanceof|interface|let|new|null|return|switch|throw|true|try|type|undefined|var|while)\b/gy);
+  const pythonKeywords = rule("tok-keyword", /\b(?:and|as|assert|async|await|break|class|continue|def|del|elif|else|except|False|finally|for|from|if|import|in|is|lambda|None|not|or|pass|raise|return|True|try|while|with|yield)\b/gy);
+  const swiftKeywords = rule("tok-keyword", /\b(?:actor|any|as|associatedtype|await|break|case|catch|class|continue|defer|do|else|enum|extension|false|fileprivate|final|for|func|guard|if|import|in|init|internal|is|let|mutating|nil|open|private|protocol|public|rethrows|return|self|some|static|struct|switch|throw|throws|true|try|var|where|while)\b/gy);
+
+  const grammars = {
+    sh: [
+      hashComment,
+      commonStrings,
+      rule("tok-variable", /\$\{[^}]+\}|\$[A-Za-z_][\w]*/gy),
+      rule("tok-keyword", /\b(?:case|do|done|elif|else|esac|fi|for|function|if|in|select|then|time|until|while)\b/gy),
+      commonNumbers
+    ],
+    json: [
+      rule("tok-property", /"(?:\\.|[^"\\])*"(?=\s*:)/gy),
+      rule("tok-string", /"(?:\\.|[^"\\])*"/gy),
+      commonNumbers,
+      rule("tok-keyword", /\b(?:true|false|null)\b/gy)
+    ],
+    js: [slashComment, commonStrings, jsKeywords, commonNumbers],
+    ts: [slashComment, commonStrings, jsKeywords, commonNumbers],
+    html: [
+      rule("tok-comment", /<!--[\s\S]*?-->/gy),
+      rule("tok-tag", /<\/?[A-Za-z][^>\n]*?>/gy)
+    ],
+    css: [
+      slashComment,
+      commonStrings,
+      rule("tok-property", /[A-Za-z-]+(?=\s*:)/gy),
+      rule("tok-attr", /[#.][A-Za-z_-][\w-]*/gy),
+      commonNumbers
+    ],
+    sql: [
+      rule("tok-comment", /--[^\n]*|\/\*[\s\S]*?\*\//gy),
+      rule("tok-string", /'(?:''|[^'])*'|"(?:\\"|[^"])*"/gy),
+      rule("tok-keyword", /\b(?:add|alter|and|as|asc|begin|between|by|case|commit|constraint|create|delete|desc|distinct|drop|else|end|exists|for|foreign|from|group|having|in|index|inner|insert|into|is|join|key|left|limit|not|null|on|or|order|outer|primary|returning|right|rollback|select|set|table|then|update|values|when|where|with)\b/giy),
+      commonNumbers
+    ],
+    python: [
+      hashComment,
+      rule("tok-string", /"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/gy),
+      pythonKeywords,
+      commonNumbers
+    ],
+    swift: [
+      slashComment,
+      commonStrings,
+      rule("tok-attr", /@[A-Za-z_]\w*/gy),
+      swiftKeywords,
+      commonNumbers
+    ]
+  };
+
+  const highlightWithRules = (text, rules) => {
+    let output = "";
+    let index = 0;
+
+    while (index < text.length) {
+      let match = null;
+      let matchRule = null;
+
+      for (const currentRule of rules) {
+        currentRule.pattern.lastIndex = index;
+        const candidate = currentRule.pattern.exec(text);
+        if (candidate && candidate.index === index) {
+          match = candidate[0];
+          matchRule = currentRule;
+          break;
+        }
+      }
+
+      if (match) {
+        output += `<span class="${matchRule.className}">${escapeHtml(match)}</span>`;
+        index += match.length;
+      } else {
+        output += escapeHtml(text[index]);
+        index += 1;
+      }
+    }
+
+    return output;
+  };
+
+  const highlightDiff = (text) => text
+    .split(/(\n)/)
+    .map((part) => {
+      if (part === "\n") return part;
+      const escaped = escapeHtml(part);
+      if (part.startsWith("+++") || part.startsWith("---")) return `<span class="tok-meta">${escaped}</span>`;
+      if (part.startsWith("@@")) return `<span class="tok-meta">${escaped}</span>`;
+      if (part.startsWith("+")) return `<span class="tok-add">${escaped}</span>`;
+      if (part.startsWith("-")) return `<span class="tok-del">${escaped}</span>`;
+      return escaped;
+    })
+    .join("");
+
+  const languageFor = (code) => {
+    const className = Array.from(code.classList).find((name) => name.startsWith("language-"));
+    const language = className ? className.replace("language-", "").toLowerCase() : "";
+    return aliases[language] || language;
+  };
+
+  const highlight = (text, language) => {
+    if (language === "diff") return highlightDiff(text);
+    const rules = grammars[language];
+    return rules ? highlightWithRules(text, rules) : escapeHtml(text);
+  };
+
+  const addCopyButton = (pre, rawText) => {
+    if (pre.querySelector(".copy-code")) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "copy-code";
+    button.textContent = "Copy";
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(rawText);
+        button.textContent = "Copied";
+        window.setTimeout(() => { button.textContent = "Copy"; }, 1200);
+      } catch (_error) {
+        button.textContent = "Select";
+        window.setTimeout(() => { button.textContent = "Copy"; }, 1200);
+      }
+    });
+
+    pre.appendChild(button);
+  };
+
+  document.querySelectorAll("pre code").forEach((code) => {
+    const rawText = code.textContent;
+    const language = languageFor(code);
+    code.innerHTML = highlight(rawText, language);
+    const pre = code.closest("pre");
+    if (pre) addCopyButton(pre, rawText);
+  });
+})();
+</script>
