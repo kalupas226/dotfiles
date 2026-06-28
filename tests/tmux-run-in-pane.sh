@@ -145,7 +145,7 @@ test_below_runs_command_from_claude_cwd() {
     write_claude_state "$tmpdir" agent "$claude_cwd" "$project_dir" 202401010000.00
 
     TMPDIR="$tmpdir" \
-        TMUX_TEST_PS_COMMANDS="claude agents" \
+        TMUX_TEST_PS_COMMANDS="claude --dangerously-skip-permissions" \
         TMUX_TEST_PANE_CURRENT_PATH="$project_dir" \
         TMUX_TEST_LIST_PANES=$'%1\t0\t0\t100\t20\n%2\t0\t21\t100\t20' \
         TMUX_TEST_PANE_CURRENT_COMMAND="zsh" \

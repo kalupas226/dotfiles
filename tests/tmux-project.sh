@@ -85,7 +85,7 @@ case "\$cmd" in
     new-session)
         printf '%s\n' "\${TMUX_PROJECT_TEST_NEW_SESSION_ID:-new-session-id}"
         ;;
-    switch-client|attach-session)
+    set-option|switch-client|attach-session)
         ;;
     *)
         printf 'unexpected tmux command: %s\n' "\$cmd" >&2
@@ -139,6 +139,10 @@ test_creates_and_switches_inside_tmux() {
 
     grep -F "new-session -d -P -F #{session_id} -s acme_my-app -n main -c ${project_dir}" "$tmux_log" >/dev/null ||
         fail "expected tmux-project to create a project session"
+    grep -F "set-option -q -t \$42 @project_label my-app" "$tmux_log" >/dev/null ||
+        fail "expected tmux-project to set a short project label"
+    grep -F "set-option -q -t \$42 @project_full_label acme/my-app" "$tmux_log" >/dev/null ||
+        fail "expected tmux-project to set a full project label"
     grep -F "switch-client -t \$42" "$tmux_log" >/dev/null ||
         fail "expected tmux-project to switch to the new session inside tmux"
     grep -F -- $'--delimiter=\t' "$fzf_log" >/dev/null ||
@@ -181,6 +185,10 @@ test_switches_existing_session_inside_tmux() {
     fi
     grep -F "switch-client -t \$7" "$tmux_log" >/dev/null ||
         fail "expected tmux-project to switch to the existing session"
+    grep -F "set-option -q -t \$7 @project_label my-app" "$tmux_log" >/dev/null ||
+        fail "expected tmux-project to refresh the short project label"
+    grep -F "set-option -q -t \$7 @project_full_label acme/my-app" "$tmux_log" >/dev/null ||
+        fail "expected tmux-project to refresh the full project label"
 
     rm -rf "$wrapper_dir" "$tmux_log" "$fzf_log" "$fzf_input" "$tmpdir"
 }
@@ -211,6 +219,10 @@ test_creates_and_attaches_outside_tmux() {
 
     grep -F "new-session -d -P -F #{session_id} -s acme_my_app_api -n main -c ${project_dir}" "$tmux_log" >/dev/null ||
         fail "expected tmux-project to sanitize the session name"
+    grep -F "set-option -q -t \$9 @project_label my app:api" "$tmux_log" >/dev/null ||
+        fail "expected tmux-project to keep the repository label readable"
+    grep -F "set-option -q -t \$9 @project_full_label acme/my app:api" "$tmux_log" >/dev/null ||
+        fail "expected tmux-project to keep the full label readable"
     grep -F "attach-session -t \$9" "$tmux_log" >/dev/null ||
         fail "expected tmux-project to attach outside tmux"
 

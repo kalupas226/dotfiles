@@ -37,6 +37,12 @@ project_label_for_path() {
     fi
 }
 
+project_repository_for_path() {
+    local project_dir="$1"
+
+    basename -- "$project_dir"
+}
+
 project_records() {
     local project_dir
     local label
@@ -92,6 +98,19 @@ session_id_for_name() {
         awk -F '\t' -v name="$session_name" '$1 == name { print $2; exit }'
 }
 
+set_project_labels() {
+    local session_id="$1"
+    local project_dir="$2"
+    local project_label
+    local project_full_label
+
+    project_label="$(project_repository_for_path "$project_dir")"
+    project_full_label="$(project_label_for_path "$project_dir")"
+
+    tmux set-option -q -t "$session_id" @project_label "$project_label"
+    tmux set-option -q -t "$session_id" @project_full_label "$project_full_label"
+}
+
 open_session() {
     local session_id="$1"
 
@@ -126,6 +145,7 @@ main() {
         session_id="$(tmux new-session -d -P -F '#{session_id}' -s "$session_name" -n main -c "$project_dir")"
         [[ -n "$session_id" ]] || session_id="$session_name"
     fi
+    set_project_labels "$session_id" "$project_dir"
 
     open_session "$session_id"
 }

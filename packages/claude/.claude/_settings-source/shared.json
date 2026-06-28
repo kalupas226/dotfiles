@@ -25,6 +25,11 @@
       "Bash(chmod 777 /*)",
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
+      "Bash(gh repo delete:*)",
+      "Bash(gh release delete:*)",
+      "Bash(gh api -X DELETE:*)",
+      "Bash(gh api --method DELETE:*)",
+      "Bash(gh auth logout:*)",
       "Bash(rm -rf /)",
       "Bash(rm -rf /*)",
       "Bash(rm -rf ~)",
@@ -71,6 +76,16 @@
           }
         ]
       }
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": false,
+    "allowUnsandboxedCommands": false,
+    "excludedCommands": [
+      "gh *",
+      "swift *",
+      "xcodebuild *"
     ]
   },
   "statusLine": {
