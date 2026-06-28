@@ -37,6 +37,7 @@ Restart your terminal, or run `exec zsh`, after installation.
 - Installs TPM if missing
 - Activates mise and runs `mise install`
 - Installs Claude Code if missing
+- Prints manual setup reminders
 
 After the first install, use the helper in `~/.local/bin` for routine maintenance:
 
@@ -46,31 +47,9 @@ dotfiles outdated
 
 ## Post-Install Steps
 
-Some tools need one-time setup after `install.sh`:
+Some tools need one-time manual setup after `install.sh`.
 
-- **tmux plugins (TPM)**: open tmux and run `prefix + I`
-  - TPM plugins are not lockfile-pinned
-  - Update intentionally with `prefix + U`
-- **Neovim plugins (lazy.nvim)**: open Neovim and run `:Lazy sync`
-  - Plugins are locked by `packages/nvim/.config/nvim/lazy-lock.json`
-  - Check updates with `:Lazy check`
-  - Update intentionally with targeted `:Lazy update <plugin>`
-  - Review the lockfile diff before committing
-- **Homebrew apps/tools**: complete any first-run permissions or in-app setup
-- **AeroSpace**:
-  - Grant Accessibility permission in `System Settings` -> `Privacy & Security` -> `Accessibility`
-  - Run `defaults write com.apple.spaces spans-displays -bool true && killall SystemUIServer` for multi-monitor support
-  - Reload config with `alt-shift-;` then `esc`
-- **Claude Code plugins**: reinstall plugins from the marketplace with `/plugins`
-- **Claude Code settings**:
-  - Add any machine-specific source files to `~/.claude/_settings-source/*.json`
-  - Generate the user settings with `dotfiles claude-settings`
-- **pfw (Point-Free Way CLI)**: follow https://github.com/pointfreeco/pfw
-- **Logi Tune**: install manually; it is not managed by Homebrew here
-- **macOS settings**:
-  - Mission Control: `Desktop & Dock` -> disable "Automatically rearrange Spaces based on most recent use"
-  - Trackpad: `Trackpad` -> enable "Tap to click"
-  - Trackpad: `Accessibility` -> `Pointer Control` -> `Trackpad Options...` -> enable dragging and choose "Three Finger Drag"
+The current checklist is printed by `install.sh` at the end of the install so the manual steps have one source of truth.
 
 ## Maintenance
 
@@ -82,6 +61,7 @@ Some tools need one-time setup after `install.sh`:
 - Generate Claude Code settings: `dotfiles claude-settings`
 - Node.js is pinned in `packages/mise/.config/mise/config.toml`
 - Homebrew packages are defined in `Brewfile`
+- Manual setup reminders are maintained in `install.sh`
 - Neovim plugins are locked in `packages/nvim/.config/nvim/lazy-lock.json`
 - Git identity defaults to GitHub noreply; override per machine with `~/.gitconfig.local`
 - Prefer project-local `devDependencies`, `npm dlx`/`npx`, or Homebrew over global npm installs
