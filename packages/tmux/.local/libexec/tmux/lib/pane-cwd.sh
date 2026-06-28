@@ -25,7 +25,7 @@ tmux_path_related() {
     [[ "$left" == "$right" || "$left" == "$right"/* || "$right" == "$left"/* ]]
 }
 
-tmux_pane_has_claude_agents() {
+tmux_pane_has_claude() {
     local pane_id="$1"
     local pane_tty
     local tty_name
@@ -35,7 +35,7 @@ tmux_pane_has_claude_agents() {
 
     tty_name="${pane_tty#/dev/}"
     ps -o command= -t "$tty_name" 2>/dev/null |
-        grep -E '(^|/)claude([[:space:]].*)?[[:space:]]agents([[:space:]]|$)' >/dev/null 2>&1 ||
+        grep -E '(^|/)claude([[:space:]]|$)' >/dev/null 2>&1 ||
         return 1
 }
 
@@ -93,7 +93,7 @@ tmux_resolved_cwd() {
     local claude_cwd
 
     pane_current_path="$(tmux_pane_format "$pane_id" "#{pane_current_path}")"
-    if tmux_pane_has_claude_agents "$pane_id"; then
+    if tmux_pane_has_claude "$pane_id"; then
         if claude_cwd="$(tmux_latest_claude_cwd "$pane_current_path")" && [[ -n "$claude_cwd" && -d "$claude_cwd" ]]; then
             printf '%s\n' "$claude_cwd"
             return 0

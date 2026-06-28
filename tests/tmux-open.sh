@@ -144,7 +144,7 @@ test_uses_latest_matching_claude_cwd_for_popup() {
     write_claude_state "$tmpdir" other "$other_cwd" "$other_project_dir" 202401010002.00
 
     TMPDIR="$tmpdir" \
-        TMUX_TEST_PS_COMMANDS="claude agents" \
+        TMUX_TEST_PS_COMMANDS="claude --dangerously-skip-permissions" \
         TMUX_TEST_PANE_CURRENT_PATH="$fallback_cwd" \
         run_tmux_open "$wrapper_dir" popup-lazygit "%1"
 
