@@ -22,6 +22,8 @@ test_records_minimal_worktree_state() {
     local worktree_path
     local output
     local session_file
+    local state_dir_mode
+    local session_file_mode
 
     tmpdir="$(mktemp -d /tmp/claude-cwd-hook-state.XXXXXX)"
     project_dir="$(mktemp -d /tmp/claude-cwd-hook-project.XXXXXX)"
@@ -47,6 +49,10 @@ test_records_minimal_worktree_state() {
     [[ -f "$session_file" ]] || fail "expected session state to be written"
     [[ ! -f "${tmpdir%/}/claude-cwd-state/latest.json" ]] || fail "expected hook not to write latest.json"
     [[ ! -f "${tmpdir%/}/claude-cwd-state/events.jsonl" ]] || fail "expected hook not to append events.jsonl"
+    state_dir_mode="$(stat -f '%Lp' "${tmpdir%/}/claude-cwd-state" 2>/dev/null || stat -c '%a' "${tmpdir%/}/claude-cwd-state")"
+    session_file_mode="$(stat -f '%Lp' "$session_file" 2>/dev/null || stat -c '%a' "$session_file")"
+    [[ "$state_dir_mode" == "700" ]] || fail "expected state directory mode 700, got: $state_dir_mode"
+    [[ "$session_file_mode" == "600" ]] || fail "expected session file mode 600, got: $session_file_mode"
 
     jq -e \
         --arg project_dir "$project_dir" \

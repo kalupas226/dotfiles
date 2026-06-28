@@ -244,6 +244,43 @@ test_pick_pastes_backtick_refs() {
     rm -rf "$wrapper_dir" "$tmux_log" "$fzf_log" "$fzf_input" "$root"
 }
 
+test_pick_excludes_sensitive_files() {
+    local wrapper_dir
+    local tmux_log
+    local fzf_log
+    local fzf_input
+    local root
+
+    wrapper_dir="$(mktemp -d /tmp/tmux-file-refs-sensitive-wrapper.XXXXXX)"
+    tmux_log="$(mktemp /tmp/tmux-file-refs-sensitive-log.XXXXXX)"
+    fzf_log="$(mktemp /tmp/tmux-file-refs-sensitive-fzf-log.XXXXXX)"
+    fzf_input="$(mktemp /tmp/tmux-file-refs-sensitive-fzf-input.XXXXXX)"
+    root="$(mktemp -d /tmp/tmux-file-refs-sensitive-root.XXXXXX)"
+    mkdir -p "${root}/config" "${root}/certs" "${root}/.ssh" "${root}/src"
+    printf 'secret\n' >"${root}/.env"
+    printf 'secret\n' >"${root}/config/.env.local"
+    printf 'secret\n' >"${root}/certs/dev.pem"
+    printf 'secret\n' >"${root}/certs/dev.key"
+    printf 'secret\n' >"${root}/.npmrc"
+    printf 'secret\n' >"${root}/.ssh/config"
+    printf 'ok\n' >"${root}/src/app.txt"
+    setup_wrappers "$wrapper_dir" "$tmux_log" "$fzf_log" "$fzf_input"
+
+    rm -f "${wrapper_dir}/rg"
+    TMUX_FILE_REFS_TEST_FZF_SELECTION=$'src/app.txt\n' \
+        run_tmux_file_refs "$wrapper_dir" --pick "%1" "$root"
+
+    grep -F "src/app.txt" "$fzf_input" >/dev/null ||
+        fail "expected normal files to be listed"
+    for path in ".env" "config/.env.local" "certs/dev.pem" "certs/dev.key" ".npmrc" ".ssh/config"; do
+        if grep -F "$path" "$fzf_input" >/dev/null; then
+            fail "expected sensitive path to be excluded from file refs: $path"
+        fi
+    done
+
+    rm -rf "$wrapper_dir" "$tmux_log" "$fzf_log" "$fzf_input" "$root"
+}
+
 test_pick_cancel_does_not_paste() {
     local wrapper_dir
     local tmux_log
@@ -282,6 +319,8 @@ main() {
     ok "refuses broad fallback roots outside git"
     test_pick_pastes_backtick_refs
     ok "pastes selected file references"
+    test_pick_excludes_sensitive_files
+    ok "excludes sensitive file references"
     test_pick_cancel_does_not_paste
     ok "cancels without pasting"
 }

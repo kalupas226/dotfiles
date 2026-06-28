@@ -104,11 +104,35 @@ list_files() {
     local root="$1"
 
     if command -v rg >/dev/null 2>&1; then
-        (cd "$root" && rg --files --hidden --glob '!.git' --glob '!**/.git/**')
+        (
+            cd "$root" && rg --files --hidden \
+                --glob '!.git' \
+                --glob '!**/.git/**' \
+                --glob '!**/.env' \
+                --glob '!**/.env.*' \
+                --glob '!**/*.pem' \
+                --glob '!**/*.key' \
+                --glob '!**/*.p12' \
+                --glob '!**/*.pfx' \
+                --glob '!**/.npmrc' \
+                --glob '!**/.ssh/**'
+        )
         return
     fi
 
-    (cd "$root" && find . -type f ! -path './.git/*' -print | sed 's#^\./##')
+    (
+        cd "$root" && find . -type f \
+            ! -path './.git/*' \
+            ! -name '.env' \
+            ! -name '.env.*' \
+            ! -name '*.pem' \
+            ! -name '*.key' \
+            ! -name '*.p12' \
+            ! -name '*.pfx' \
+            ! -name '.npmrc' \
+            ! -path './.ssh/*' \
+            -print | sed 's#^\./##'
+    )
 }
 
 format_ref() {

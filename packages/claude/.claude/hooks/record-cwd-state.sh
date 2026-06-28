@@ -4,12 +4,14 @@
 # Keep stdout empty so the hook never injects context or decisions.
 
 set -u
+umask 077
 
 input=$(cat)
 tmpdir="${TMPDIR:-/tmp}"
 state_dir="${tmpdir%/}/claude-cwd-state"
 
 mkdir -p "$state_dir" 2>/dev/null || exit 0
+chmod 700 "$state_dir" 2>/dev/null || exit 0
 
 record=$(
     printf '%s' "$input" | jq -c \
@@ -37,7 +39,12 @@ if [ -z "$session_id" ]; then
 fi
 
 safe_session_id=$(printf '%s' "$session_id" | tr -cs '[:alnum:]_.-' '_')
+tmp_record=$(mktemp "${state_dir}/session-${safe_session_id}.tmp.XXXXXX" 2>/dev/null) || exit 0
 
-printf '%s\n' "$record" > "$state_dir/session-${safe_session_id}.json" 2>/dev/null || true
+if printf '%s\n' "$record" > "$tmp_record" 2>/dev/null; then
+    mv -f "$tmp_record" "$state_dir/session-${safe_session_id}.json" 2>/dev/null || true
+else
+    rm -f "$tmp_record" 2>/dev/null || true
+fi
 
 exit 0
