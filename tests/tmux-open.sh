@@ -8,7 +8,7 @@ REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd -P)"
 # shellcheck source=/dev/null
 source "${REPO_ROOT}/scripts/lib/ui.sh"
 
-TMUX_OPEN="${REPO_ROOT}/packages/bin/.local/bin/tmux-open"
+TMUX_OPEN="${REPO_ROOT}/packages/tmux/.local/libexec/tmux/open"
 
 fail() {
     warn "$*"

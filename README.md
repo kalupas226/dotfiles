@@ -41,7 +41,7 @@ Restart your terminal, or run `exec zsh`, after installation.
 After the first install, use the helper in `~/.local/bin` for routine maintenance:
 
 ```bash
-dotfiles check
+dotfiles outdated
 ```
 
 ## Post-Install Steps
@@ -74,9 +74,10 @@ Some tools need one-time setup after `install.sh`:
 
 ## Maintenance
 
-- Check managed updates: `dotfiles check`
-- Refresh update metadata before checking: `dotfiles check --refresh`
-- Check a single source: `dotfiles check brew`, `dotfiles check mise`, or `dotfiles check sheldon`
+- Check managed updates: `dotfiles outdated`
+- Refresh update metadata before checking: `dotfiles outdated --refresh`
+- Check a single source: `dotfiles outdated brew`, `dotfiles outdated mise`, or `dotfiles outdated sheldon`
+- Diagnose local symlink health: `dotfiles doctor`
 - Install or relink everything: `dotfiles install`
 - Generate Claude Code settings: `dotfiles claude-settings`
 - Node.js is pinned in `packages/mise/.config/mise/config.toml`
@@ -102,7 +103,7 @@ scripts/migrate-legacy-links-to-stow.sh
 - Add machine-specific Claude settings as any other `*.json` file in `~/.claude/_settings-source/`
 - Claude Code uses `packages/claude/.claude/statusline-command.sh` for a compact two-row statusline
 - `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories under `$TMPDIR/claude-cwd-state`
-- `tmux-open` uses that state to open shells, panes, and lazygit from the relevant Claude-aware directory
+- tmux libexec helpers use that state to open shells, panes, and lazygit from the relevant Claude-aware directory
 - Interactive zsh auto-starts a `home` tmux session with a `main` window, except in Claude, Codex, and VS Code terminals
 
 ## Repository Structure
@@ -123,10 +124,10 @@ scripts/migrate-legacy-links-to-stow.sh
 │   ├── nvim/       # Neovim configuration
 │   ├── sheldon/    # zsh plugin pins
 │   ├── starship/   # Starship prompt
-│   ├── tmux/       # tmux configuration
+│   ├── tmux/       # tmux configuration and tmux-only libexec helpers
 │   ├── wezterm/    # WezTerm configuration
 │   └── zsh/        # zsh startup files and helpers
-├── scripts/        # Maintenance and update-check scripts
+├── scripts/        # Maintenance, diagnostics, and update-check scripts
 ├── skills/         # Shared Agent Skills
 └── tests/          # Shell regression tests
 ```

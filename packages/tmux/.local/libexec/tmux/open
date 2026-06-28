@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+
+# shellcheck source=/dev/null
+source "${SCRIPT_DIR}/lib/pane-cwd.sh"
+
+usage() {
+    cat <<'EOF'
+Usage:
+  ~/.local/libexec/tmux/open <popup|popup-lazygit|split-h|split-v|split-v-lazygit|new-window> <pane-id>
+
+Opens tmux UI from a pane-aware working directory.
+
+For Claude agent panes, this helper first tries the most recent matching Claude
+cwd state. Otherwise it falls back to the pane's current path.
+EOF
+}
+
+die() {
+    printf 'tmux/open: %s\n' "$*" >&2
+    exit 1
+}
+
+require_cmd() {
+    command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+main() {
+    local action="${1:-}"
+    local pane_id="${2:-}"
+    local cwd
+    local session_id
+
+    case "$action" in
+        -h|--help|help)
+            usage
+            return 0
+            ;;
+    esac
+
+    [[ -n "$action" ]] || die "action is required"
+    [[ -n "$pane_id" ]] || die "pane-id is required"
+    require_cmd tmux
+
+    cwd="$(tmux_resolved_cwd "$pane_id")"
+
+    case "$action" in
+        popup)
+            tmux display-popup -t "$pane_id" -d "$cwd" -xC -yC -w 85% -h 85% -E
+            ;;
+        popup-lazygit)
+            tmux display-popup -t "$pane_id" -d "$cwd" -xC -yC -w 85% -h 85% -E "lazygit"
+            ;;
+        split-h)
+            tmux split-window -h -t "$pane_id" -c "$cwd"
+            ;;
+        split-v)
+            tmux split-window -v -t "$pane_id" -c "$cwd"
+            ;;
+        split-v-lazygit)
+            tmux split-window -v -t "$pane_id" -c "$cwd" "lazygit"
+            ;;
+        new-window)
+            session_id="$(tmux_pane_format "$pane_id" "#{session_id}")"
+            if [[ -n "$session_id" ]]; then
+                tmux new-window -t "$session_id" -c "$cwd"
+            else
+                tmux new-window -c "$cwd"
+            fi
+            ;;
+        *)
+            die "unknown action: $action"
+            ;;
+    esac
+}
+
+main "$@"

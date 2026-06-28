@@ -9,41 +9,41 @@ UI_HELPERS="$DOTFILES_DIR/scripts/lib/ui.sh"
 
 STEP_ICON="🔍"
 REFRESH=0
-CHECKS=(brew mise sheldon)
-CHECK_DESCRIPTIONS=(
+SOURCES=(brew mise sheldon)
+SOURCE_DESCRIPTIONS=(
   "Homebrew outdated"
   "mise outdated"
   "sheldon plugin pinned revs"
 )
-REQUESTED_CHECKS=()
+REQUESTED_SOURCES=()
 
 banner() {
   local border="${CYAN}${LINE_EQUAL}${RESET}"
   printf "%s\n" "$border"
-  echo "${BOLD}${CYAN}🔎 Checking dotfiles updates${RESET}"
+  echo "${BOLD}${CYAN}🔎 Checking dotfiles outdated sources${RESET}"
   printf "%s\n\n" "$border"
 }
 
 usage() {
   cat <<'EOF'
-Usage: check-updates.sh [--refresh] [check...]
-Checks:
+Usage: outdated.sh [--refresh] [source...]
+Sources:
 EOF
   local i
-  for i in "${!CHECKS[@]}"; do
-    printf "  %-8s %s\n" "${CHECKS[$i]}" "${CHECK_DESCRIPTIONS[$i]}"
+  for i in "${!SOURCES[@]}"; do
+    printf "  %-8s %s\n" "${SOURCES[$i]}" "${SOURCE_DESCRIPTIONS[$i]}"
   done
   cat <<'EOF'
 Options:
-  --refresh    Refresh update metadata before supported checks
-  --list       Show available checks
+  --refresh    Refresh update metadata before supported sources
+  --list       Show available sources
   --help       Show this message
-If no checks are provided, all run in order.
+If no sources are provided, all run in order.
 EOF
 }
 
-list_checks() {
-  printf "%s\n" "${CHECKS[@]}"
+list_sources() {
+  printf "%s\n" "${SOURCES[@]}"
 }
 
 parse_args() {
@@ -54,7 +54,7 @@ parse_args() {
         exit 0
         ;;
       --list)
-        list_checks
+        list_sources
         exit 0
         ;;
       --refresh)
@@ -63,7 +63,7 @@ parse_args() {
         ;;
       --)
         shift
-        REQUESTED_CHECKS+=("$@")
+        REQUESTED_SOURCES+=("$@")
         break
         ;;
       -*)
@@ -71,7 +71,7 @@ parse_args() {
         return 1
         ;;
       *)
-        REQUESTED_CHECKS+=("$1")
+        REQUESTED_SOURCES+=("$1")
         shift
         ;;
     esac
@@ -80,30 +80,30 @@ parse_args() {
 
 resolve_script() {
   case "$1" in
-    brew) echo "$DOTFILES_DIR/scripts/checks/brew-outdated.sh" ;;
-    mise) echo "$DOTFILES_DIR/scripts/checks/mise-outdated.sh" ;;
-    sheldon) echo "$DOTFILES_DIR/scripts/checks/sheldon-pins.sh" ;;
+    brew) echo "$DOTFILES_DIR/scripts/outdated/brew-outdated.sh" ;;
+    mise) echo "$DOTFILES_DIR/scripts/outdated/mise-outdated.sh" ;;
+    sheldon) echo "$DOTFILES_DIR/scripts/outdated/sheldon-pins.sh" ;;
     *) return 1 ;;
   esac
 }
 
-run_checks() {
-  local checks=("$@")
+run_sources() {
+  local sources=("$@")
   local failed=0
   local script_path
-  if [ ${#checks[@]} -eq 0 ]; then
-    checks=("${CHECKS[@]}")
+  if [ ${#sources[@]} -eq 0 ]; then
+    sources=("${SOURCES[@]}")
   fi
 
-  for check in "${checks[@]}"; do
-    script_path="$(resolve_script "$check")" || { warn "Unknown check '$check'"; failed=1; continue; }
+  for source in "${sources[@]}"; do
+    script_path="$(resolve_script "$source")" || { warn "Unknown source '$source'"; failed=1; continue; }
     if [ ! -x "$script_path" ]; then
-      warn "Check script missing or not executable: $script_path"
+      warn "Outdated source script missing or not executable: $script_path"
       failed=1
       continue
     fi
-    if ! DOTFILES_CHECK_REFRESH="$REFRESH" "$script_path"; then
-      warn "Check '$check' failed"
+    if ! DOTFILES_OUTDATED_REFRESH="$REFRESH" "$script_path"; then
+      warn "Outdated source '$source' failed"
       failed=1
     fi
   done
@@ -124,7 +124,7 @@ main() {
   parse_args "$@" || return 1
 
   banner
-  if run_checks ${REQUESTED_CHECKS[@]+"${REQUESTED_CHECKS[@]}"}; then
+  if run_sources ${REQUESTED_SOURCES[@]+"${REQUESTED_SOURCES[@]}"}; then
     result=0
   else
     result=$?
@@ -133,9 +133,9 @@ main() {
   next_steps
   printf "\n"
   if [ "$result" -eq 0 ]; then
-    ok "Checks finished"
+    ok "Outdated checks finished"
   else
-    warn "Checks finished with warnings"
+    warn "Outdated checks finished with warnings"
   fi
   return "$result"
 }
