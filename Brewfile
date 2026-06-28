@@ -18,7 +18,8 @@ brew "zoxide"
 
 # Casks
 cask "1password"
-cask "cleanshot"
+# CleanShot is installed manually because the current license is tied to v4.7.7.
+# cask "cleanshot"
 cask "codex-app"
 cask "figma"
 cask "karabiner-elements"

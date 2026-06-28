@@ -10,4 +10,4 @@ gh skill --help
 
 ## Skills
 
-- `plan-html` - Render an implementation or task plan as a self-contained HTML page and open it in the browser.
+- `html-briefing` - Render a plan, PR review, explanation, report, comparison, or lightweight local artifact as a self-contained HTML page and open it in the browser.
