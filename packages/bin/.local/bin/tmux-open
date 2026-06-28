@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+
+# shellcheck source=/dev/null
+source "${SCRIPT_DIR}/../lib/tmux/pane-cwd.sh"
+
 usage() {
     cat <<'EOF'
 Usage:
@@ -23,116 +28,6 @@ require_cmd() {
     command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
 }
 
-pane_format() {
-    local pane_id="$1"
-    local format="$2"
-
-    tmux display-message -p -t "$pane_id" "$format" 2>/dev/null || true
-}
-
-state_dir() {
-    local tmpdir="${TMPDIR:-/tmp}"
-
-    printf '%s/claude-cwd-state\n' "${tmpdir%/}"
-}
-
-file_mtime() {
-    local file="$1"
-
-    stat -f '%m' "$file" 2>/dev/null || stat -c '%Y' "$file" 2>/dev/null || printf '0\n'
-}
-
-path_related() {
-    local left="$1"
-    local right="$2"
-
-    [[ -n "$left" && -n "$right" ]] || return 1
-    [[ "$left" == "$right" || "$left" == "$right"/* || "$right" == "$left"/* ]]
-}
-
-pane_has_claude_agents() {
-    local pane_id="$1"
-    local pane_tty
-    local tty_name
-
-    pane_tty="$(pane_format "$pane_id" "#{pane_tty}")"
-    [[ -n "$pane_tty" ]] || return 1
-
-    tty_name="${pane_tty#/dev/}"
-    ps -o command= -t "$tty_name" 2>/dev/null |
-        grep -E '(^|/)claude([[:space:]].*)?[[:space:]]agents([[:space:]]|$)' >/dev/null 2>&1 ||
-        return 1
-}
-
-latest_claude_cwd() {
-    local pane_current_path="$1"
-    local dir
-    local file
-    local cwd
-    local project_dir
-    local mtime
-    local best_mtime=0
-    local best_cwd=""
-    local us
-
-    command -v jq >/dev/null 2>&1 || return 1
-
-    dir="$(state_dir)"
-    [[ -d "$dir" && -n "$pane_current_path" ]] || return 1
-
-    us=$(printf '\037')
-    for file in "$dir"/session-*.json; do
-        [[ -f "$file" ]] || continue
-
-        IFS="$us" read -r cwd project_dir <<EOF
-$(jq -r '
-[
-    (.effective_cwd // ""),
-    (.project_dir // "")
-] | map(tostring) | join("\u001f")
-' "$file" 2>/dev/null || true)
-EOF
-
-        [[ -n "$cwd" && -d "$cwd" ]] || continue
-        if [[ -n "$project_dir" ]]; then
-            path_related "$pane_current_path" "$project_dir" || continue
-        else
-            path_related "$pane_current_path" "$cwd" || continue
-        fi
-
-        mtime="$(file_mtime "$file")"
-        [[ "$mtime" =~ ^[0-9]+$ ]] || mtime=0
-        if (( mtime >= best_mtime )); then
-            best_mtime="$mtime"
-            best_cwd="$cwd"
-        fi
-    done
-
-    [[ -n "$best_cwd" ]] || return 1
-    printf '%s\n' "$best_cwd"
-}
-
-resolved_cwd() {
-    local pane_id="$1"
-    local pane_current_path
-    local claude_cwd
-
-    pane_current_path="$(pane_format "$pane_id" "#{pane_current_path}")"
-    if pane_has_claude_agents "$pane_id"; then
-        if claude_cwd="$(latest_claude_cwd "$pane_current_path")" && [[ -n "$claude_cwd" && -d "$claude_cwd" ]]; then
-            printf '%s\n' "$claude_cwd"
-            return 0
-        fi
-    fi
-
-    if [[ -n "$pane_current_path" && -d "$pane_current_path" ]]; then
-        printf '%s\n' "$pane_current_path"
-        return 0
-    fi
-
-    printf '%s\n' "$HOME"
-}
-
 main() {
     local action="${1:-}"
     local pane_id="${2:-}"
@@ -150,7 +45,7 @@ main() {
     [[ -n "$pane_id" ]] || die "pane-id is required"
     require_cmd tmux
 
-    cwd="$(resolved_cwd "$pane_id")"
+    cwd="$(tmux_resolved_cwd "$pane_id")"
 
     case "$action" in
         popup)
@@ -169,7 +64,7 @@ main() {
             tmux split-window -v -t "$pane_id" -c "$cwd" "lazygit"
             ;;
         new-window)
-            session_id="$(pane_format "$pane_id" "#{session_id}")"
+            session_id="$(tmux_pane_format "$pane_id" "#{session_id}")"
             if [[ -n "$session_id" ]]; then
                 tmux new-window -t "$session_id" -c "$cwd"
             else

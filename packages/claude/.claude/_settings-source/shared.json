@@ -61,6 +61,16 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/record-cwd-state.sh"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {

@@ -56,6 +56,7 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 
 | Key | Action | Source |
 |---|---|---|
+| `prefix + m` | Open tmux shortcut launcher and quick reference | `packages/tmux/.tmux.conf` |
 | `prefix + \|` | Split pane vertically (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + -` | Split pane horizontally (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + H/J/K/L` | Resize pane | `packages/tmux/.tmux.conf` |
@@ -67,10 +68,10 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | `prefix + E` | Clear pane label | `packages/tmux/.tmux.conf` |
 | `prefix + u` | Open a shell in a centered tmux popup (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + g` | Open `lazygit` in centered tmux popup (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
-| `prefix + G` | Open `lazygit` in a bottom pane (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
-| `prefix + P` | Open project session picker (`ghq` + `fzf`) | `packages/tmux/.tmux.conf` |
+| `prefix + G` | Send `lazygit` to the pane below (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + P` | Open project from `ghq`; creates or switches tmux session | `packages/tmux/.tmux.conf` |
 | `prefix + n/p` | Next/previous window | `packages/tmux/.tmux.conf` |
-| `prefix + s` | Open session chooser (`choose-tree`) | `packages/tmux/.tmux.conf` |
+| `prefix + s` | Switch tmux session (`choose-tree`) | `packages/tmux/.tmux.conf` |
 | `prefix + {/}` | Swap pane up/down (tmux default) | tmux default |
 | `copy-mode` + `v` | Begin selection | `packages/tmux/.tmux.conf` |
 | `copy-mode` + `y` | Copy selection to macOS clipboard | `packages/tmux/.tmux.conf` |

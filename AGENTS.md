@@ -41,6 +41,7 @@ Use the narrowest validation that matches your change:
 - `bash tests/generate-claude-settings.sh`
 - `bash tests/migrate-legacy-links-to-stow.sh`
 - `bash tests/tmux-open.sh`
+- `bash tests/tmux-run-in-pane.sh`
 - `bash tests/tmux-project.sh`
 - `./scripts/check-updates.sh --list` for CLI/script sanity
 - `./scripts/migrate-legacy-links-to-stow.sh --dry-run` when changing Stow migration logic
@@ -119,6 +120,7 @@ Supported commands:
 - Claude Code uses `packages/claude/.claude/statusline-command.sh` for the statusline
 - `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories for `tmux-open`
 - `packages/bin/.local/bin/tmux-open` opens panes, popups, and lazygit from a Claude-aware cwd when possible
+- `packages/bin/.local/bin/tmux-run-in-pane` sends commands into an existing pane from a Claude-aware cwd
 - `packages/bin/.local/bin/tmux-project` opens project sessions from a `ghq` + `fzf` picker
 
 ## Shell Conventions

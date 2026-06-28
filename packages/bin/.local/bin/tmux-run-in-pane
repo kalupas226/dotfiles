@@ -1,0 +1,217 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+
+# shellcheck source=/dev/null
+source "${SCRIPT_DIR}/../lib/tmux/pane-cwd.sh"
+
+usage() {
+    cat <<'EOF'
+Usage:
+  tmux-run-in-pane [--select] <below> <source-pane-id> <command...>
+
+Runs a command in an existing tmux pane from a pane-aware working directory.
+
+For Claude agent panes, tmux-run-in-pane first tries the most recent matching
+Claude cwd state. Otherwise it falls back to the source pane's current path.
+EOF
+}
+
+die() {
+    printf 'tmux-run-in-pane: %s\n' "$*" >&2
+    exit 1
+}
+
+require_cmd() {
+    command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+tmux_message() {
+    local pane_id="$1"
+    local message="$2"
+
+    tmux display-message -t "$pane_id" "tmux-run-in-pane: $message" 2>/dev/null || true
+}
+
+shell_quote() {
+    local value="$1"
+
+    printf "'"
+    while [[ "$value" == *"'"* ]]; do
+        printf "%s%s" "${value%%\'*}" "'\\''"
+        value="${value#*\'}"
+    done
+    printf "%s'" "$value"
+}
+
+shell_join() {
+    local arg
+    local sep=""
+
+    for arg in "$@"; do
+        printf '%s' "$sep"
+        shell_quote "$arg"
+        sep=" "
+    done
+}
+
+pane_below() {
+    local pane_id="$1"
+    local window_id
+    local panes
+    local id
+    local left
+    local top
+    local width
+    local height
+    local source_left=-1
+    local source_top=-1
+    local source_right=-1
+    local best_id=""
+    local best_top=-1
+
+    window_id="$(tmux_pane_format "$pane_id" "#{window_id}")"
+    [[ -n "$window_id" ]] || return 1
+
+    panes="$(tmux list-panes -t "$window_id" -F '#{pane_id}	#{pane_left}	#{pane_top}	#{pane_width}	#{pane_height}' 2>/dev/null)" ||
+        return 1
+
+    while IFS=$'\t' read -r id left top width height; do
+        [[ -n "$id" ]] || continue
+        [[ "$id" == "$pane_id" ]] || continue
+        [[ "$left" =~ ^[0-9]+$ && "$top" =~ ^[0-9]+$ && "$width" =~ ^[0-9]+$ && "$height" =~ ^[0-9]+$ ]] ||
+            return 1
+
+        source_left="$left"
+        source_top="$top"
+        source_right=$((left + width - 1))
+        break
+    done <<<"$panes"
+
+    (( source_left >= 0 )) || return 1
+
+    while IFS=$'\t' read -r id left top width height; do
+        local right
+
+        [[ -n "$id" && "$id" != "$pane_id" ]] || continue
+        [[ "$left" =~ ^[0-9]+$ && "$top" =~ ^[0-9]+$ && "$width" =~ ^[0-9]+$ && "$height" =~ ^[0-9]+$ ]] ||
+            continue
+
+        right=$((left + width - 1))
+        (( top > source_top )) || continue
+        (( left <= source_right && right >= source_left )) || continue
+
+        if (( best_top < 0 || top < best_top )); then
+            best_top="$top"
+            best_id="$id"
+        fi
+    done <<<"$panes"
+
+    [[ -n "$best_id" ]] || return 1
+    printf '%s\n' "$best_id"
+}
+
+pane_has_idle_shell() {
+    local pane_id="$1"
+    local command
+    local in_mode
+
+    in_mode="$(tmux_pane_format "$pane_id" "#{pane_in_mode}")"
+    if [[ "$in_mode" == "1" ]]; then
+        printf 'pane mode\n'
+        return 1
+    fi
+
+    # This is a pragmatic idle check: it catches running programs, but intentionally
+    # leaves partially typed shell input to shell-side integration if needed later.
+    command="$(tmux_pane_format "$pane_id" "#{pane_current_command}")"
+    case "$command" in
+        bash|dash|fish|ksh|mksh|sh|yash|zsh)
+            return 0
+            ;;
+    esac
+
+    [[ -n "$command" ]] && printf '%s\n' "$command"
+    return 1
+}
+
+target_pane() {
+    local target="$1"
+    local source_pane_id="$2"
+
+    case "$target" in
+        below|down)
+            pane_below "$source_pane_id"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+main() {
+    local select_target=0
+    local target="${1:-}"
+    local source_pane_id="${2:-}"
+    local cwd
+    local target_pane_id
+    local current_command
+    local command
+
+    case "$target" in
+        -h|--help|help)
+            usage
+            return 0
+            ;;
+    esac
+
+    while [[ "${1:-}" == --* ]]; do
+        case "$1" in
+            --select)
+                select_target=1
+                shift
+                ;;
+            --)
+                shift
+                break
+                ;;
+            *)
+                die "unknown option: $1"
+                ;;
+        esac
+    done
+
+    target="${1:-}"
+    source_pane_id="${2:-}"
+
+    [[ -n "$target" ]] || die "target is required"
+    [[ -n "$source_pane_id" ]] || die "source-pane-id is required"
+    shift 2
+    [[ "$#" -gt 0 ]] || die "command is required"
+    require_cmd tmux
+
+    if ! target_pane_id="$(target_pane "$target" "$source_pane_id")"; then
+        tmux_message "$source_pane_id" "no target pane: $target"
+        return 0
+    fi
+
+    if ! current_command="$(pane_has_idle_shell "$target_pane_id")"; then
+        if [[ -n "$current_command" ]]; then
+            tmux_message "$source_pane_id" "target pane is busy: $current_command"
+        else
+            tmux_message "$source_pane_id" "target pane is busy"
+        fi
+        return 0
+    fi
+
+    cwd="$(tmux_resolved_cwd "$source_pane_id")"
+    command="cd $(shell_quote "$cwd") && $(shell_join "$@")"
+    tmux send-keys -t "$target_pane_id" "$command" Enter
+    if (( select_target )); then
+        tmux select-pane -t "$target_pane_id"
+    fi
+}
+
+main "$@"

@@ -98,12 +98,48 @@ test_records_cwd_changed_state() {
     rm -rf "$tmpdir" "$project_dir" "$old_cwd" "$new_cwd"
 }
 
+test_records_stop_state() {
+    local tmpdir
+    local project_dir
+    local cwd
+    local session_file
+
+    tmpdir="$(mktemp -d /tmp/claude-cwd-hook-stop-state.XXXXXX)"
+    project_dir="$(mktemp -d /tmp/claude-cwd-hook-stop-project.XXXXXX)"
+    cwd="$(mktemp -d /tmp/claude-cwd-hook-stop-cwd.XXXXXX)"
+
+    jq -n \
+        --arg cwd "$cwd" \
+        '{
+            hook_event_name: "Stop",
+            session_id: "session-stop",
+            cwd: $cwd,
+            stop_hook_active: false,
+            last_assistant_message: "ignored"
+        }' |
+        TMPDIR="$tmpdir" CLAUDE_PROJECT_DIR="$project_dir" bash "$HOOK" >/dev/null
+
+    session_file="${tmpdir%/}/claude-cwd-state/session-session-stop.json"
+
+    jq -e \
+        --arg cwd "$cwd" \
+        '.hook_event_name == "Stop"
+            and .cwd == $cwd
+            and .effective_cwd == $cwd
+            and (has("last_assistant_message") | not)' "$session_file" >/dev/null ||
+        fail "expected Stop state to record cwd without assistant message"
+
+    rm -rf "$tmpdir" "$project_dir" "$cwd"
+}
+
 main() {
     step "Running Claude cwd state hook tests"
     test_records_minimal_worktree_state
     ok "records minimal worktree state"
     test_records_cwd_changed_state
     ok "records CwdChanged state"
+    test_records_stop_state
+    ok "records Stop state"
 }
 
 main "$@"
