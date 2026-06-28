@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+SCRIPT_PATH="${SCRIPT_DIR}/$(basename -- "${BASH_SOURCE[0]}")"
+BUFFER_NAME="tmux-file-refs"
+
+usage() {
+    cat <<'EOF'
+Usage:
+  ~/.local/libexec/tmux/file-refs <pane-id>
+  ~/.local/libexec/tmux/file-refs --pick <pane-id> <root>
+
+Pick files from the current pane's repository root and paste relative path
+references back into the source pane.
+EOF
+}
+
+die() {
+    printf 'tmux/file-refs: %s\n' "$*" >&2
+    exit 1
+}
+
+tmux_pane_format() {
+    local pane_id="$1"
+    local format="$2"
+
+    tmux display-message -p -t "$pane_id" "$format" 2>/dev/null || true
+}
+
+tmux_message() {
+    local pane_id="$1"
+    local message="$2"
+
+    tmux display-message -t "$pane_id" "tmux/file-refs: $message" 2>/dev/null || true
+}
+
+require_cmd() {
+    local pane_id="$1"
+    local command="$2"
+
+    if command -v "$command" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    if [[ -n "$pane_id" ]]; then
+        tmux_message "$pane_id" "required command not found: $command"
+        return 1
+    fi
+
+    die "required command not found: $command"
+}
+
+shell_quote() {
+    local value="$1"
+
+    printf "'"
+    while [[ "$value" == *"'"* ]]; do
+        printf "%s%s" "${value%%\'*}" "'\\''"
+        value="${value#*\'}"
+    done
+    printf "%s'" "$value"
+}
+
+shell_join() {
+    local arg
+    local sep=""
+
+    for arg in "$@"; do
+        printf '%s' "$sep"
+        shell_quote "$arg"
+        sep=" "
+    done
+}
+
+git_root_for_path() {
+    local path="$1"
+    local root
+
+    if root="$(git -C "$path" rev-parse --show-toplevel 2>/dev/null)" && [[ -n "$root" && -d "$root" ]]; then
+        printf '%s\n' "$root"
+        return 0
+    fi
+
+    return 1
+}
+
+broad_fallback_root() {
+    local path="$1"
+    local home="${HOME%/}"
+    local home_parent
+
+    [[ -n "$path" ]] || return 1
+    if [[ "$path" != "/" ]]; then
+        path="${path%/}"
+    fi
+    home_parent="$(dirname -- "$home")"
+
+    [[ "$path" == "/" || "$path" == "$home" || "$path" == "$home_parent" ]]
+}
+
+list_files() {
+    local root="$1"
+
+    if command -v rg >/dev/null 2>&1; then
+        (cd "$root" && rg --files --hidden --glob '!.git' --glob '!**/.git/**')
+        return
+    fi
+
+    (cd "$root" && find . -type f ! -path './.git/*' -print | sed 's#^\./##')
+}
+
+format_ref() {
+    local path="$1"
+    local backtick
+    local escaped
+
+    backtick="$(printf '\140')"
+    escaped="${path//$backtick/\\$backtick}"
+    printf '%s%s%s' "$backtick" "$escaped" "$backtick"
+}
+
+format_refs() {
+    local path
+    local sep=""
+
+    while IFS= read -r path || [[ -n "$path" ]]; do
+        [[ -n "$path" ]] || continue
+        printf '%s' "$sep"
+        format_ref "$path"
+        sep=" "
+    done
+}
+
+pick_and_paste() {
+    local pane_id="$1"
+    local root="$2"
+    local selected
+    local refs
+
+    [[ -d "$root" ]] || die "root is not a directory: $root"
+    require_cmd "" fzf
+
+    selected="$(
+        list_files "$root" |
+            fzf \
+                --multi \
+                --prompt='files> ' \
+                --preview='bat --color=always --style=numbers --line-range=:200 {} 2>/dev/null || sed -n "1,200p" {} 2>/dev/null' \
+                --preview-window=right:60%:wrap
+    )" || return 0
+    [[ -n "$selected" ]] || return 0
+
+    refs="$(printf '%s\n' "$selected" | format_refs)"
+    [[ -n "$refs" ]] || return 0
+
+    tmux set-buffer -b "$BUFFER_NAME" "$refs"
+    tmux paste-buffer -t "$pane_id" -b "$BUFFER_NAME"
+}
+
+open_picker() {
+    local pane_id="$1"
+    local cwd
+    local root
+    local command
+
+    require_cmd "$pane_id" tmux || return 0
+    require_cmd "$pane_id" fzf || return 0
+
+    cwd="$(tmux_pane_format "$pane_id" "#{pane_current_path}")"
+    if [[ -z "$cwd" || ! -d "$cwd" ]]; then
+        cwd="$HOME"
+    fi
+    if ! root="$(git_root_for_path "$cwd")"; then
+        root="$cwd"
+        if broad_fallback_root "$root"; then
+            tmux_message "$pane_id" "not in a git repo: $root"
+            return 0
+        fi
+    fi
+
+    command="$(shell_join "$SCRIPT_PATH" --pick "$pane_id" "$root")"
+    tmux display-popup -t "$pane_id" -d "$root" -xC -yC -w 85% -h 85% -T " file refs " -E "$command"
+}
+
+main() {
+    case "${1:-}" in
+        -h|--help|help)
+            usage
+            return 0
+            ;;
+        --pick)
+            shift
+            [[ -n "${1:-}" ]] || die "pane-id is required"
+            [[ -n "${2:-}" ]] || die "root is required"
+            pick_and_paste "$1" "$2"
+            ;;
+        *)
+            [[ -n "${1:-}" ]] || die "pane-id is required"
+            open_picker "$1"
+            ;;
+    esac
+}
+
+main "$@"

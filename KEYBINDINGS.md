@@ -69,6 +69,7 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | `prefix + u` | Open a shell in a centered tmux popup (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + g` | Open `lazygit` in centered tmux popup (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
 | `prefix + G` | Send `lazygit` to the pane below (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + f` | Pick files from the current repo and paste path references into the pane | `packages/tmux/.tmux.conf` |
 | `prefix + P` | Open project from `ghq`; creates or switches tmux session | `packages/tmux/.tmux.conf` |
 | `prefix + n/p` | Next/previous window | `packages/tmux/.tmux.conf` |
 | `prefix + s` | Switch tmux session (`choose-tree`) | `packages/tmux/.tmux.conf` |
