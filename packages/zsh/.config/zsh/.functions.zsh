@@ -50,6 +50,16 @@ function gbdm() {
   git branch -d -- "${branches[@]}"
 }
 
+# Git: cd to repository root
+function grt() {
+  local root
+  root="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+    printf 'grt: not inside a git worktree\n' >&2
+    return 1
+  }
+  cd -- "$root"
+}
+
 # Git: switch to local branch (fzf)
 function gswl() {
   local branch
