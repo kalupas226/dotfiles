@@ -36,48 +36,6 @@
       "Bash(rm -rf .git)"
     ]
   },
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/record-cwd-state.sh"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/record-cwd-state.sh"
-          }
-        ]
-      }
-    ],
-    "CwdChanged": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/record-cwd-state.sh"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/record-cwd-state.sh"
-          }
-        ]
-      }
-    ]
-  },
   "sandbox": {
     "enabled": true,
     "failIfUnavailable": false,

@@ -39,7 +39,6 @@ There is no single unified automated test suite for the whole repo, but there ar
 
 Use the narrowest validation that matches your change:
 - `bash tests/claude-statusline.sh`
-- `bash tests/claude-cwd-state-hook.sh`
 - `bash tests/generate-claude-settings.sh`
 - `bash tests/migrate-legacy-links-to-stow.sh`
 - `bash tests/tmux-config.sh`
@@ -63,7 +62,7 @@ Top-level files:
 Packages:
 - `packages/aerospace` - AeroSpace config
 - `packages/bin` - installed user-facing helper CLIs such as `dotfiles`
-- `packages/claude` - Claude Code settings source, hooks, and statusline
+- `packages/claude` - Claude Code settings source and statusline
 - `packages/git` - `.gitconfig` and global ignore file
 - `packages/karabiner` - Karabiner-Elements config
 - `packages/lazygit` - Lazygit config
@@ -123,7 +122,6 @@ Supported commands:
 ### Claude Code and tmux
 
 - Claude Code uses `packages/claude/.claude/statusline-command.sh` for the statusline
-- `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories for the tmux helpers
 - tmux opens panes, popups, and lazygit directly from the active pane's current path
 - `packages/tmux/.local/libexec/tmux/project` opens project sessions from a `ghq` + `fzf` picker
 - `packages/tmux/.local/libexec/tmux/file-refs` pastes selected repository file references into the active pane
