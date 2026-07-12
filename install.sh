@@ -1,6 +1,7 @@
 #!/bin/zsh
 
 set -e
+set -o pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKIP_CONFIRMATION=0
@@ -20,6 +21,34 @@ EOF
 die() {
     warn "$*"
     exit 1
+}
+
+brew_executable() {
+    local candidate
+
+    if command -v brew &> /dev/null; then
+        command -v brew
+        return 0
+    fi
+
+    for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+        if [ -x "$candidate" ]; then
+            printf "%s\n" "$candidate"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+load_brew_shellenv() {
+    local brew_bin
+
+    brew_bin="$(brew_executable)" || {
+        warn "Homebrew executable not found after installation"
+        return 1
+    }
+    eval "$("$brew_bin" shellenv)"
 }
 
 parse_args() {
@@ -117,7 +146,7 @@ install_tpm() {
 
 install_brew() {
     step "Checking Homebrew"
-    if command -v brew &> /dev/null; then
+    if brew_executable >/dev/null; then
         skip "Homebrew already installed"
         return
     fi
@@ -228,7 +257,7 @@ main() {
     printf "%s\n\n" "$border"
 
     install_brew
-    eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null
+    load_brew_shellenv
     install_brew_packages
     link_dotfiles
     install_tpm
