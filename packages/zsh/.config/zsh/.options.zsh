@@ -2,28 +2,18 @@
 bindkey -v
 setopt correct no_flow_control
 bindkey -M viins "^D" delete-char-or-list
+bindkey -M viins "^?" backward-delete-char
+bindkey -M viins "^H" backward-delete-char
 autoload -Uz colors && colors
-
-# Completion
-# Register local completion functions before initializing zsh completion.
-fpath=("$ZSHDIR/completions" $fpath)
-autoload -Uz compinit && compinit
-setopt complete_aliases
 autoload -Uz select-word-style && select-word-style default
 zstyle ':zle:*' word-chars "_-./;@"
 zstyle ':zle:*' word-style unspecified
-zstyle ':completion:*:default' menu select=2
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 # History
 setopt share_history histignorealldups
 HISTFILE=$HOME/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
-bindkey "^p" history-substring-search-up
-bindkey "^n" history-substring-search-down
-bindkey -M viins "^?" backward-delete-char
-bindkey -M viins "^H" backward-delete-char
 
 # Directory navigation
 setopt auto_cd auto_pushd pushd_ignore_dups

@@ -15,7 +15,3 @@ rev = "v0.7.1"
 [plugins.fast-syntax-highlighting]
 github = "zdharma-continuum/fast-syntax-highlighting"
 rev = "v1.56"
-
-[plugins.zoxide]
-github = "ajeetdsouza/zoxide"
-rev = "v0.9.9"
