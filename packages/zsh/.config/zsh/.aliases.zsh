@@ -1,4 +1,6 @@
-alias ls='eza --icons'
+# --icons takes an optional value, so pass it with `=` or the next
+# argument (e.g. `ls share`) gets parsed as the icon mode.
+alias ls='eza --icons=auto'
 alias cat='bat'
 alias vim='nvim'
 
