@@ -3,8 +3,10 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PACKAGES_DIR="${DOTFILES_DOCTOR_PACKAGES_DIR:-$DOTFILES_DIR/packages}"
 
 UI_HELPERS="$DOTFILES_DIR/scripts/lib/ui.sh"
+# shellcheck source=scripts/lib/ui.sh
 . "$UI_HELPERS"
 
 STEP_ICON="🩺"
@@ -15,8 +17,8 @@ Usage: doctor.sh
 
 Diagnose local dotfiles health without changing files.
 
-Currently checks for broken symlinks that point back into this repository's
-packages/ tree.
+Checks for broken symlinks that point back into this repository's packages/
+tree, and verifies that every managed package file is linked under $HOME.
 EOF
 }
 
@@ -94,7 +96,55 @@ report_broken_dotfiles_symlinks() {
   return 1
 }
 
+report_managed_dotfile_links() {
+  local source_file
+  local package_relative_path
+  local package_name
+  local relative_path
+  local target_file
+  local target_link
+  local count=0
+
+  step "Managed dotfile links"
+
+  if [ ! -d "$PACKAGES_DIR" ]; then
+    warn "Packages directory not found: $PACKAGES_DIR"
+    return 1
+  fi
+
+  while IFS= read -r source_file; do
+    package_relative_path="${source_file#"${PACKAGES_DIR}"/}"
+    package_name="${package_relative_path%%/*}"
+    relative_path="${package_relative_path#"${package_name}"/}"
+    target_file="${HOME}/${relative_path}"
+
+    if [ ! -e "$target_file" ] && [ ! -L "$target_file" ]; then
+      printf "  missing: %s\n" "$target_file"
+    elif [ ! -L "$target_file" ]; then
+      printf "  not a symlink: %s\n" "$target_file"
+    elif [ ! "$target_file" -ef "$source_file" ]; then
+      target_link="$(readlink "$target_file" 2>/dev/null || true)"
+      printf "  wrong target: %s -> %s\n" "$target_file" "$target_link"
+    else
+      continue
+    fi
+
+    count=$((count + 1))
+  done < <(find "$PACKAGES_DIR" -type f)
+
+  if [ "$count" -eq 0 ]; then
+    ok "All managed dotfiles are linked"
+    return 0
+  fi
+
+  warn "Found ${count} managed dotfile link issue(s)"
+  note "Review the paths above, resolve any conflicts, then run 'dotfiles install'."
+  return 1
+}
+
 main() {
+  local failed=0
+
   case "${1:-}" in
     --help|-h)
       usage
@@ -111,7 +161,10 @@ main() {
 
   load_scan_roots
 
-  if report_broken_dotfiles_symlinks; then
+  report_broken_dotfiles_symlinks || failed=1
+  report_managed_dotfile_links || failed=1
+
+  if [ "$failed" -eq 0 ]; then
     ok "Doctor finished"
   else
     warn "Doctor finished with warnings"
