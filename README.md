@@ -86,7 +86,7 @@ scripts/migrate-legacy-links-to-stow.sh
 ## tmux
 
 - tmux opens shells, panes, and lazygit from the active pane's current directory
-- tmux libexec helpers provide the project picker and file reference picker
+- tmux libexec helpers provide the project picker, the file reference picker, and the scrollback text picker
 - Interactive zsh auto-starts a `home` tmux session with a `main` window, except in Claude, Codex, and VS Code terminals
 
 ## Repository Structure

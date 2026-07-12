@@ -44,6 +44,7 @@ Use the narrowest validation that matches your change:
 - `bash tests/tmux-config.sh`
 - `bash tests/tmux-file-refs.sh`
 - `bash tests/tmux-project.sh`
+- `bash tests/tmux-scrollback-picker.sh`
 - `bash tests/doctor.sh`
 - `bash tests/outdated.sh`
 - `./scripts/outdated.sh --list` for CLI/script sanity
@@ -128,6 +129,7 @@ Supported commands:
 - tmux opens panes, popups, and lazygit directly from the active pane's current path
 - `packages/tmux/.local/libexec/tmux/project` opens project sessions from a `ghq` + `fzf` picker
 - `packages/tmux/.local/libexec/tmux/file-refs` pastes selected repository file references into the active pane
+- `packages/tmux/.local/libexec/tmux/scrollback-picker` pastes, copies, or opens tokens picked from the active pane's scrollback
 
 ## Shell Conventions
 

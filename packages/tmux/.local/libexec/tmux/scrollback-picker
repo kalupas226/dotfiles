@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+SCRIPT_PATH="${SCRIPT_DIR}/$(basename -- "${BASH_SOURCE[0]}")"
+BUFFER_NAME="tmux-scrollback-picker"
+MIN_TOKEN_LENGTH=5
+
+usage() {
+    cat <<'EOF'
+Usage:
+  ~/.local/libexec/tmux/scrollback-picker <pane-id>
+  ~/.local/libexec/tmux/scrollback-picker --pick <pane-id>
+
+Pick tokens (paths, URLs, words) from the active pane's scrollback with fzf,
+then paste them into the pane, copy them to the clipboard, or open URLs.
+EOF
+}
+
+die() {
+    printf 'tmux/scrollback-picker: %s\n' "$*" >&2
+    exit 1
+}
+
+tmux_message() {
+    local pane_id="$1"
+    local message="$2"
+
+    tmux display-message -t "$pane_id" "tmux/scrollback-picker: $message" 2>/dev/null || true
+}
+
+require_cmd() {
+    local pane_id="$1"
+    local command="$2"
+
+    if command -v "$command" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    if [[ -n "$pane_id" ]]; then
+        tmux_message "$pane_id" "required command not found: $command"
+        return 1
+    fi
+
+    die "required command not found: $command"
+}
+
+shell_quote() {
+    local value="$1"
+
+    printf "'"
+    while [[ "$value" == *"'"* ]]; do
+        printf "%s%s" "${value%%\'*}" "'\\''"
+        value="${value#*\'}"
+    done
+    printf "%s'" "$value"
+}
+
+shell_join() {
+    local arg
+    local sep=""
+
+    for arg in "$@"; do
+        printf '%s' "$sep"
+        shell_quote "$arg"
+        sep=" "
+    done
+}
+
+capture_tokens() {
+    local pane_id="$1"
+
+    tmux capture-pane -p -J -t "$pane_id" -S - |
+        awk -v min="$MIN_TOKEN_LENGTH" '
+        {
+            for (i = 1; i <= NF; i++) {
+                token = $i
+                gsub(/^["'\''`(<{[]+/, "", token)
+                gsub(/[]"'\''`)>},.:;]+$/, "", token)
+                if (length(token) >= min) {
+                    print token
+                }
+            }
+        }' |
+        awk '{ lines[NR] = $0 } END { for (i = NR; i >= 1; i--) print lines[i] }' |
+        awk '!seen[$0]++'
+}
+
+join_selection() {
+    paste -sd ' ' -
+}
+
+paste_selection() {
+    local pane_id="$1"
+    local selected="$2"
+    local joined
+
+    joined="$(printf '%s\n' "$selected" | join_selection)"
+    [[ -n "$joined" ]] || return 0
+
+    tmux set-buffer -b "$BUFFER_NAME" "$joined"
+    tmux paste-buffer -t "$pane_id" -b "$BUFFER_NAME"
+}
+
+copy_selection() {
+    local pane_id="$1"
+    local selected="$2"
+    local joined
+
+    require_cmd "$pane_id" pbcopy || return 0
+
+    joined="$(printf '%s\n' "$selected" | join_selection)"
+    [[ -n "$joined" ]] || return 0
+
+    printf '%s' "$joined" | pbcopy
+    tmux_message "$pane_id" "copied to clipboard"
+}
+
+open_urls() {
+    local pane_id="$1"
+    local selected="$2"
+    local token
+
+    require_cmd "$pane_id" open || return 0
+
+    while IFS= read -r token; do
+        [[ -n "$token" ]] || continue
+        if [[ "$token" =~ ^https?:// ]]; then
+            open "$token"
+        else
+            tmux_message "$pane_id" "not a URL: $token"
+        fi
+    done <<<"$selected"
+}
+
+pick_and_act() {
+    local pane_id="$1"
+    local tokens
+    local output
+    local key
+    local selected
+
+    require_cmd "" fzf
+
+    tokens="$(capture_tokens "$pane_id")"
+    if [[ -z "$tokens" ]]; then
+        tmux_message "$pane_id" "no text in scrollback"
+        return 0
+    fi
+
+    output="$(
+        printf '%s\n' "$tokens" |
+            fzf \
+                --multi \
+                --prompt='text> ' \
+                --header='enter: paste / ctrl-y: copy / ctrl-o: open URL' \
+                --expect=ctrl-y,ctrl-o
+    )" || return 0
+
+    key="$(printf '%s\n' "$output" | head -n 1)"
+    selected="$(printf '%s\n' "$output" | tail -n +2)"
+    [[ -n "$selected" ]] || return 0
+
+    case "$key" in
+        ctrl-y)
+            copy_selection "$pane_id" "$selected"
+            ;;
+        ctrl-o)
+            open_urls "$pane_id" "$selected"
+            ;;
+        *)
+            paste_selection "$pane_id" "$selected"
+            ;;
+    esac
+}
+
+open_picker() {
+    local pane_id="$1"
+    local command
+
+    require_cmd "$pane_id" tmux || return 0
+    require_cmd "$pane_id" fzf || return 0
+
+    command="$(shell_join "$SCRIPT_PATH" --pick "$pane_id")"
+    tmux display-popup -t "$pane_id" -xC -yC -w 85% -h 85% -T " scrollback " -E "$command"
+}
+
+main() {
+    case "${1:-}" in
+        -h|--help|help)
+            usage
+            return 0
+            ;;
+        --pick)
+            shift
+            [[ -n "${1:-}" ]] || die "pane-id is required"
+            pick_and_act "$1"
+            ;;
+        *)
+            [[ -n "${1:-}" ]] || die "pane-id is required"
+            open_picker "$1"
+            ;;
+    esac
+}
+
+main "$@"
