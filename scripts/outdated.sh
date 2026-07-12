@@ -5,6 +5,7 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 UI_HELPERS="$DOTFILES_DIR/scripts/lib/ui.sh"
+# shellcheck source=scripts/lib/ui.sh
 . "$UI_HELPERS"
 
 STEP_ICON="🔍"

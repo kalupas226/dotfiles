@@ -10,7 +10,7 @@ Examples:
 - `packages/zsh/.zshrc` -> `~/.zshrc`
 - `packages/nvim/.config/nvim/init.lua` -> `~/.config/nvim/init.lua`
 - `packages/bin/.local/bin/dotfiles` -> `~/.local/bin/dotfiles`
-- `packages/tmux/.local/libexec/tmux/open` -> `~/.local/libexec/tmux/open`
+- `packages/tmux/.local/libexec/tmux/project` -> `~/.local/libexec/tmux/project`
 - `packages/claude/.claude/_settings-source/shared.json` -> `~/.claude/_settings-source/shared.json`
 
 The repo contains both user configuration and maintenance tooling:
@@ -39,13 +39,13 @@ There is no single unified automated test suite for the whole repo, but there ar
 
 Use the narrowest validation that matches your change:
 - `bash tests/claude-statusline.sh`
-- `bash tests/claude-cwd-state-hook.sh`
 - `bash tests/generate-claude-settings.sh`
 - `bash tests/migrate-legacy-links-to-stow.sh`
-- `bash tests/tmux-open.sh`
-- `bash tests/tmux-run-in-pane.sh`
+- `bash tests/tmux-config.sh`
+- `bash tests/tmux-file-refs.sh`
 - `bash tests/tmux-project.sh`
 - `bash tests/doctor.sh`
+- `bash tests/outdated.sh`
 - `./scripts/outdated.sh --list` for CLI/script sanity
 - `./scripts/migrate-legacy-links-to-stow.sh --dry-run` when changing Stow migration logic
 - `./install.sh` when you change installation flow, symlinking behavior, package lists, or anything cross-cutting
@@ -58,12 +58,11 @@ Top-level files:
 - `Brewfile` - source of truth for Homebrew formulae/casks
 - `install.sh` - main installer; links dotfiles with GNU Stow, installs TPM/Homebrew packages/mise tools/Claude Code
 - `README.md` - human-facing setup and maintenance guide
-- `KEYBINDINGS.md` - reference for configured shortcuts across macOS, AeroSpace, WezTerm, zsh, tmux, and Neovim
 
 Packages:
 - `packages/aerospace` - AeroSpace config
 - `packages/bin` - installed user-facing helper CLIs such as `dotfiles`
-- `packages/claude` - Claude Code settings source, hooks, and statusline
+- `packages/claude` - Claude Code settings source and statusline
 - `packages/git` - `.gitconfig` and global ignore file
 - `packages/karabiner` - Karabiner-Elements config
 - `packages/lazygit` - Lazygit config
@@ -120,17 +119,19 @@ Supported commands:
 - `dotfiles claude-settings`
 - `dotfiles help`
 
-### Claude Code and tmux
+### Claude Code
 
 - Claude Code uses `packages/claude/.claude/statusline-command.sh` for the statusline
-- `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories for the tmux helpers
-- `packages/tmux/.local/libexec/tmux/open` opens panes, popups, and lazygit from a Claude-aware cwd when possible
-- `packages/tmux/.local/libexec/tmux/run-in-pane` sends commands into an existing pane from a Claude-aware cwd
+
+### tmux
+
+- tmux opens panes, popups, and lazygit directly from the active pane's current path
 - `packages/tmux/.local/libexec/tmux/project` opens project sessions from a `ghq` + `fzf` picker
+- `packages/tmux/.local/libexec/tmux/file-refs` pastes selected repository file references into the active pane
 
 ## Shell Conventions
 
-- `install.sh` uses `zsh` with `set -e`
+- `install.sh` uses `zsh` with `set -e` and `set -o pipefail`
 - files under `scripts/` use `bash` with `set -euo pipefail`
 - use 4-space indentation in shell scripts
 - prefer explicit conditionals and guard clauses
@@ -146,7 +147,6 @@ Repository-specific placement rules:
 ## Editing Guidance
 
 - Update `README.md` too if you change setup flow, package coverage, or documented workflows
-- Update `KEYBINDINGS.md` when changing shortcuts in AeroSpace, Karabiner, tmux, WezTerm, zsh, or Neovim
 - Update `Brewfile` and `packages/mise/.config/mise/config.toml` consistently when changing installed tooling
 - Do not assume an empty repo-local `.gitignore` means generated paths are meant to be tracked; global ignore rules may be active via `core.excludesFile`
 - Prefer minimal, targeted edits because many files are installed directly into `$HOME`

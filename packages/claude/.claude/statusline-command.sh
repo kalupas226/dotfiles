@@ -76,7 +76,7 @@ fi
 
 marker="✳"
 
-# Nerd Font icons (rendered via the Hack Nerd Font Mono fallback in WezTerm).
+# Nerd Font icons (rendered via WezTerm's symbol fallback).
 # Built from printf octal UTF-8 escapes rather than literal glyphs so the bytes
 # survive editing and need no bash 4 unicode-escape support.
 icon_dir=$(printf '\357\201\273')       # nf-fa-folder       U+F07B
