@@ -10,7 +10,7 @@ Examples:
 - `packages/zsh/.zshrc` -> `~/.zshrc`
 - `packages/nvim/.config/nvim/init.lua` -> `~/.config/nvim/init.lua`
 - `packages/bin/.local/bin/dotfiles` -> `~/.local/bin/dotfiles`
-- `packages/tmux/.local/libexec/tmux/open` -> `~/.local/libexec/tmux/open`
+- `packages/tmux/.local/libexec/tmux/project` -> `~/.local/libexec/tmux/project`
 - `packages/claude/.claude/_settings-source/shared.json` -> `~/.claude/_settings-source/shared.json`
 
 The repo contains both user configuration and maintenance tooling:
@@ -42,8 +42,7 @@ Use the narrowest validation that matches your change:
 - `bash tests/claude-cwd-state-hook.sh`
 - `bash tests/generate-claude-settings.sh`
 - `bash tests/migrate-legacy-links-to-stow.sh`
-- `bash tests/tmux-open.sh`
-- `bash tests/tmux-run-in-pane.sh`
+- `bash tests/tmux-config.sh`
 - `bash tests/tmux-project.sh`
 - `bash tests/doctor.sh`
 - `bash tests/outdated.sh`
@@ -125,9 +124,9 @@ Supported commands:
 
 - Claude Code uses `packages/claude/.claude/statusline-command.sh` for the statusline
 - `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories for the tmux helpers
-- `packages/tmux/.local/libexec/tmux/open` opens panes, popups, and lazygit from a Claude-aware cwd when possible
-- `packages/tmux/.local/libexec/tmux/run-in-pane` sends commands into an existing pane from a Claude-aware cwd
+- tmux opens panes, popups, and lazygit directly from the active pane's current path
 - `packages/tmux/.local/libexec/tmux/project` opens project sessions from a `ghq` + `fzf` picker
+- `packages/tmux/.local/libexec/tmux/file-refs` pastes selected repository file references into the active pane
 
 ## Shell Conventions
 

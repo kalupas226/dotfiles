@@ -83,7 +83,8 @@ scripts/migrate-legacy-links-to-stow.sh
 - Add machine-specific Claude settings as any other `*.json` file in `~/.claude/_settings-source/`
 - Claude Code uses `packages/claude/.claude/statusline-command.sh` for a compact two-row statusline
 - `packages/claude/.claude/hooks/record-cwd-state.sh` records recent Claude working directories under `$TMPDIR/claude-cwd-state`
-- tmux libexec helpers use that state to open shells, panes, and lazygit from the relevant Claude-aware directory
+- tmux opens shells, panes, and lazygit from the active pane's current directory
+- tmux libexec helpers provide the project picker and file reference picker
 - Interactive zsh auto-starts a `home` tmux session with a `main` window, except in Claude, Codex, and VS Code terminals
 
 ## Repository Structure

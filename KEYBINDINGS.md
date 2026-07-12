@@ -57,8 +57,8 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | Key | Action | Source |
 |---|---|---|
 | `prefix + m` | Open tmux shortcut launcher and quick reference | `packages/tmux/.tmux.conf` |
-| `prefix + \|` | Split pane vertically (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
-| `prefix + -` | Split pane horizontally (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + \|` | Split pane vertically from the active pane cwd | `packages/tmux/.tmux.conf` |
+| `prefix + -` | Split pane horizontally from the active pane cwd | `packages/tmux/.tmux.conf` |
 | `prefix + H/J/K/L` | Resize pane | `packages/tmux/.tmux.conf` |
 | `prefix + t` | New window (prompt for name) | `packages/tmux/.tmux.conf` |
 | `prefix + T` | New session (prompt for name) | `packages/tmux/.tmux.conf` |
@@ -66,9 +66,8 @@ Quick reference for custom shortcuts configured in this dotfiles repo.
 | `prefix + R` | Rename session | `packages/tmux/.tmux.conf` |
 | `prefix + e` | Edit pane label | `packages/tmux/.tmux.conf` |
 | `prefix + E` | Clear pane label | `packages/tmux/.tmux.conf` |
-| `prefix + u` | Open a shell in a centered tmux popup (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
-| `prefix + g` | Open `lazygit` in centered tmux popup (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
-| `prefix + G` | Send `lazygit` to the pane below (Claude-aware cwd) | `packages/tmux/.tmux.conf` |
+| `prefix + u` | Open a shell in a centered tmux popup from the active pane cwd | `packages/tmux/.tmux.conf` |
+| `prefix + g` | Open `lazygit` in a centered tmux popup from the active pane cwd | `packages/tmux/.tmux.conf` |
 | `prefix + f` | Pick files from the current repo and paste path references into the pane | `packages/tmux/.tmux.conf` |
 | `prefix + P` | Open project from `ghq`; creates or switches tmux session | `packages/tmux/.tmux.conf` |
 | `prefix + n/p` | Next/previous window | `packages/tmux/.tmux.conf` |
