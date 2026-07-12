@@ -4,20 +4,28 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 UI_HELPERS="$DOTFILES_DIR/scripts/lib/ui.sh"
+# shellcheck source=scripts/lib/ui.sh
 . "$UI_HELPERS"
 
 STEP_ICON="${STEP_ICON:-🔍}"
 
-command -v git >/dev/null 2>&1 || { warn "git not installed"; exit 0; }
+command -v git >/dev/null 2>&1 || { warn "git not installed"; exit 1; }
 
 plugins_file="$DOTFILES_DIR/packages/sheldon/.config/sheldon/plugins.toml"
-[[ -f "$plugins_file" ]] || { warn "plugins.toml not found"; exit 0; }
+[[ -f "$plugins_file" ]] || { warn "plugins.toml not found"; exit 1; }
 
 step "sheldon plugin rev check"
+failed=0
 while read -r name repo rev; do
+  remote_tags=""
   [[ -z "$rev" ]] && continue
+  if ! remote_tags="$(git ls-remote --tags --sort=-version:refname "https://github.com/${repo}.git" 2>/dev/null)"; then
+    printf "  %s (%s) ? unavailable\n" "$name" "$rev"
+    failed=1
+    continue
+  fi
   latest_tag=$(
-    git ls-remote --tags --sort=-version:refname "https://github.com/${repo}.git" 2>/dev/null \
+    printf '%s\n' "$remote_tags" \
       | awk '{print $2}' \
       | sed 's#refs/tags/##' \
       | grep -v '\^{}' \
@@ -26,6 +34,7 @@ while read -r name repo rev; do
   )
   if [[ -z "$latest_tag" ]]; then
     printf "  %s (%s) ? unknown\n" "$name" "$rev"
+    failed=1
   elif [[ "$rev" != "$latest_tag" ]]; then
     printf "  %s (%s) < %s\n" "$name" "$rev" "$latest_tag"
   else
@@ -51,3 +60,5 @@ done < <(
     END {emit()}
   ' "$plugins_file"
 )
+
+exit "$failed"

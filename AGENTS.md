@@ -46,6 +46,7 @@ Use the narrowest validation that matches your change:
 - `bash tests/tmux-run-in-pane.sh`
 - `bash tests/tmux-project.sh`
 - `bash tests/doctor.sh`
+- `bash tests/outdated.sh`
 - `./scripts/outdated.sh --list` for CLI/script sanity
 - `./scripts/migrate-legacy-links-to-stow.sh --dry-run` when changing Stow migration logic
 - `./install.sh` when you change installation flow, symlinking behavior, package lists, or anything cross-cutting
