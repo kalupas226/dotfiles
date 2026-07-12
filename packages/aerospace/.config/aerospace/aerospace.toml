@@ -84,7 +84,7 @@ alt-shift-j = ['join-with down', 'mode main']
 alt-shift-k = ['join-with up', 'mode main']
 alt-shift-l = ['join-with right', 'mode main']
 
-# Workspace 1: Development (Xcode, editor, and Codex)
+# Workspace 1: Development (Xcode, editor, and AI assistants)
 [[on-window-detected]]
 if.app-id = 'com.apple.dt.Xcode'
 run = 'move-node-to-workspace 1'
@@ -98,12 +98,12 @@ if.app-id = 'com.microsoft.VSCode'
 run = 'move-node-to-workspace 1'
 
 [[on-window-detected]]
-if.app-id = 'com.openai.codex'
+if.app-id = 'com.openai.chat'
 run = 'move-node-to-workspace 1'
 
 [[on-window-detected]]
-if.app-id = 'com.openai.chat'
-run = 'move-node-to-workspace 2'
+if.app-id = 'com.anthropic.claudefordesktop'
+run = 'move-node-to-workspace 1'
 
 # Workspace 2: Reference & Notes
 [[on-window-detected]]
