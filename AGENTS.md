@@ -42,6 +42,7 @@ Use the narrowest validation that matches your change:
 - `bash tests/generate-claude-settings.sh`
 - `bash tests/migrate-legacy-links-to-stow.sh`
 - `bash tests/tmux-config.sh`
+- `bash tests/tmux-file-refs.sh`
 - `bash tests/tmux-project.sh`
 - `bash tests/doctor.sh`
 - `bash tests/outdated.sh`
@@ -57,7 +58,6 @@ Top-level files:
 - `Brewfile` - source of truth for Homebrew formulae/casks
 - `install.sh` - main installer; links dotfiles with GNU Stow, installs TPM/Homebrew packages/mise tools/Claude Code
 - `README.md` - human-facing setup and maintenance guide
-- `KEYBINDINGS.md` - reference for configured shortcuts across macOS, AeroSpace, WezTerm, zsh, tmux, and Neovim
 
 Packages:
 - `packages/aerospace` - AeroSpace config
@@ -119,16 +119,19 @@ Supported commands:
 - `dotfiles claude-settings`
 - `dotfiles help`
 
-### Claude Code and tmux
+### Claude Code
 
 - Claude Code uses `packages/claude/.claude/statusline-command.sh` for the statusline
+
+### tmux
+
 - tmux opens panes, popups, and lazygit directly from the active pane's current path
 - `packages/tmux/.local/libexec/tmux/project` opens project sessions from a `ghq` + `fzf` picker
 - `packages/tmux/.local/libexec/tmux/file-refs` pastes selected repository file references into the active pane
 
 ## Shell Conventions
 
-- `install.sh` uses `zsh` with `set -e`
+- `install.sh` uses `zsh` with `set -e` and `set -o pipefail`
 - files under `scripts/` use `bash` with `set -euo pipefail`
 - use 4-space indentation in shell scripts
 - prefer explicit conditionals and guard clauses
@@ -144,7 +147,6 @@ Repository-specific placement rules:
 ## Editing Guidance
 
 - Update `README.md` too if you change setup flow, package coverage, or documented workflows
-- Update `KEYBINDINGS.md` when changing shortcuts in AeroSpace, Karabiner, tmux, WezTerm, zsh, or Neovim
 - Update `Brewfile` and `packages/mise/.config/mise/config.toml` consistently when changing installed tooling
 - Do not assume an empty repo-local `.gitignore` means generated paths are meant to be tracked; global ignore rules may be active via `core.excludesFile`
 - Prefer minimal, targeted edits because many files are installed directly into `$HOME`

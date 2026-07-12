@@ -76,12 +76,15 @@ scripts/migrate-legacy-links-to-stow.sh
 ./install.sh
 ```
 
-## Claude Code and tmux
+## Claude Code
 
 - `~/.claude/settings.json` is generated manually with `dotfiles claude-settings`
 - `packages/claude/.claude/_settings-source/shared.json` is repo-managed
 - Add machine-specific Claude settings as any other `*.json` file in `~/.claude/_settings-source/`
 - Claude Code uses `packages/claude/.claude/statusline-command.sh` for a compact two-row statusline
+
+## tmux
+
 - tmux opens shells, panes, and lazygit from the active pane's current directory
 - tmux libexec helpers provide the project picker and file reference picker
 - Interactive zsh auto-starts a `home` tmux session with a `main` window, except in Claude, Codex, and VS Code terminals
@@ -114,6 +117,5 @@ scripts/migrate-legacy-links-to-stow.sh
 
 Useful references:
 
-- `KEYBINDINGS.md` - custom macOS, terminal, tmux, zsh, and Neovim shortcuts
 - `skills/README.md` - shared Agent Skills in this repo
 - `AGENTS.md` - guidance for AI coding agents working in this repository
