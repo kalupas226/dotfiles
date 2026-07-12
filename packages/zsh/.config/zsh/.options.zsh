@@ -5,9 +5,9 @@ bindkey -M viins "^D" delete-char-or-list
 autoload -Uz colors && colors
 
 # Completion
-# Register local completion functions before initializing zsh completion.
+# Register local completion functions here; compinit itself runs in
+# .plugins.zsh after sheldon has added plugin completions to fpath.
 fpath=("$ZSHDIR/completions" $fpath)
-autoload -Uz compinit && compinit
 setopt complete_aliases
 autoload -Uz select-word-style && select-word-style default
 zstyle ':zle:*' word-chars "_-./;@"
