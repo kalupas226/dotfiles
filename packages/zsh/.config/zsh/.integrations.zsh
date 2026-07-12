@@ -1,3 +1,6 @@
+# zsh integration for external binaries. The binaries themselves are
+# managed by Brewfile / mise; this file only wires them into the shell.
+
 # fzf
 export FZF_DEFAULT_OPTS='
   --height=60%
