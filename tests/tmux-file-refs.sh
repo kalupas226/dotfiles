@@ -201,7 +201,7 @@ test_refuses_broad_fallback_root_outside_git() {
         TMUX_FILE_REFS_TEST_GIT_FAIL=1 \
         run_tmux_file_refs "$wrapper_dir" "%1"
 
-    grep -F "display-message -t %1 tmux/file-refs: not in a git repo: /" "$tmux_log" >/dev/null ||
+    grep -F "display-message -l -t %1 tmux/file-refs: not in a git repo: /" "$tmux_log" >/dev/null ||
         fail "expected file-refs to report broad fallback roots outside git"
     if grep -F "display-popup" "$tmux_log" >/dev/null; then
         fail "expected file-refs not to open a popup from a broad fallback root"
@@ -226,7 +226,7 @@ test_pick_pastes_backtick_refs() {
     root="$(mktemp -d /tmp/tmux-file-refs-pick-root.XXXXXX)"
     setup_wrappers "$wrapper_dir" "$tmux_log" "$fzf_log" "$fzf_input"
     backtick="$(printf '\140')"
-    expected_refs="set-buffer -b tmux-file-refs ${backtick}packages/tmux/.tmux.conf${backtick} ${backtick}docs/file name.md${backtick}"
+    expected_refs="set-buffer -b tmux-file-refs -- ${backtick}packages/tmux/.tmux.conf${backtick} ${backtick}docs/file name.md${backtick}"
 
     TMUX_FILE_REFS_TEST_RG_FILES=$'packages/tmux/.tmux.conf\ndocs/file name.md\n' \
         TMUX_FILE_REFS_TEST_FZF_SELECTION=$'packages/tmux/.tmux.conf\ndocs/file name.md\n' \

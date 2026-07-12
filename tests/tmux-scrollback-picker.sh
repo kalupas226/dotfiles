@@ -184,7 +184,7 @@ test_pick_pastes_selection() {
         TMUX_SCROLLBACK_PICKER_TEST_FZF_OUTPUT=$'\nfirst-token\nsecond-token\n' \
         run_scrollback_picker "$WRAPPER_DIR" --pick "%1"
 
-    grep -F "set-buffer -b tmux-scrollback-picker first-token second-token" "$TMUX_LOG" >/dev/null ||
+    grep -F "set-buffer -b tmux-scrollback-picker -- first-token second-token" "$TMUX_LOG" >/dev/null ||
         fail "expected the selection to be joined into a buffer"
     grep -F "paste-buffer -t %1 -b tmux-scrollback-picker" "$TMUX_LOG" >/dev/null ||
         fail "expected the buffer to be pasted into the source pane"
@@ -220,7 +220,7 @@ test_pick_opens_urls_only() {
     if grep -F "packages/tmux/.tmux.conf" "$OPEN_LOG" >/dev/null; then
         fail "expected non-URL selections not to be opened"
     fi
-    grep -F "display-message -t %1 tmux/scrollback-picker: not a URL: packages/tmux/.tmux.conf" "$TMUX_LOG" >/dev/null ||
+    grep -F "display-message -l -t %1 tmux/scrollback-picker: not a URL: packages/tmux/.tmux.conf" "$TMUX_LOG" >/dev/null ||
         fail "expected non-URL selections to be reported"
 
     cleanup_fixture
@@ -249,7 +249,7 @@ test_pick_reports_empty_scrollback() {
     TMUX_SCROLLBACK_PICKER_TEST_CAPTURE='' \
         run_scrollback_picker "$WRAPPER_DIR" --pick "%1"
 
-    grep -F "display-message -t %1 tmux/scrollback-picker: no text in scrollback" "$TMUX_LOG" >/dev/null ||
+    grep -F "display-message -l -t %1 tmux/scrollback-picker: no text in scrollback" "$TMUX_LOG" >/dev/null ||
         fail "expected empty scrollback to be reported"
     if grep -F "fzf" "$FZF_LOG" >/dev/null; then
         fail "expected fzf not to run for empty scrollback"

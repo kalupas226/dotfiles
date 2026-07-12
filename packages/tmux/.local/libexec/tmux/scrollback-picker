@@ -27,7 +27,7 @@ tmux_message() {
     local pane_id="$1"
     local message="$2"
 
-    tmux display-message -t "$pane_id" "tmux/scrollback-picker: $message" 2>/dev/null || true
+    tmux display-message -l -t "$pane_id" "tmux/scrollback-picker: $message" 2>/dev/null || true
 }
 
 require_cmd() {
@@ -99,7 +99,7 @@ paste_selection() {
     joined="$(printf '%s\n' "$selected" | join_selection)"
     [[ -n "$joined" ]] || return 0
 
-    tmux set-buffer -b "$BUFFER_NAME" "$joined"
+    tmux set-buffer -b "$BUFFER_NAME" -- "$joined"
     tmux paste-buffer -t "$pane_id" -b "$BUFFER_NAME"
 }
 
