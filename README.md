@@ -64,6 +64,7 @@ The current checklist is printed by `install.sh` at the end of the install so th
 - Manual setup reminders are maintained in `install.sh`
 - Neovim plugins are locked in `packages/nvim/.config/nvim/lazy-lock.json`
 - Git identity defaults to GitHub noreply; override per machine with `~/.gitconfig.local`
+- Git and lazygit render diffs with `git-delta` (installed via `Brewfile`)
 - Prefer project-local `devDependencies`, `npm dlx`/`npx`, or Homebrew over global npm installs
 
 If `brew bundle` or `mise install` fails mid-run, fix the cause and rerun `dotfiles install`.
@@ -86,7 +87,7 @@ scripts/migrate-legacy-links-to-stow.sh
 ## tmux
 
 - tmux opens shells, panes, and lazygit from the active pane's current directory
-- tmux libexec helpers provide the project picker and file reference picker
+- tmux libexec helpers provide the project picker, the file reference picker, and the scrollback text picker
 - Interactive zsh auto-starts a `home` tmux session with a `main` window, except in Claude, Codex, and VS Code terminals
 
 ## Repository Structure

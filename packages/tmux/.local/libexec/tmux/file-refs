@@ -33,7 +33,7 @@ tmux_message() {
     local pane_id="$1"
     local message="$2"
 
-    tmux display-message -t "$pane_id" "tmux/file-refs: $message" 2>/dev/null || true
+    tmux display-message -l -t "$pane_id" "tmux/file-refs: $message" 2>/dev/null || true
 }
 
 require_cmd() {
@@ -179,7 +179,7 @@ pick_and_paste() {
     refs="$(printf '%s\n' "$selected" | format_refs)"
     [[ -n "$refs" ]] || return 0
 
-    tmux set-buffer -b "$BUFFER_NAME" "$refs"
+    tmux set-buffer -b "$BUFFER_NAME" -- "$refs"
     tmux paste-buffer -t "$pane_id" -b "$BUFFER_NAME"
 }
 
