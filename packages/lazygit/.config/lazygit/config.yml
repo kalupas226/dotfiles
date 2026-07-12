@@ -1,5 +1,9 @@
 gui:
   language: en
   showFileTree: true
+git:
+  pagers:
+    - colorArg: always
+      pager: delta --dark --paging=never
 os:
   editPreset: "nvim"
