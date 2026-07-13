@@ -27,6 +27,15 @@ cd ~/.dotfiles
 ./install.sh --skip-confirmation
 ```
 
+To run only part of the installation, pass one or more targets. Targets always run in installation order:
+
+```bash
+./install.sh link
+./install.sh brew mise
+```
+
+Available targets are `brew`, `link`, `tpm`, `mise`, and `claude`. Use `all`, or omit targets, to run the full installation. Selected targets do not automatically run missing prerequisites; for example, `link` reports an error if GNU Stow is unavailable.
+
 Restart your terminal, or run `exec zsh`, after installation.
 
 ## What `install.sh` Does
@@ -58,6 +67,7 @@ The current checklist is printed by `install.sh` at the end of the install so th
 - Check a single source: `dotfiles outdated brew`, `dotfiles outdated mise`, or `dotfiles outdated sheldon`
 - Diagnose local symlink health: `dotfiles doctor`
 - Install or relink everything: `dotfiles install`
+- Run selected installation targets: `dotfiles install link` or `dotfiles install brew mise`
 - Generate Claude Code settings: `dotfiles claude-settings`
 - Node.js is pinned in `packages/mise/.config/mise/config.toml`
 - Homebrew packages are defined in `Brewfile`
@@ -67,7 +77,7 @@ The current checklist is printed by `install.sh` at the end of the install so th
 - Git and lazygit render diffs with `git-delta` (installed via `Brewfile`)
 - Prefer project-local `devDependencies`, `npm dlx`/`npx`, or Homebrew over global npm installs
 
-If `brew bundle` or `mise install` fails mid-run, fix the cause and rerun `dotfiles install`.
+If `brew bundle` or `mise install` fails mid-run, fix the cause and rerun `dotfiles install brew` or `dotfiles install mise`. Running `dotfiles install` still reruns the full installation.
 
 If Stow reports conflicts from legacy symlinks created by older versions of `install.sh`, run:
 
