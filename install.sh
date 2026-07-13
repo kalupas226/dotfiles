@@ -5,16 +5,36 @@ set -o pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKIP_CONFIRMATION=0
+RUN_BREW=0
+RUN_LINK=0
+RUN_TPM=0
+RUN_MISE=0
+RUN_CLAUDE=0
+FULL_INSTALL=0
+HAS_TARGET=0
 
 UI_HELPERS="${DOTFILES_DIR}/scripts/lib/ui.sh"
 . "$UI_HELPERS"
 
 usage() {
     cat <<'EOF'
-Usage: ./install.sh [--skip-confirmation]
+Usage: ./install.sh [--skip-confirmation] [TARGET...]
+
+Targets:
+  all                  Run every installation target (default)
+  brew                 Install Homebrew if needed and apply Brewfile
+  link                 Link all dotfile packages with GNU Stow
+  tpm                  Install TPM if needed
+  mise                 Install tools managed by mise
+  claude               Install Claude Code if needed
 
 Options:
   --skip-confirmation    Do not prompt before running official remote installer scripts
+
+Examples:
+  ./install.sh
+  ./install.sh link
+  ./install.sh brew mise
 EOF
 }
 
@@ -51,6 +71,14 @@ load_brew_shellenv() {
     eval "$("$brew_bin" shellenv)"
 }
 
+select_all_targets() {
+    RUN_BREW=1
+    RUN_LINK=1
+    RUN_TPM=1
+    RUN_MISE=1
+    RUN_CLAUDE=1
+}
+
 parse_args() {
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -62,11 +90,75 @@ parse_args() {
                 usage
                 exit 0
                 ;;
+            all)
+                select_all_targets
+                FULL_INSTALL=1
+                HAS_TARGET=1
+                shift
+                ;;
+            brew)
+                RUN_BREW=1
+                HAS_TARGET=1
+                shift
+                ;;
+            link)
+                RUN_LINK=1
+                HAS_TARGET=1
+                shift
+                ;;
+            tpm)
+                RUN_TPM=1
+                HAS_TARGET=1
+                shift
+                ;;
+            mise)
+                RUN_MISE=1
+                HAS_TARGET=1
+                shift
+                ;;
+            claude)
+                RUN_CLAUDE=1
+                HAS_TARGET=1
+                shift
+                ;;
             *)
-                die "Unknown option: $1"
+                die "Unknown target or option: $1 (expected: all, brew, link, tpm, mise, or claude)"
                 ;;
         esac
     done
+
+    if [ "$HAS_TARGET" -eq 0 ]; then
+        select_all_targets
+        FULL_INSTALL=1
+    fi
+}
+
+print_selected_targets() {
+    local -a targets
+
+    if [ "$FULL_INSTALL" -eq 1 ]; then
+        note "Targets: all"
+        return
+    fi
+
+    targets=()
+    if [ "$RUN_BREW" -eq 1 ]; then
+        targets+=("brew")
+    fi
+    if [ "$RUN_LINK" -eq 1 ]; then
+        targets+=("link")
+    fi
+    if [ "$RUN_TPM" -eq 1 ]; then
+        targets+=("tpm")
+    fi
+    if [ "$RUN_MISE" -eq 1 ]; then
+        targets+=("mise")
+    fi
+    if [ "$RUN_CLAUDE" -eq 1 ]; then
+        targets+=("claude")
+    fi
+
+    note "Targets: ${targets[*]}"
 }
 
 confirm_remote_installer() {
@@ -255,19 +347,34 @@ main() {
     printf "%s\n" "$border"
     echo "${BOLD}${CYAN}🌟 Starting dotfiles installation${RESET}"
     printf "%s\n\n" "$border"
+    print_selected_targets
 
-    install_brew
-    load_brew_shellenv
-    install_brew_packages
-    link_dotfiles
-    install_tpm
-    install_mise_tools
-    install_claude_code
-    
+    if [ "$RUN_BREW" -eq 1 ]; then
+        install_brew
+        load_brew_shellenv
+        install_brew_packages
+    fi
+    if [ "$RUN_LINK" -eq 1 ]; then
+        link_dotfiles
+    fi
+    if [ "$RUN_TPM" -eq 1 ]; then
+        install_tpm
+    fi
+    if [ "$RUN_MISE" -eq 1 ]; then
+        install_mise_tools
+    fi
+    if [ "$RUN_CLAUDE" -eq 1 ]; then
+        install_claude_code
+    fi
+
     echo ""
-    echo "${GREEN}🎉 Installation complete!${RESET}"
-    echo "Please restart your terminal or run 'exec zsh' to apply the new setup."
-    print_manual_setup_reminders
+    if [ "$FULL_INSTALL" -eq 1 ]; then
+        echo "${GREEN}🎉 Installation complete!${RESET}"
+        echo "Please restart your terminal or run 'exec zsh' to apply the new setup."
+        print_manual_setup_reminders
+    else
+        echo "${GREEN}🎉 Selected installation tasks complete!${RESET}"
+    fi
 }
 
 main "$@"
