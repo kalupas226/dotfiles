@@ -31,6 +31,7 @@ test_tmux_config_uses_pane_current_path() {
     local shell_popup
     local lazygit_popup
     local project_picker
+    local project_binding
     local file_refs
     local removed_alias
     local removed_binding
@@ -66,9 +67,14 @@ test_tmux_config_uses_pane_current_path() {
     if [[ -n "$removed_alias" ]]; then
         fail "expected removed lazygit pane alias to be unset"
     fi
-    removed_binding="$(HOME="$TMUX_TEST_HOME" TMUX_TMPDIR="$TMUX_TEST_TMPDIR" tmux -L "$TMUX_TEST_SOCKET" list-keys -T prefix G 2>/dev/null || true)"
+    project_binding="$(HOME="$TMUX_TEST_HOME" TMUX_TMPDIR="$TMUX_TEST_TMPDIR" tmux -L "$TMUX_TEST_SOCKET" list-keys -T prefix |
+        awk '$4 == "G"')"
+    [[ "$project_binding" == *'.local/libexec/tmux/project'* ]] ||
+        fail "expected prefix + G to open the project picker"
+    removed_binding="$(HOME="$TMUX_TEST_HOME" TMUX_TMPDIR="$TMUX_TEST_TMPDIR" tmux -L "$TMUX_TEST_SOCKET" list-keys -T prefix |
+        awk '$4 == "P"')"
     if [[ -n "$removed_binding" ]]; then
-        fail "expected prefix + G to be unbound"
+        fail "expected prefix + P to be unbound"
     fi
 
     if grep -E 'Claude-aware|\.local/libexec/tmux/open|run-in-pane|my-lazygit-bottom-pane' "$TMUX_CONF" >/dev/null; then

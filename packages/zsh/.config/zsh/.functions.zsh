@@ -219,3 +219,16 @@ function zoxide_interactive() {
 }
 zle -N zoxide_interactive
 bindkey "^z" zoxide_interactive
+
+# Navigate to ghq repository (Ctrl+G)
+function cdrepo() {
+  local selected_dir
+  selected_dir="$(ghq list -p |
+                 fzf --query="$LBUFFER" --preview='eza -l --icons --color=always {}')" || return
+  [[ -n "$selected_dir" ]] || return
+
+  cd -- "$selected_dir"
+  zle reset-prompt
+}
+zle -N cdrepo
+bindkey -M viins '^G' cdrepo
