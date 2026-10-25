@@ -103,7 +103,7 @@ If Stow conflicts with symlinks created by older versions of `install.sh`, use `
 ### mise
 
 `packages/mise/.config/mise/config.toml` currently defines:
-- `node = "24.14.1"`
+- `node = "24.22.1"`
 
 ### dotfiles helper
 
