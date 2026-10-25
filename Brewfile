@@ -25,11 +25,7 @@ cask "claude"
 cask "figma"
 cask "karabiner-elements"
 cask "notion"
-cask "obsidian"
-cask "raycast"
 cask "slack"
-cask "smartgit"
-cask "visual-studio-code"
 cask "wezterm"
 
 # Taps

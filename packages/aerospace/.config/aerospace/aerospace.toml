@@ -94,10 +94,6 @@ if.app-id = 'com.github.wez.wezterm'
 run = 'move-node-to-workspace 1'
 
 [[on-window-detected]]
-if.app-id = 'com.microsoft.VSCode'
-run = 'move-node-to-workspace 1'
-
-[[on-window-detected]]
 if.app-id = 'com.openai.chat'
 run = 'move-node-to-workspace 1'
 
@@ -108,10 +104,6 @@ run = 'move-node-to-workspace 1'
 # Workspace 2: Reference & Notes
 [[on-window-detected]]
 if.app-id = 'com.figma.Desktop'
-run = 'move-node-to-workspace 2'
-
-[[on-window-detected]]
-if.app-id = 'md.obsidian'
 run = 'move-node-to-workspace 2'
 
 [[on-window-detected]]
