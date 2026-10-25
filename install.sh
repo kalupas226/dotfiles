@@ -252,7 +252,7 @@ install_claude_code() {
         die "Claude Code install cancelled"
     fi
 
-    if ! curl -fsSL https://claude.ai/install.sh | sh; then
+    if ! curl -fsSL https://claude.ai/install.sh | bash; then
         warn "Claude Code install failed; check network and rerun"
         return 1
     fi
@@ -269,7 +269,6 @@ print_manual_setup_reminders() {
     echo "  - Complete any first-run permissions or in-app setup"
     echo ""
     echo "Manual apps:"
-    echo "  - CleanShot: install manually and keep on v4.7.7 unless renewing the update license"
     echo "  - Logi Tune: install manually; it is not managed by Homebrew here"
     echo ""
     echo "AeroSpace:"

@@ -20,8 +20,6 @@ brew "zoxide"
 cask "1password"
 cask "chatgpt"
 cask "claude"
-# CleanShot is installed manually because the current license is tied to v4.7.7.
-# cask "cleanshot"
 cask "figma"
 cask "karabiner-elements"
 cask "notion"
