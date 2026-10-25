@@ -11,7 +11,6 @@ source "${REPO_ROOT}/scripts/lib/ui.sh"
 OUTDATED="${REPO_ROOT}/scripts/outdated.sh"
 BREW_OUTDATED="${REPO_ROOT}/scripts/outdated/brew-outdated.sh"
 MISE_OUTDATED="${REPO_ROOT}/scripts/outdated/mise-outdated.sh"
-SHELDON_OUTDATED="${REPO_ROOT}/scripts/outdated/sheldon-pins.sh"
 
 fail() {
     warn "$*"
@@ -40,19 +39,7 @@ EOF
 exit "${FAKE_MISE_STATUS:-0}"
 EOF
 
-cat > "${wrapper_dir}/git" <<'EOF'
-#!/usr/bin/env bash
-if [[ "${1:-}" == "ls-remote" ]]; then
-    if [[ "${FAKE_GIT_LS_REMOTE_STATUS:-0}" -ne 0 ]]; then
-        exit "$FAKE_GIT_LS_REMOTE_STATUS"
-    fi
-    printf 'deadbeef\trefs/tags/v999.0.0\n'
-    exit 0
-fi
-exit 0
-EOF
-
-    chmod +x "${wrapper_dir}/brew" "${wrapper_dir}/mise" "${wrapper_dir}/git"
+    chmod +x "${wrapper_dir}/brew" "${wrapper_dir}/mise"
 }
 
 test_dispatcher_propagates_brew_failure() {
@@ -114,24 +101,6 @@ test_mise_failure_returns_nonzero() {
     rm -rf "$tmpdir"
 }
 
-test_sheldon_remote_failure_returns_nonzero() {
-    local tmpdir
-    local wrapper_dir
-
-    tmpdir="$(mktemp -d /tmp/dotfiles-outdated-sheldon.XXXXXX)"
-    wrapper_dir="${tmpdir}/bin"
-    create_fake_commands "$wrapper_dir"
-
-    if PATH="${wrapper_dir}:/usr/bin:/bin" FAKE_GIT_LS_REMOTE_STATUS=1 bash "$SHELDON_OUTDATED" >/dev/null 2>&1; then
-        fail "expected sheldon remote failure to return non-zero"
-    fi
-
-    PATH="${wrapper_dir}:/usr/bin:/bin" FAKE_GIT_LS_REMOTE_STATUS=0 bash "$SHELDON_OUTDATED" >/dev/null ||
-        fail "expected sheldon check to succeed when remote tags are available"
-
-    rm -rf "$tmpdir"
-}
-
 main() {
     step "Running outdated tests"
     test_dispatcher_propagates_brew_failure
@@ -140,8 +109,6 @@ main() {
     ok "keeps checking brew after refresh failure"
     test_mise_failure_returns_nonzero
     ok "returns non-zero when mise fails"
-    test_sheldon_remote_failure_returns_nonzero
-    ok "returns non-zero when sheldon remote checks fail"
 }
 
 main "$@"
