@@ -7,7 +7,6 @@ DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKIP_CONFIRMATION=0
 RUN_BREW=0
 RUN_LINK=0
-RUN_TPM=0
 RUN_MISE=0
 RUN_CLAUDE=0
 FULL_INSTALL=0
@@ -24,7 +23,6 @@ Targets:
   all                  Run every installation target (default)
   brew                 Install Homebrew if needed and apply Brewfile
   link                 Link all dotfile packages with GNU Stow
-  tpm                  Install TPM if needed
   mise                 Install tools managed by mise
   claude               Install Claude Code if needed
 
@@ -74,7 +72,6 @@ load_brew_shellenv() {
 select_all_targets() {
     RUN_BREW=1
     RUN_LINK=1
-    RUN_TPM=1
     RUN_MISE=1
     RUN_CLAUDE=1
 }
@@ -106,11 +103,6 @@ parse_args() {
                 HAS_TARGET=1
                 shift
                 ;;
-            tpm)
-                RUN_TPM=1
-                HAS_TARGET=1
-                shift
-                ;;
             mise)
                 RUN_MISE=1
                 HAS_TARGET=1
@@ -122,7 +114,7 @@ parse_args() {
                 shift
                 ;;
             *)
-                die "Unknown target or option: $1 (expected: all, brew, link, tpm, mise, or claude)"
+                die "Unknown target or option: $1 (expected: all, brew, link, mise, or claude)"
                 ;;
         esac
     done
@@ -147,9 +139,6 @@ print_selected_targets() {
     fi
     if [ "$RUN_LINK" -eq 1 ]; then
         targets+=("link")
-    fi
-    if [ "$RUN_TPM" -eq 1 ]; then
-        targets+=("tpm")
     fi
     if [ "$RUN_MISE" -eq 1 ]; then
         targets+=("mise")
@@ -215,27 +204,6 @@ link_dotfiles() {
     fi
 }
 
-install_tpm() {
-    step "Installing TPM (tmux plugin manager)"
-
-    if [ -d "${HOME}/.tmux/plugins/tpm" ]; then
-        skip "TPM already installed"
-        return
-    fi
-
-    if ! command -v git &> /dev/null; then
-        warn "git not found; install git then rerun"
-        return 1
-    fi
-
-    if git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"; then
-        ok "Installed TPM"
-    else
-        warn "TPM install failed; check network and rerun"
-        return 1
-    fi
-}
-
 install_brew() {
     step "Checking Homebrew"
     if brew_executable >/dev/null; then
@@ -297,18 +265,6 @@ print_manual_setup_reminders() {
     section_line
     echo "${BOLD}Manual setup reminders${RESET}"
     echo ""
-    echo "tmux plugins:"
-    echo "  - Open tmux and run prefix + I"
-    echo "  - TPM plugins are not lockfile-pinned"
-    echo "  - Update intentionally with prefix + U"
-    echo ""
-    echo "Neovim plugins:"
-    echo "  - Open Neovim and run :Lazy sync"
-    echo "  - Plugins are locked by packages/nvim/.config/nvim/lazy-lock.json"
-    echo "  - Check updates with :Lazy check"
-    echo "  - Update intentionally with targeted :Lazy update <plugin>"
-    echo "  - Review the lockfile diff before committing"
-    echo ""
     echo "Homebrew apps/tools:"
     echo "  - Complete any first-run permissions or in-app setup"
     echo ""
@@ -356,9 +312,6 @@ main() {
     fi
     if [ "$RUN_LINK" -eq 1 ]; then
         link_dotfiles
-    fi
-    if [ "$RUN_TPM" -eq 1 ]; then
-        install_tpm
     fi
     if [ "$RUN_MISE" -eq 1 ]; then
         install_mise_tools
