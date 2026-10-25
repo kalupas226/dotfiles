@@ -7,7 +7,7 @@ _dotfiles() {
 
   commands=(
     install:"Link dotfiles and install managed tools"
-    outdated:"Check Homebrew, mise, and sheldon updates"
+    outdated:"Check Homebrew and mise updates"
     doctor:"Diagnose local dotfiles symlink health"
     claude-settings:"Generate Claude Code user settings"
     help:"Show help"
@@ -15,7 +15,6 @@ _dotfiles() {
   sources=(
     brew:"Homebrew outdated"
     mise:"mise outdated"
-    sheldon:"sheldon plugin pinned revs"
   )
   outdated_options=(
     --refresh:"Refresh update metadata before supported sources"

@@ -10,11 +10,10 @@ UI_HELPERS="$DOTFILES_DIR/scripts/lib/ui.sh"
 
 STEP_ICON="🔍"
 REFRESH=0
-SOURCES=(brew mise sheldon)
+SOURCES=(brew mise)
 SOURCE_DESCRIPTIONS=(
   "Homebrew outdated"
   "mise outdated"
-  "sheldon plugin pinned revs"
 )
 REQUESTED_SOURCES=()
 
@@ -83,7 +82,6 @@ resolve_script() {
   case "$1" in
     brew) echo "$DOTFILES_DIR/scripts/outdated/brew-outdated.sh" ;;
     mise) echo "$DOTFILES_DIR/scripts/outdated/mise-outdated.sh" ;;
-    sheldon) echo "$DOTFILES_DIR/scripts/outdated/sheldon-pins.sh" ;;
     *) return 1 ;;
   esac
 }
@@ -116,7 +114,6 @@ next_steps() {
   step "Next steps"
   printf "%s  • Homebrew:%s run 'brew upgrade <pkg>' (or 'brew upgrade' for all)\n" "$MAGENTA" "$RESET"
   printf "%s  • mise:%s edit packages/mise/.config/mise/config.toml, then run 'mise install <tool>'\n" "$MAGENTA" "$RESET"
-  printf "%s  • sheldon:%s bump rev in packages/sheldon/.config/sheldon/plugins.toml and run 'sheldon lock --relock'\n" "$MAGENTA" "$RESET"
 }
 
 main() {

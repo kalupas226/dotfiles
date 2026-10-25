@@ -6,14 +6,14 @@ usage() {
   cat <<'EOF'
 Usage:
   dotfiles install [--skip-confirmation] [TARGET...]
-  dotfiles outdated [--refresh] [brew|mise|sheldon...]
+  dotfiles outdated [--refresh] [brew|mise...]
   dotfiles doctor
   dotfiles claude-settings
   dotfiles help
 
 Commands:
   install          Install everything or selected installation targets
-  outdated         Check Homebrew, mise, and sheldon updates
+  outdated         Check Homebrew and mise updates
   doctor           Diagnose local dotfiles symlink health
   claude-settings  Generate Claude Code user settings
   help             Show this message
@@ -22,7 +22,6 @@ Install targets:
   all              Run every installation target (default)
   brew             Install Homebrew if needed and apply Brewfile
   link             Link all dotfile packages with GNU Stow
-  tpm              Install TPM if needed
   mise             Install tools managed by mise
   claude           Install Claude Code if needed
 

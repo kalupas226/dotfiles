@@ -47,7 +47,6 @@ new_test_environment() {
     mkdir -p "${tmpdir}/home" "${tmpdir}/bin"
     : > "${tmpdir}/install.log"
     make_mock_command "${tmpdir}/bin" brew
-    make_mock_command "${tmpdir}/bin" git
     make_mock_command "${tmpdir}/bin" mise
     make_mock_command "${tmpdir}/bin" stow
     make_curl_mock "${tmpdir}/bin"
@@ -119,7 +118,6 @@ test_no_target_runs_full_installation() {
     [[ "$log" == *$'brew shellenv\nbrew bundle '* ]] ||
         fail "expected full installation to run the brew target first"
     [[ "$log" == *$'\nstow '* ]] || fail "expected full installation to run the link target"
-    [[ "$log" == *$'\ngit clone '* ]] || fail "expected full installation to run the tpm target"
     [[ "$log" == *$'\nmise activate zsh\nmise install'* ]] ||
         fail "expected full installation to run the mise target"
     [[ "$log" == *$'\ncurl -fsSL https://claude.ai/install.sh' ]] ||

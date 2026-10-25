@@ -2,7 +2,6 @@
 # argument (e.g. `ls share`) gets parsed as the icon mode.
 alias ls='eza --icons=auto'
 alias cat='bat'
-alias vim='nvim'
 
 alias gl='git log'
 alias gb='git branch'

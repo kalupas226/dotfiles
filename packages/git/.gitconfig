@@ -7,7 +7,7 @@
 [pull]
   rebase = false
 [core]
-  editor = nvim
+  editor = vim
   excludesfile = ~/.gitignore.global
   pager = delta
 [interactive]

@@ -5,3 +5,7 @@ elif [ -x /opt/homebrew/bin/brew ]; then
 elif [ -x /usr/local/bin/brew ]; then
   eval "$(/usr/local/bin/brew shellenv)"
 fi
+
+if [ -n "${HOMEBREW_PREFIX:-}" ] && [ -d "${HOMEBREW_PREFIX}/opt/curl/bin" ]; then
+  export PATH="${HOMEBREW_PREFIX}/opt/curl/bin:${PATH}"
+fi
