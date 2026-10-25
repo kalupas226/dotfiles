@@ -8,7 +8,6 @@ This is a personal macOS dotfiles repo built around a package-based layout. Each
 
 Examples:
 - `packages/zsh/.zshrc` -> `~/.zshrc`
-- `packages/nvim/.config/nvim/init.lua` -> `~/.config/nvim/init.lua`
 - `packages/bin/.local/bin/dotfiles` -> `~/.local/bin/dotfiles`
 - `packages/tmux/.local/libexec/tmux/project` -> `~/.local/libexec/tmux/project`
 - `packages/claude/.claude/_settings-source/shared.json` -> `~/.claude/_settings-source/shared.json`
@@ -30,7 +29,7 @@ The repo contains both user configuration and maintenance tooling:
 - Diagnose local dotfiles symlink health: `dotfiles doctor`
 - Generate Claude Code user settings via installed helper: `dotfiles claude-settings`
 - Check all managed updates directly: `./scripts/outdated.sh`
-- Run one outdated source: `dotfiles outdated brew`, `dotfiles outdated mise`, or `dotfiles outdated sheldon`
+- Run one outdated source: `dotfiles outdated brew` or `dotfiles outdated mise`
 - List available outdated sources: `./scripts/outdated.sh --list`
 
 ## Validation
@@ -57,7 +56,7 @@ For dotfile-only changes, also sanity-check the target symlink under `$HOME` aft
 
 Top-level files:
 - `Brewfile` - source of truth for Homebrew formulae/casks
-- `install.sh` - main installer; links dotfiles with GNU Stow, installs TPM/Homebrew packages/mise tools/Claude Code
+- `install.sh` - main installer; links dotfiles with GNU Stow, installs Homebrew packages/mise tools/Claude Code
 - `README.md` - human-facing setup and maintenance guide
 
 Packages:
@@ -69,8 +68,6 @@ Packages:
 - `packages/lazygit` - Lazygit config
 - `packages/mise` - mise tool pins
 - `packages/npm` - npm safety defaults (`.npmrc`)
-- `packages/nvim` - Neovim config
-- `packages/sheldon` - shell plugin manager config
 - `packages/starship` - prompt config
 - `packages/tmux` - tmux config and tmux-only libexec helpers
 - `packages/wezterm` - WezTerm config
@@ -79,7 +76,7 @@ Packages:
 Maintenance code:
 - `scripts/lib/ui.sh` - shared shell UI helpers (`step`, `note`, `ok`, `warn`, `skip`, `section_line`)
 - `scripts/outdated.sh` - dispatcher for managed update checks
-- `scripts/outdated/` - individual outdated checks for brew/mise/sheldon
+- `scripts/outdated/` - individual outdated checks for brew and mise
 - `scripts/doctor.sh` - read-only local dotfiles health diagnostics
 - `scripts/generate-claude-settings.sh` - manually merges Claude settings source JSON files from `~/.claude/_settings-source` into `~/.claude/settings.json`
 - `scripts/migrate-legacy-links-to-stow.sh` - one-time helper for removing old repo-pointing symlinks before Stow takes over
@@ -94,7 +91,6 @@ Maintenance code:
 - installs Homebrew if missing
 - runs `brew bundle -v --file=Brewfile`
 - links package dotfiles with `stow --no-folding`
-- installs TPM if missing
 - activates mise and runs `mise install`
 - installs Claude Code if missing
 
@@ -115,7 +111,7 @@ If Stow conflicts with symlinks created by older versions of `install.sh`, use `
 
 Supported commands:
 - `dotfiles install`
-- `dotfiles outdated [--refresh] [brew|mise|sheldon...]`
+- `dotfiles outdated [--refresh] [brew|mise...]`
 - `dotfiles doctor`
 - `dotfiles claude-settings`
 - `dotfiles help`

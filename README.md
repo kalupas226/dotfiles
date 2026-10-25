@@ -34,7 +34,7 @@ To run only part of the installation, pass one or more targets. Targets always r
 ./install.sh brew mise
 ```
 
-Available targets are `brew`, `link`, `tpm`, `mise`, and `claude`. Use `all`, or omit targets, to run the full installation. Selected targets do not automatically run missing prerequisites; for example, `link` reports an error if GNU Stow is unavailable.
+Available targets are `brew`, `link`, `mise`, and `claude`. Use `all`, or omit targets, to run the full installation. Selected targets do not automatically run missing prerequisites; for example, `link` reports an error if GNU Stow is unavailable.
 
 Restart your terminal, or run `exec zsh`, after installation.
 
@@ -43,7 +43,6 @@ Restart your terminal, or run `exec zsh`, after installation.
 - Installs Homebrew if missing
 - Runs `brew bundle -v --file=Brewfile`
 - Links package dotfiles into `$HOME` with `stow --no-folding`
-- Installs TPM if missing
 - Activates mise and runs `mise install`
 - Installs Claude Code if missing
 - Prints manual setup reminders
@@ -64,7 +63,7 @@ The current checklist is printed by `install.sh` at the end of the install so th
 
 - Check managed updates: `dotfiles outdated`
 - Refresh update metadata before checking: `dotfiles outdated --refresh`
-- Check a single source: `dotfiles outdated brew`, `dotfiles outdated mise`, or `dotfiles outdated sheldon`
+- Check a single source: `dotfiles outdated brew` or `dotfiles outdated mise`
 - Diagnose local symlink health: `dotfiles doctor`
 - Install or relink everything: `dotfiles install`
 - Run selected installation targets: `dotfiles install link` or `dotfiles install brew mise`
@@ -72,7 +71,6 @@ The current checklist is printed by `install.sh` at the end of the install so th
 - Node.js is pinned in `packages/mise/.config/mise/config.toml`
 - Homebrew packages are defined in `Brewfile`
 - Manual setup reminders are maintained in `install.sh`
-- Neovim plugins are locked in `packages/nvim/.config/nvim/lazy-lock.json`
 - Git identity defaults to GitHub noreply; override per machine with `~/.gitconfig.local`
 - Git and lazygit render diffs with `git-delta` (installed via `Brewfile`)
 - Prefer project-local `devDependencies`, `npm dlx`/`npx`, or Homebrew over global npm installs
@@ -115,8 +113,6 @@ scripts/migrate-legacy-links-to-stow.sh
 │   ├── lazygit/    # Lazygit configuration
 │   ├── mise/       # mise tool pins
 │   ├── npm/        # npm defaults
-│   ├── nvim/       # Neovim configuration
-│   ├── sheldon/    # zsh plugin pins
 │   ├── starship/   # Starship prompt
 │   ├── tmux/       # tmux configuration and tmux-only libexec helpers
 │   ├── wezterm/    # WezTerm configuration
